@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="現場撮影">
+<meta name="theme-color" content="#007aff">
+<title>現場写真撮影アプリ</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; height: 100%; background: #f5f5f7; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    color: #1d1d1f; font-size: 16px; line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+  }
+  .app-bar {
+    background: #1d1d1f; color: white;
+    padding: 14px 16px; text-align: center;
+    font-size: 17px; font-weight: 600;
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .badge-count {
+    background: #ff3b30; color: white;
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 13px; font-weight: 600;
+    min-width: 28px; text-align: center;
+  }
+  .badge-count.zero { background: #48484a; }
+  .container { max-width: 640px; margin: 0 auto; padding: 16px; }
+  .card {
+    background: white; border-radius: 12px;
+    padding: 16px 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .card-title {
+    font-size: 15px; font-weight: 600;
+    margin: 0 0 14px 0; color: #1d1d1f;
+  }
+  
+  .field-row {
+    margin-bottom: 14px;
+  }
+  .field-label-row {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 6px; gap: 8px;
+  }
+  .field-label {
+    font-size: 13px; color: #6e6e73;
+    font-weight: 500; flex: 1;
+  }
+  .check-toggle {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 12px; color: #6e6e73;
+    cursor: pointer; user-select: none;
+    padding: 4px 8px;
+    background: #f5f5f7;
+    border-radius: 6px;
+  }
+  .check-toggle input[type="checkbox"] {
+    width: 16px; height: 16px; margin: 0;
+    accent-color: #007aff;
+  }
+  .check-toggle.active {
+    background: #e7f3ff; color: #0066cc;
+  }
+  .field-input-row {
+    display: flex; gap: 6px; align-items: center;
+  }
+  .field-input-row input[type="text"] {
+    flex: 1; margin-bottom: 0;
+  }
+  .delete-field-btn {
+    background: none; border: 1px solid #ff3b30;
+    color: #ff3b30; padding: 8px 10px;
+    font-size: 14px; border-radius: 8px;
+    cursor: pointer; width: auto;
+    margin: 0; flex-shrink: 0;
+  }
+  
+  input[type="text"] {
+    width: 100%; padding: 12px 14px; font-size: 16px;
+    border: 1px solid #d2d2d7; border-radius: 8px;
+    background: white; color: #1d1d1f;
+    margin-bottom: 14px;
+    -webkit-appearance: none; appearance: none;
+  }
+  input[type="text"]:focus { outline: none; border-color: #007aff; }
+  
+  .add-field-btn {
+    background: white;
+    color: #007aff;
+    border: 1px dashed #007aff;
+    padding: 10px;
+    font-size: 14px; font-weight: 500;
+    margin-bottom: 0;
+  }
+  
+  .preview-line {
+    font-size: 14px; color: #6e6e73;
+    margin: 0 0 14px 0; padding: 12px 14px;
+    background: #f5f5f7; border-radius: 8px;
+    word-break: break-all;
+  }
+  .preview-name { color: #007aff; font-weight: 600; }
+  button {
+    width: 100%; padding: 14px; font-size: 16px;
+    font-weight: 600; border: none; border-radius: 10px;
+    background: #007aff; color: white; cursor: pointer;
+    -webkit-appearance: none; appearance: none;
+    transition: opacity 0.15s; margin-bottom: 10px;
+  }
+  button:active { opacity: 0.7; }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  button.secondary { background: #e5e5ea; color: #1d1d1f; }
+  button.danger { background: #ff3b30; color: white; }
+  button.success { background: #34c759; color: white; }
+  input[type="file"] { display: none; }
+  .photo-list { margin-top: 12px; }
+  .photo-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px; border-bottom: 1px solid #f0f0f5;
+  }
+  .photo-item:last-child { border-bottom: none; }
+  .photo-thumb {
+    width: 60px; height: 60px;
+    border-radius: 8px; object-fit: cover;
+    flex-shrink: 0; background: #f5f5f7;
+  }
+  .photo-info { flex: 1; min-width: 0; }
+  .photo-name {
+    font-size: 14px; font-weight: 600;
+    word-break: break-all; color: #1d1d1f;
+  }
+  .photo-path {
+    font-size: 11px; color: #8e8e93;
+    word-break: break-all; margin-top: 2px;
+  }
+  .photo-time {
+    font-size: 11px; color: #8e8e93; margin-top: 2px;
+  }
+  .photo-delete {
+    background: none; border: none; color: #ff3b30;
+    font-size: 24px; padding: 4px 10px;
+    margin: 0; width: auto; flex-shrink: 0;
+  }
+  .empty {
+    text-align: center; color: #8e8e93;
+    padding: 30px 0; font-size: 14px;
+  }
+  .stat-bar {
+    display: flex; justify-content: space-between;
+    padding: 12px; background: #f5f5f7;
+    border-radius: 8px; margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .stat-bar strong { font-weight: 600; color: #1d1d1f; }
+  .progress {
+    background: #e5e5ea; border-radius: 8px;
+    overflow: hidden; margin: 10px 0;
+    display: none;
+  }
+  .progress.show { display: block; }
+  .progress-bar {
+    background: #007aff; height: 8px;
+    width: 0%; transition: width 0.2s;
+  }
+  .info-box {
+    background: #e7f3ff; border-radius: 10px;
+    padding: 12px 14px; margin-bottom: 14px;
+    font-size: 13px; color: #1e40af;
+    line-height: 1.6;
+  }
+  .tab-bar {
+    display: flex; background: white;
+    border-radius: 10px; padding: 4px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  .tab {
+    flex: 1; padding: 10px; text-align: center;
+    border-radius: 8px; font-size: 14px;
+    font-weight: 500; color: #6e6e73;
+    cursor: pointer;
+  }
+  .tab.active {
+    background: #007aff; color: white;
+  }
+  .view { display: none; }
+  .view.active { display: block; }
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <span>📷 現場写真撮影アプリ</span>
+  <span class="badge-count zero" id="badgeCount">0</span>
+</div>
+<div class="container">
+
+  <div class="tab-bar">
+    <div class="tab active" data-view="shoot">📸 撮影</div>
+    <div class="tab" data-view="list">📋 一覧</div>
+    <div class="tab" data-view="export">📤 書出し</div>
+  </div>
+
+  <div id="view-shoot" class="view active">
+    <div class="card">
+      <p class="card-title">🏢 撮影対象</p>
+      <p style="font-size: 12px; color: #6e6e73; margin: 0 0 12px 0;">
+        ✓を入れた項目がファイル名の頭に追加されます（空欄の項目は含まれません）
+      </p>
+      
+      <div id="fixedFields">
+        <!-- 固定フィールド（クライアント、事業所、棟）が動的に挿入される -->
+      </div>
+      
+      <div id="customFields">
+        <!-- 自由記述フィールドが動的に挿入される -->
+      </div>
+      
+      <button id="addFieldBtn" class="add-field-btn">+ 自由記述を追加</button>
+    </div>
+
+    <div class="card">
+      <p class="card-title">📸 撮影</p>
+      <label style="font-size: 13px; color: #6e6e73; display: block; margin-bottom: 6px; font-weight: 500;">ファイル名（番号など）</label>
+      <input type="text" id="filename" placeholder="例: 123" autocomplete="off" />
+      <p class="preview-line">保存名のプレビュー:<br><span class="preview-name" id="preview">(ファイル名).jpg</span></p>
+      <input type="file" id="camera" accept="image/*" capture="environment" />
+      <button id="shoot-btn">📷 カメラを起動して撮影</button>
+    </div>
+
+    <div class="info-box">
+      撮影した写真はアプリ内に蓄積されます。<br>
+      最後にまとめて「書出し」タブからZIPで一括ダウンロードできます。
+    </div>
+  </div>
+
+  <div id="view-list" class="view">
+    <div class="card">
+      <p class="card-title">📋 撮影リスト</p>
+      <div class="stat-bar">
+        <span>合計：<strong id="totalCount">0</strong> 枚</span>
+        <span>容量：<strong id="totalSize">0 MB</strong></span>
+      </div>
+      <div id="photoList" class="photo-list">
+        <div class="empty">まだ撮影がありません</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <button id="clearAllBtn" class="danger">🗑 すべて削除（撮り直し）</button>
+    </div>
+  </div>
+
+  <div id="view-export" class="view">
+    <div class="card">
+      <p class="card-title">📤 ZIPファイルとして書出し</p>
+      <div class="info-box">
+        <strong>動作内容：</strong><br>
+        撮影した写真を「クライアント／事業所／棟」のフォルダ構造で整理したZIPファイルを作成します。<br><br>
+        <strong>保存方法：</strong><br>
+        1. 下のボタンをタップ<br>
+        2. ZIPファイルがダウンロードされる<br>
+        3. iPadの「ファイル」アプリでZIPを長押し → 解凍<br>
+        4. 整理されたフォルダがそのまま使えます
+      </div>
+      <div class="stat-bar">
+        <span>書出し対象：<strong id="exportCount">0</strong> 枚</span>
+      </div>
+      <div class="progress" id="progress">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <button id="exportBtn" class="success">📦 ZIPでまとめて書出す</button>
+      <button id="exportClearBtn" class="secondary" style="display:none;">✅ 書出し済み、データを削除</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var $ = function(id) { return document.getElementById(id); };
+  
+  var photos = [];
+  var customFieldCount = 2; // 初期の自由記述欄の数
+  
+  // フィールド設定（key, label, defaultChecked）
+  var fixedFieldDefs = [
+    { key: 'client', label: 'クライアント会社', placeholder: '例: ○○商事', defaultChecked: false },
+    { key: 'site', label: '事業所', placeholder: '例: 東京本社', defaultChecked: false },
+    { key: 'building', label: '棟', placeholder: '例: A棟', defaultChecked: true }
+  ];
+  
+  var filename = $('filename');
+  var preview = $('preview');
+  var camera = $('camera');
+  var shootBtn = $('shoot-btn');
+  var badgeCount = $('badgeCount');
+  var totalCount = $('totalCount');
+  var totalSize = $('totalSize');
+  var exportCount = $('exportCount');
+  var photoList = $('photoList');
+  var clearAllBtn = $('clearAllBtn');
+  var exportBtn = $('exportBtn');
+  var exportClearBtn = $('exportClearBtn');
+  var progress = $('progress');
+  var progressBar = $('progressBar');
+  var fixedFieldsContainer = $('fixedFields');
+  var customFieldsContainer = $('customFields');
+  var addFieldBtn = $('addFieldBtn');
+  
+  function sanitize(s) {
+    return (s || '').replace(/[\\\/:*?"<>|]/g, '_').trim();
+  }
+  
+  function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+  }
+  
+  // フィールド行を作成する関数
+  function createFieldRow(key, label, placeholder, defaultChecked, isCustom, customIdx) {
+    var row = document.createElement('div');
+    row.className = 'field-row';
+    row.dataset.key = key;
+    
+    // ラベル行（ラベル + チェックボックス）
+    var labelRow = document.createElement('div');
+    labelRow.className = 'field-label-row';
+    
+    var labelEl = document.createElement('span');
+    labelEl.className = 'field-label';
+    labelEl.textContent = label;
+    
+    var checkLabel = document.createElement('label');
+    checkLabel.className = 'check-toggle' + (defaultChecked ? ' active' : '');
+    var checkInput = document.createElement('input');
+    checkInput.type = 'checkbox';
+    checkInput.checked = defaultChecked;
+    checkInput.dataset.key = key;
+    checkInput.className = 'include-check';
+    var checkText = document.createElement('span');
+    checkText.textContent = 'ファイル名に含める';
+    checkLabel.appendChild(checkInput);
+    checkLabel.appendChild(checkText);
+    
+    checkInput.addEventListener('change', function() {
+      if (this.checked) {
+        checkLabel.classList.add('active');
+      } else {
+        checkLabel.classList.remove('active');
+      }
+      saveState();
+      updatePreview();
+    });
+    
+    labelRow.appendChild(labelEl);
+    labelRow.appendChild(checkLabel);
+    row.appendChild(labelRow);
+    
+    // 入力行（テキスト入力 + 削除ボタン）
+    var inputRow = document.createElement('div');
+    inputRow.className = 'field-input-row';
+    
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = placeholder;
+    input.autocomplete = 'off';
+    input.dataset.key = key;
+    input.className = 'field-input';
+    input.addEventListener('input', function() {
+      saveState();
+      updatePreview();
+    });
+    inputRow.appendChild(input);
+    
+    if (isCustom) {
+      var delBtn = document.createElement('button');
+      delBtn.className = 'delete-field-btn';
+      delBtn.textContent = '×';
+      delBtn.title = 'この欄を削除';
+      delBtn.onclick = function() {
+        if (confirm('この自由記述欄を削除しますか？\n（入力した内容も消えます）')) {
+          row.remove();
+          saveState();
+          updatePreview();
+        }
+      };
+      inputRow.appendChild(delBtn);
+    }
+    
+    row.appendChild(inputRow);
+    return row;
+  }
+  
+  // 全フィールドの値を取得する関数
+  function getAllFields() {
+    var result = [];
+    var allRows = document.querySelectorAll('.field-row');
+    allRows.forEach(function(row) {
+      var input = row.querySelector('.field-input');
+      var check = row.querySelector('.include-check');
+      if (input && check) {
+        result.push({
+          key: row.dataset.key,
+          label: row.querySelector('.field-label').textContent,
+          value: input.value,
+          included: check.checked
+        });
+      }
+    });
+    return result;
+  }
+  
+  // ファイル名のプレビュー更新
+  function updatePreview() {
+    var fields = getAllFields();
+    var parts = [];
+    fields.forEach(function(f) {
+      if (f.included && f.value.trim()) {
+        parts.push(sanitize(f.value));
+      }
+    });
+    var fname = sanitize(filename.value || '(ファイル名)');
+    var fullName = parts.length > 0 ? parts.join('_') + '_' + fname : fname;
+    preview.textContent = fullName + '.jpg';
+  }
+  
+  // 状態保存
+  function saveState() {
+    try {
+      var state = {
+        fields: [],
+        customCount: customFieldsContainer.querySelectorAll('.field-row').length
+      };
+      var allRows = document.querySelectorAll('.field-row');
+      allRows.forEach(function(row) {
+        var input = row.querySelector('.field-input');
+        var check = row.querySelector('.include-check');
+        var labelEl = row.querySelector('.field-label');
+        if (input && check) {
+          state.fields.push({
+            key: row.dataset.key,
+            label: labelEl.textContent,
+            value: input.value,
+            checked: check.checked,
+            isCustom: row.dataset.key.indexOf('custom_') === 0
+          });
+        }
+      });
+      localStorage.setItem('appState', JSON.stringify(state));
+    } catch(e) {}
+  }
+  
+  // 状態復元
+  function loadState() {
+    try {
+      var saved = localStorage.getItem('appState');
+      if (!saved) return false;
+      var state = JSON.parse(saved);
+      
+      // 復元処理
+      fixedFieldsContainer.innerHTML = '';
+      customFieldsContainer.innerHTML = '';
+      
+      var customIdx = 1;
+      state.fields.forEach(function(f) {
+        if (f.isCustom) {
+          var row = createFieldRow(f.key, f.label, '自由に入力', f.checked, true, customIdx);
+          var input = row.querySelector('.field-input');
+          if (input) input.value = f.value || '';
+          customFieldsContainer.appendChild(row);
+          customIdx++;
+        } else {
+          // 固定フィールド
+          var def = fixedFieldDefs.find(function(d) { return d.key === f.key; });
+          if (def) {
+            var row = createFieldRow(def.key, def.label, def.placeholder, f.checked, false);
+            var input = row.querySelector('.field-input');
+            if (input) input.value = f.value || '';
+            fixedFieldsContainer.appendChild(row);
+          }
+        }
+      });
+      return true;
+    } catch(e) {
+      return false;
+    }
+  }
+  
+  // 初期構築
+  function initFields() {
+    // 固定フィールド作成
+    fixedFieldDefs.forEach(function(def) {
+      var row = createFieldRow(def.key, def.label, def.placeholder, def.defaultChecked, false);
+      fixedFieldsContainer.appendChild(row);
+    });
+    // 自由記述欄を2つ追加
+    for (var i = 1; i <= 2; i++) {
+      var row = createFieldRow('custom_' + i, '自由記述' + (i === 1 ? '①' : '②'), '自由に入力', false, true, i);
+      customFieldsContainer.appendChild(row);
+    }
+  }
+  
+  // 自由記述欄を追加
+  addFieldBtn.addEventListener('click', function() {
+    var existingCount = customFieldsContainer.querySelectorAll('.field-row').length;
+    var num = existingCount + 1;
+    var labelNum = num <= 9 ? ['①','②','③','④','⑤','⑥','⑦','⑧','⑨'][num - 1] : num;
+    var key = 'custom_' + Date.now();
+    var row = createFieldRow(key, '自由記述' + labelNum, '自由に入力', false, true, num);
+    customFieldsContainer.appendChild(row);
+    saveState();
+    updatePreview();
+  });
+  
+  function updateStats() {
+    var count = photos.length;
+    badgeCount.textContent = count;
+    badgeCount.className = count > 0 ? 'badge-count' : 'badge-count zero';
+    totalCount.textContent = count;
+    exportCount.textContent = count;
+    var totalBytes = photos.reduce(function(sum, p) { return sum + p.size; }, 0);
+    totalSize.textContent = formatSize(totalBytes);
+  }
+  
+  function renderList() {
+    if (photos.length === 0) {
+      photoList.innerHTML = '<div class="empty">まだ撮影がありません</div>';
+      updateStats();
+      return;
+    }
+    photoList.innerHTML = '';
+    photos.slice().reverse().forEach(function(p, idx) {
+      var realIdx = photos.length - 1 - idx;
+      var item = document.createElement('div');
+      item.className = 'photo-item';
+      
+      var img = document.createElement('img');
+      img.className = 'photo-thumb';
+      img.src = p.dataUrl;
+      
+      var info = document.createElement('div');
+      info.className = 'photo-info';
+      var name = document.createElement('div');
+      name.className = 'photo-name';
+      name.textContent = p.filename;
+      var path = document.createElement('div');
+      path.className = 'photo-path';
+      path.textContent = '📁 ' + p.client + ' / ' + p.site + ' / ' + p.building;
+      var time = document.createElement('div');
+      time.className = 'photo-time';
+      time.textContent = new Date(p.time).toLocaleString('ja-JP') + ' / ' + formatSize(p.size);
+      info.appendChild(name);
+      info.appendChild(path);
+      info.appendChild(time);
+      
+      var del = document.createElement('button');
+      del.className = 'photo-delete';
+      del.textContent = '×';
+      del.onclick = function() {
+        if (confirm('この写真を削除しますか？\n' + p.filename)) {
+          photos.splice(realIdx, 1);
+          renderList();
+        }
+      };
+      
+      item.appendChild(img);
+      item.appendChild(info);
+      item.appendChild(del);
+      photoList.appendChild(item);
+    });
+    updateStats();
+  }
+  
+  // タブ切替
+  document.querySelectorAll('.tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      tab.classList.add('active');
+      $('view-' + tab.dataset.view).classList.add('active');
+      if (tab.dataset.view === 'list') renderList();
+      if (tab.dataset.view === 'export') updateStats();
+    });
+  });
+  
+  filename.addEventListener('input', updatePreview);
+  
+  // 撮影
+  shootBtn.addEventListener('click', function() {
+    if (!filename.value.trim()) {
+      alert('ファイル名を入力してください');
+      filename.focus();
+      return;
+    }
+    camera.click();
+  });
+  
+  camera.addEventListener('change', function(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    
+    var fields = getAllFields();
+    var clientField = fields.find(function(f) { return f.key === 'client'; });
+    var siteField = fields.find(function(f) { return f.key === 'site'; });
+    var buildingField = fields.find(function(f) { return f.key === 'building'; });
+    
+    var parts = [];
+    fields.forEach(function(f) {
+      if (f.included && f.value.trim()) {
+        parts.push(sanitize(f.value));
+      }
+    });
+    var fname = sanitize(filename.value);
+    var fullName = parts.length > 0 ? parts.join('_') + '_' + fname : fname;
+    
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      var photo = {
+        client: sanitize(clientField ? clientField.value : '') || '未分類',
+        site: sanitize(siteField ? siteField.value : '') || '未分類',
+        building: sanitize(buildingField ? buildingField.value : '') || '未分類',
+        filename: fullName + '.jpg',
+        dataUrl: ev.target.result,
+        size: file.size,
+        time: new Date().toISOString()
+      };
+      photos.push(photo);
+      updateStats();
+      
+      camera.value = '';
+      filename.value = '';
+      updatePreview();
+      filename.focus();
+      
+      shootBtn.textContent = '✓ 保存しました（次の撮影へ）';
+      shootBtn.style.background = '#34c759';
+      setTimeout(function() {
+        shootBtn.textContent = '📷 カメラを起動して撮影';
+        shootBtn.style.background = '';
+      }, 1500);
+    };
+    reader.readAsDataURL(file);
+  });
+  
+  // すべて削除
+  clearAllBtn.addEventListener('click', function() {
+    if (photos.length === 0) {
+      alert('削除する写真がありません');
+      return;
+    }
+    if (confirm('すべての撮影写真（' + photos.length + '枚）を削除します。よろしいですか？')) {
+      photos = [];
+      renderList();
+      alert('すべて削除しました');
+    }
+  });
+  
+  // ZIP書出し
+  exportBtn.addEventListener('click', async function() {
+    if (photos.length === 0) {
+      alert('書出す写真がありません');
+      return;
+    }
+    
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'ZIPを作成中...';
+    progress.classList.add('show');
+    progressBar.style.width = '0%';
+    
+    try {
+      var zip = new JSZip();
+      
+      for (var i = 0; i < photos.length; i++) {
+        var p = photos[i];
+        var folderPath = p.client + '/' + p.site + '/' + p.building;
+        var base64Data = p.dataUrl.split(',')[1];
+        zip.file(folderPath + '/' + p.filename, base64Data, { base64: true });
+        progressBar.style.width = ((i + 1) / photos.length * 50) + '%';
+        await new Promise(function(r) { setTimeout(r, 10); });
+      }
+      
+      var blob = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'STORE'
+      }, function(meta) {
+        progressBar.style.width = (50 + meta.percent / 2) + '%';
+      });
+      
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      var timestamp = new Date().toISOString().replace(/[:.]/g, '-').substring(0, 19);
+      a.download = '現場撮影_' + timestamp + '.zip';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+      
+      progressBar.style.width = '100%';
+      exportBtn.textContent = '✓ ダウンロード完了';
+      exportClearBtn.style.display = 'block';
+      
+      setTimeout(function() {
+        exportBtn.disabled = false;
+        exportBtn.textContent = '📦 もう一度書出す';
+        progress.classList.remove('show');
+      }, 2000);
+    } catch (err) {
+      alert('書出しエラー: ' + err.message);
+      exportBtn.disabled = false;
+      exportBtn.textContent = '📦 ZIPでまとめて書出す';
+      progress.classList.remove('show');
+    }
+  });
+  
+  exportClearBtn.addEventListener('click', function() {
+    if (confirm('撮影済みデータ ' + photos.length + ' 枚をアプリから削除します。\n（ダウンロード済みZIPは残ります）')) {
+      photos = [];
+      renderList();
+      exportClearBtn.style.display = 'none';
+      alert('データを削除しました');
+    }
+  });
+  
+  // 初期化
+  if (!loadState()) {
+    initFields();
+  }
+  updatePreview();
+  updateStats();
+})();
+</script>
+</body>
+</html>
