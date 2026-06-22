@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.113</title>
+<title>現場写真撮影アプリ v3.115</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1830,7 +1830,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.113 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.115 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2952,6 +2952,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </details>
       <p id="imp-summary" class="imp-summary"></p>
       <p id="imp-note" class="imp-note">赤色は<strong>注意表示</strong>です（取り込みは可能・別レコードになります）。番号は各行で直せます。</p>
+      <label id="imp-autotidy-row" style="display:flex;align-items:center;gap:7px;font-size:12px;color:#c7c7cc;margin:2px 0 8px;cursor:pointer;line-height:1.5;">
+        <input type="checkbox" id="imp-autotidy" style="width:auto;margin:0;flex:0 0 auto;"> <span>同名（拡張子違い）は<strong>HEIC等を自動でオフ</strong>にする（JPG等を1枚残す）</span>
+      </label>
       <button type="button" id="imp-tidy" class="imp-tidy-btn" style="display:none;"></button>
       <div id="imp-list" class="pin-photo-list" style="max-height:42vh;"></div>
       <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#34c759;text-align:center;">この内容で取り込む</button>
@@ -3254,7 +3257,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.113）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.115）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11082,6 +11085,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   //   この規則は取り込みダイアログ内の「提案番号」と「重複判定」にのみ使う。既定は head（先頭）。
   var impNumRule = 'head';
   try { var _r = localStorage.getItem('impNumRule'); if (_r === 'head' || _r === 'tail') impNumRule = _r; } catch (e) {}
+  // v3-115：同名(拡張子違い)を取り込み前に自動オフするか（UI設定のみ・既定OFF＝現行どおり）
+  var impAutoTidy = false;
+  try { impAutoTidy = (localStorage.getItem('impAutoTidy') === '1'); } catch (e) {}
   function impExtractNum(name, rule) {
     if (!name) return '';
     var base = String(name).replace(/\.[^.]+$/, ''); // 拡張子除去
@@ -11117,17 +11123,38 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function impBaseKey(name){ return String(name).replace(/\.[^.]+$/, '').toLowerCase(); }
   function impFmtRank(name){ var m=(String(name).match(/\.([a-z0-9]+)$/i)||[,''])[1].toLowerCase(); var r={jpg:1,jpeg:1,png:2,webp:3,gif:4,bmp:5,heic:9,heif:9}; return r[m]||6; }
   // 「同名（拡張子違い）を1枚に整理」：各グループで最も互換性の高い形式を1枚だけ残し、他はチェックを外す（削除はしない＝戻せる）
-  function impTidySameName(){
+  // 同名（拡張子違い）整理の中核：各グループで高互換形式を1枚だけ残し、他はチェックを外す（削除しない＝戻せる）。
+  // silent=true なら結果トーストを出さない（自動オフ用）。戻り値で残/外した枚数を返す。 v3-115
+  function impApplyTidy(silent){
     var entries = impValidEntries();
     var groups = {};
     entries.forEach(function(e){ var k=impBaseKey(e.origName); (groups[k]=groups[k]||[]).push(e); });
+    var kept = 0, turnedOff = 0; // 残した枚数／今回オフにした枚数
     Object.keys(groups).forEach(function(k){
       var g=groups[k]; if(g.length<2) return;
       var keep=g[0]; for(var i=1;i<g.length;i++){ if(impFmtRank(g[i].origName)<impFmtRank(keep.origName)) keep=g[i]; }
-      g.forEach(function(e){ e.include=(e===keep); });
+      g.forEach(function(e){
+        var wasOn = e.include;
+        e.include = (e===keep);
+        if (e===keep) { kept++; }
+        else if (wasOn) { turnedOff++; } // 元々オフのものは数えない＝今回外した枚数のみ
+      });
     });
     renderImportPreview();
+    // v3-114：「効いているのに分かりにくい」の解消＝結果をトースト表示（手動押下時のみ。整理ロジックは不変）
+    if (!silent) {
+      try {
+        var onNow = impValidEntries().filter(function(e){ return e.include; }).length;
+        if (kept > 0) {
+          showToast('整理しました：JPG等を ' + kept + ' 枚残し、HEIC等 ' + turnedOff + ' 枚のチェックを外しました（取り込む ' + onNow + ' 枚）');
+        } else {
+          showToast('同名（拡張子違い）の組はありませんでした');
+        }
+      } catch (e) {}
+    }
+    return { kept: kept, turnedOff: turnedOff };
   }
+  function impTidySameName(){ impApplyTidy(false); }
   function renderImportPreview(){
     var listEl = $('imp-list'); if (!listEl) return;
     var cl = sanitize($('imp-client').value) || '未分類', st = sanitize($('imp-site').value) || '未分類', bl = sanitize($('imp-building').value) || '未分類';
@@ -11197,6 +11224,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // 番号読み取り規則のラジオを現在値へ同期
     var rr = document.querySelector('input[name="imp-numrule"][value="' + impNumRule + '"]');
     if (rr) rr.checked = true;
+    // v3-115：自動オフ・トグルの状態を同期し、ONなら開いた時点で静かに同名整理（毎回トーストは出さない）
+    var atBox0 = $('imp-autotidy'); if (atBox0) atBox0.checked = impAutoTidy;
+    if (impAutoTidy) { try { impApplyTidy(true); } catch (e) {} }
     renderImportPreview();
     var el = $('photo-import-modal'); if (el) el.style.display = 'flex';
   }
@@ -11301,6 +11331,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     document.querySelectorAll('input[name="imp-fnmode"]').forEach(function(r){ r.addEventListener('change', renderImportPreview); });
     document.querySelectorAll('input[name="imp-numrule"]').forEach(function(r){ r.addEventListener('change', function(){ if (r.checked) impApplyNumRule(r.value); }); });
     var tidyBtn = $('imp-tidy'); if (tidyBtn) tidyBtn.addEventListener('click', impTidySameName);
+    // v3-115：自動オフ・トグル。ONにした瞬間は適用＋結果トースト。OFFにしても現在の選択は変えない（勝手な再取り込みを避ける）。
+    var atBox = $('imp-autotidy');
+    if (atBox) atBox.addEventListener('change', function(){
+      impAutoTidy = atBox.checked;
+      try { localStorage.setItem('impAutoTidy', impAutoTidy ? '1' : '0'); } catch (e) {}
+      if (impAutoTidy) { impApplyTidy(false); }
+    });
     var cf2 = $('imp-confirm'); if (cf2) cf2.addEventListener('click', confirmPhotoImport);
     var cx = $('imp-cancel'); if (cx) cx.addEventListener('click', closePhotoImportModal);
     var modal = $('photo-import-modal'); if (modal) modal.addEventListener('click', function(ev){ if (ev.target === modal) closePhotoImportModal(); });
