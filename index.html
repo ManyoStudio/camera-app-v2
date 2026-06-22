@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.106</title>
+<title>現場写真撮影アプリ v3.110</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1113,6 +1113,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .imp-row.dup { border-color:#ff453a; }
   .imp-row.off { opacity:0.45; }
   .imp-thumb { width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0; background:#1c1c1e; }
+  .imp-thumb-ph { display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; color:#e5e5ea; background:#3a3a3c; }
+  .imp-note { font-size:11px; color:#a1a1a6; margin:0 0 8px 0; line-height:1.5; }
+  .imp-tidy-btn { -webkit-appearance:none; appearance:none; margin:0 0 8px 0; padding:7px 12px; font-size:12px; font-weight:600; color:#0a84ff; background:#0a84ff1a; border:1px solid #0a84ff66; border-radius:8px; cursor:pointer; }
+  .imp-tidy-btn:active { background:#0a84ff33; }
+  .imp-info-note { font-size:11px; color:#9ad0ff; margin-top:3px; }
   .imp-info { flex:1; min-width:0; }
   .imp-fn { font-size:11px; color:#b0b0b5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .imp-numline { display:flex; align-items:center; gap:6px; font-size:13px; color:#fff; margin-top:4px; }
@@ -1808,7 +1813,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.106 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.110 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2900,7 +2905,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <label><input type="radio" name="imp-fnmode" value="keep" checked> 元のまま</label>
         <label><input type="radio" name="imp-fnmode" value="norm"> No.◯◯ に正規化（推奨）</label>
       </div>
+      <div class="imp-fnmode">
+        <span>番号の読み取り：</span>
+        <label><input type="radio" name="imp-numrule" value="head" checked> 先頭の数字</label>
+        <label><input type="radio" name="imp-numrule" value="tail"> 末尾の数字</label>
+        <span style="font-size:11px;color:#8a8a8e;">「03091_◯◯室2」のような名前は<strong>先頭</strong>が番号です。末尾の数字を使う命名なら「末尾」に切り替えてください。</span>
+      </div>
+      <details class="more-info" style="margin:2px 0 8px;">
+        <summary>📛 命名のヒント（番号がうまく読めないとき）</summary>
+        <div class="more-body" style="font-size:11px;color:#c7c7cc;line-height:1.7;">
+          ・番号はファイル名の<strong>先頭</strong>に置くと正しく読まれます（例：<strong>03091</strong>_変電室）。末尾に番号を置く命名なら、上の「番号の読み取り」を<strong>末尾の数字</strong>に切り替えてください。<br>
+          ・同じ番号は<strong>別レコード</strong>として取り込まれます（<span style="color:#ff8a80;">赤色</span>は注意表示で、そのまま取り込めます）。番号は各行で直せます。<br>
+          ・HEICとJPGが<strong>同じ名前</strong>だと、同じ写真を二重に取り込みがちです。「<strong>同名（拡張子違い）を1枚に整理</strong>」で1枚にまとめられます。<br>
+          ・<strong>フォルダ名は取り込みに影響しません</strong>（番号は各ファイル名から読み取ります）。
+        </div>
+      </details>
       <p id="imp-summary" class="imp-summary"></p>
+      <p id="imp-note" class="imp-note">赤色は<strong>注意表示</strong>です（取り込みは可能・別レコードになります）。番号は各行で直せます。</p>
+      <button type="button" id="imp-tidy" class="imp-tidy-btn" style="display:none;"></button>
       <div id="imp-list" class="pin-photo-list" style="max-height:42vh;"></div>
       <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#34c759;text-align:center;">この内容で取り込む</button>
       <button type="button" class="pin-sheet-cancel" id="imp-cancel">キャンセル</button>
@@ -3195,7 +3217,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.106）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.110）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10856,27 +10878,89 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // ===== 写真の複数一括取り込み（#5/#1 / v3-65・提案確認式・ファイル名は選択式）=====
   var importEntries = []; // {dataUrl, origName, num, include, size}（読込失敗はnull）
-  function impProposeNum(name){ return extractPhotoNumber(name) || ''; }
+  // v3-107：取り込み時だけの番号読み取り規則（'head'＝先頭の数字／'tail'＝末尾の数字＝従来）。
+  //   ※全機能共有の extractPhotoNumber は変更しない（設備グルーピング・並び替え・検索などへ波及するため）。
+  //   この規則は取り込みダイアログ内の「提案番号」と「重複判定」にのみ使う。既定は head（先頭）。
+  var impNumRule = 'head';
+  try { var _r = localStorage.getItem('impNumRule'); if (_r === 'head' || _r === 'tail') impNumRule = _r; } catch (e) {}
+  function impExtractNum(name, rule) {
+    if (!name) return '';
+    var base = String(name).replace(/\.[^.]+$/, ''); // 拡張子除去
+    if ((rule || impNumRule) === 'tail') {
+      // 従来：末尾の「数字」または「数字_枝番」を優先（アプリ自身の連番向け）
+      var mt = base.match(/(\d+)(?:_\d+)?$/);
+      if (mt) return mt[1];
+      var mt2 = base.match(/(\d+)/);
+      return mt2 ? mt2[1] : '';
+    }
+    // head：先頭に出現する数字（外部命名の「03091_◯◯室2」→ 03091 を拾う）
+    var mh = base.match(/(\d+)/);
+    return mh ? mh[1] : '';
+  }
+  function impProposeNum(name){ return impExtractNum(name, impNumRule) || ''; }
   function impFnMode(){ var r = document.querySelector('input[name="imp-fnmode"]:checked'); return r ? r.value : 'keep'; }
   function impEnsureExt(name){ return /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i.test(name) ? name : (name + '.jpg'); }
   function impConflict(cl, st, bl, num){
     if (!num) return false;
-    return photos.some(function(o){ return o.client===cl && o.site===st && o.building===bl && String(extractPhotoNumber(o.filename))===String(num); });
+    // 既存写真の番号も「取り込み時の規則」で読み取って比較（新規・既存で規則を揃える）
+    return photos.some(function(o){ return o.client===cl && o.site===st && o.building===bl && String(impExtractNum(o.filename, impNumRule))===String(num); });
+  }
+  // 規則変更時：読み込み済みエントリの提案番号を再計算して再描画（手編集も含め一括で読み直す挙動）
+  function impApplyNumRule(rule){
+    if (rule !== 'head' && rule !== 'tail') rule = 'head';
+    impNumRule = rule;
+    try { localStorage.setItem('impNumRule', rule); } catch (e) {}
+    impValidEntries().forEach(function(e){ e.num = impExtractNum(e.origName, rule) || ''; });
+    renderImportPreview();
   }
   function impValidEntries(){ return importEntries.filter(function(e){ return e; }); }
+  // v3-109：同名（拡張子違い）判定と、残す形式の優先順位（互換性の高い順）
+  function impBaseKey(name){ return String(name).replace(/\.[^.]+$/, '').toLowerCase(); }
+  function impFmtRank(name){ var m=(String(name).match(/\.([a-z0-9]+)$/i)||[,''])[1].toLowerCase(); var r={jpg:1,jpeg:1,png:2,webp:3,gif:4,bmp:5,heic:9,heif:9}; return r[m]||6; }
+  // 「同名（拡張子違い）を1枚に整理」：各グループで最も互換性の高い形式を1枚だけ残し、他はチェックを外す（削除はしない＝戻せる）
+  function impTidySameName(){
+    var entries = impValidEntries();
+    var groups = {};
+    entries.forEach(function(e){ var k=impBaseKey(e.origName); (groups[k]=groups[k]||[]).push(e); });
+    Object.keys(groups).forEach(function(k){
+      var g=groups[k]; if(g.length<2) return;
+      var keep=g[0]; for(var i=1;i<g.length;i++){ if(impFmtRank(g[i].origName)<impFmtRank(keep.origName)) keep=g[i]; }
+      g.forEach(function(e){ e.include=(e===keep); });
+    });
+    renderImportPreview();
+  }
   function renderImportPreview(){
     var listEl = $('imp-list'); if (!listEl) return;
     var cl = sanitize($('imp-client').value) || '未分類', st = sanitize($('imp-site').value) || '未分類', bl = sanitize($('imp-building').value) || '未分類';
     listEl.innerHTML = '';
-    var dups = 0, on = 0;
-    impValidEntries().forEach(function(e){
+    var entries = impValidEntries();
+    // 取り込みON同士で同じ番号が何回出るか（取り込み内＝バッチ内の重複検知）
+    var numCounts = {};
+    entries.forEach(function(e){ if (e.include && e.num) numCounts[e.num] = (numCounts[e.num]||0) + 1; });
+    // 同名（拡張子違い）のグループ
+    var baseGroups = {};
+    entries.forEach(function(e){ var k = impBaseKey(e.origName); (baseGroups[k] = baseGroups[k] || []).push(e); });
+    var sameNameGroups = 0;
+    for (var gk in baseGroups) { if (baseGroups[gk].length > 1) sameNameGroups++; }
+    var on = 0, existDups = 0, batchDups = 0;
+    entries.forEach(function(e){
       var row = document.createElement('div'); row.className = 'imp-row' + (e.include ? '' : ' off');
-      var dup = e.include && impConflict(cl, st, bl, e.num);
-      if (dup) { row.className += ' dup'; dups++; }
+      var existDup = e.include && impConflict(cl, st, bl, e.num);
+      var batchDup = e.include && !!e.num && numCounts[e.num] > 1;
+      var sameName = baseGroups[impBaseKey(e.origName)].length > 1;
+      if (existDup) existDups++;
+      if (batchDup) batchDups++;
+      if (existDup || batchDup) row.className += ' dup';
       if (e.include) on++;
       var chk = document.createElement('input'); chk.type = 'checkbox'; chk.className = 'imp-chk'; chk.checked = e.include;
       chk.addEventListener('change', function(){ e.include = chk.checked; renderImportPreview(); });
       var img = document.createElement('img'); img.className = 'imp-thumb'; img.src = e.dataUrl; img.alt = '';
+      // v3-108：HEIC等で表示できない環境でも壊れアイコンにせず、拡張子ラベルのプレースホルダに差し替える（取り込み自体は可能）
+      img.addEventListener('error', function(){
+        var ext = (String(e.origName).match(/\.([a-z0-9]+)$/i) || [,''])[1].toUpperCase() || '画像';
+        var ph = document.createElement('div'); ph.className = 'imp-thumb imp-thumb-ph'; ph.textContent = ext;
+        if (img.parentNode) img.parentNode.replaceChild(ph, img);
+      });
       var info = document.createElement('div'); info.className = 'imp-info';
       var fn = document.createElement('div'); fn.className = 'imp-fn'; fn.textContent = '元: ' + e.origName;
       var numline = document.createElement('label'); numline.className = 'imp-numline';
@@ -10885,12 +10969,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       num.addEventListener('input', function(){ e.num = num.value.trim(); renderImportPreview(); });
       numline.appendChild(num);
       info.appendChild(fn); info.appendChild(numline);
-      if (dup) { var w = document.createElement('div'); w.className = 'imp-warn'; w.textContent = '⚠ この客先・現場・棟に同じ番号が既にあります（取り込むと別レコードになります）'; info.appendChild(w); }
+      if (existDup) { var w1 = document.createElement('div'); w1.className = 'imp-warn'; w1.textContent = '⚠ 既存の写真と同じ番号です（取り込むと別レコードになります／取り込みは可能）'; info.appendChild(w1); }
+      if (batchDup) { var w2 = document.createElement('div'); w2.className = 'imp-warn'; w2.textContent = '⚠ 取り込みの中で番号「' + e.num + '」が重複しています（別レコードになります）'; info.appendChild(w2); }
+      if (sameName) { var w3 = document.createElement('div'); w3.className = 'imp-info-note'; w3.textContent = '🔁 同名（拡張子違い）の写真があります（同じ写真の二重取り込みかも／下の「整理」で1枚にできます）'; info.appendChild(w3); }
       row.appendChild(chk); row.appendChild(img); row.appendChild(info);
       listEl.appendChild(row);
     });
     var sum = $('imp-summary');
-    if (sum) sum.textContent = '取り込む：' + on + ' 枚' + (dups ? ('／⚠ 重複 ' + dups + ' 件') : '') + '（先：' + cl + ' / ' + st + ' / ' + bl + '）';
+    if (sum) {
+      var parts = ['取り込む：' + on + ' 枚'];
+      if (existDups) parts.push('既存と重複 ' + existDups + ' 件');
+      if (batchDups) parts.push('取り込み内で重複 ' + batchDups + ' 件');
+      if (sameNameGroups) parts.push('同名(拡張子違い) ' + sameNameGroups + ' 組');
+      sum.textContent = parts.join('／') + '（先：' + cl + ' / ' + st + ' / ' + bl + '）';
+    }
+    var tidy = $('imp-tidy');
+    if (tidy) {
+      if (sameNameGroups > 0) { tidy.style.display = ''; tidy.textContent = '🔁 同名（拡張子違い）を1枚に整理（' + sameNameGroups + '組）'; }
+      else { tidy.style.display = 'none'; }
+    }
   }
   function openPhotoImportModal(){
     var f = getAllFields();
@@ -10898,6 +10995,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if ($('imp-client')) $('imp-client').value = cf ? cf.value : '';
     if ($('imp-site')) $('imp-site').value = sf ? sf.value : '';
     if ($('imp-building')) $('imp-building').value = bf ? bf.value : '';
+    // 番号読み取り規則のラジオを現在値へ同期
+    var rr = document.querySelector('input[name="imp-numrule"][value="' + impNumRule + '"]');
+    if (rr) rr.checked = true;
     renderImportPreview();
     var el = $('photo-import-modal'); if (el) el.style.display = 'flex';
   }
@@ -10943,8 +11043,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   (function setupPhotoImport(){
     var btn = $('photo-import-btn'), inp = $('photo-import-input');
     if (btn && inp) btn.addEventListener('click', function(){ inp.click(); });
-    var IMP_IMG_RE = /\.(jpe?g|png|gif|webp|bmp)$/i;
-    function impMimeFor(name){ var m=(String(name).match(/\.([a-z0-9]+)$/i)||[])[1]; m=(m||'').toLowerCase(); if(m==='jpg'||m==='jpeg')return 'image/jpeg'; if(m==='png')return 'image/png'; if(m==='gif')return 'image/gif'; if(m==='webp')return 'image/webp'; if(m==='bmp')return 'image/bmp'; return 'image/jpeg'; }
+    var IMP_IMG_RE = /\.(jpe?g|png|gif|webp|bmp|heic|heif)$/i; // v3-108：HEIC/HEIFもZIPから取り込む（従来は除外され写真が消えていた）
+    function impMimeFor(name){ var m=(String(name).match(/\.([a-z0-9]+)$/i)||[])[1]; m=(m||'').toLowerCase(); if(m==='jpg'||m==='jpeg')return 'image/jpeg'; if(m==='png')return 'image/png'; if(m==='gif')return 'image/gif'; if(m==='webp')return 'image/webp'; if(m==='bmp')return 'image/bmp'; if(m==='heic')return 'image/heic'; if(m==='heif')return 'image/heif'; return 'image/jpeg'; }
     function impBaseName(p){ var s=String(p).replace(/\\/g,'/'); var i=s.lastIndexOf('/'); return i>=0?s.slice(i+1):s; }
     function impReadImageFile(file){
       return new Promise(function(res){
@@ -11000,6 +11100,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     ['imp-client','imp-site','imp-building'].forEach(function(id){ var el = $(id); if (el) el.addEventListener('input', renderImportPreview); });
     document.querySelectorAll('input[name="imp-fnmode"]').forEach(function(r){ r.addEventListener('change', renderImportPreview); });
+    document.querySelectorAll('input[name="imp-numrule"]').forEach(function(r){ r.addEventListener('change', function(){ if (r.checked) impApplyNumRule(r.value); }); });
+    var tidyBtn = $('imp-tidy'); if (tidyBtn) tidyBtn.addEventListener('click', impTidySameName);
     var cf2 = $('imp-confirm'); if (cf2) cf2.addEventListener('click', confirmPhotoImport);
     var cx = $('imp-cancel'); if (cx) cx.addEventListener('click', closePhotoImportModal);
     var modal = $('photo-import-modal'); if (modal) modal.addEventListener('click', function(ev){ if (ev.target === modal) closePhotoImportModal(); });
