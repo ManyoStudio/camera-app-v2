@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.111</title>
+<title>現場写真撮影アプリ v3.112</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1823,7 +1823,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.111 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.112 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3239,7 +3239,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.111）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.112）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10459,6 +10459,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   // ===== 写真ピッカーの並び順（両ピッカー共用 / v3-111・表示のみ・データ非干渉） =====
+  // 写真ピン・ピッカー表示用の番号読み取り（表示専用・先頭/末尾を選択可・既定=先頭 / v3-112）。
+  // ★全機能共有の extractPhotoNumber（末尾優先）は変更しない（設備グルーピング equipmentKeyOf・並び替え・検索・CSV 等への波及防止）。
+  //   外部命名「02940_◯◯室1」では末尾「1」を拾ってしまうため、表示だけ先頭の「02940」を採用する。
+  var pinNumRule = 'head';
+  try { var _pnr = localStorage.getItem('pinNumRule'); if (_pnr === 'head' || _pnr === 'tail') pinNumRule = _pnr; } catch (e) {}
+  function photoDisplayNum(ph, rule) {
+    if (!ph || !ph.filename) return '';
+    var base = String(ph.filename).replace(/\.[^.]+$/, ''); // 拡張子除去
+    if ((rule || pinNumRule) === 'tail') {
+      var mt = base.match(/(\d+)(?:_\d+)?$/);
+      if (mt) return mt[1];
+      var mt2 = base.match(/(\d+)/);
+      return mt2 ? mt2[1] : '';
+    }
+    // head（既定）：先頭に出現する数字
+    var mh = base.match(/(\d+)/);
+    return mh ? mh[1] : '';
+  }
+  function photoDisplayNumInt(ph) { return parseInt(photoDisplayNum(ph) || '0', 10); }
   // num=番号順（既定・従来挙動） / in=投入順（photos[]の元の並び） / cat=カテゴリー順（clsCode昇順・未分類は末尾） / name=ファイル名順
   var PHOTO_SORT_MODES = ['num', 'in', 'cat', 'name'];
   var photoPickerSortMode = 'num';
@@ -10467,7 +10486,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var parts = [p.clsBig, p.clsMid, p.clsSmall].filter(function (x) { return x; });
     return parts.join(' ＞ ');
   }
-  function photoNumInt(p) { return parseInt(extractPhotoNumber(p.filename) || '0', 10); }
+  function photoNumInt(p) { return photoDisplayNumInt(p); }
   // list（写真オブジェクト配列）を mode に従って並べ替えた新配列を返す。元配列・データは不変。
   function sortPhotosForPicker(list, mode) {
     var arr = list.slice();
@@ -10540,7 +10559,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var cell = document.createElement('div');
     cell.className = 'place-cell';
     cell.dataset.pid = p.id;
-    var num = extractPhotoNumber(p.filename);
+    var num = photoDisplayNum(p);
     cell.dataset.num = num || '';
     var catLine = '';
     if (photoPickerSortMode === 'cat') {
@@ -10656,7 +10675,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!banner) return;
     if (!placementActive || placeIdx >= placeQueue.length) { banner.style.display = 'none'; return; }
     var ph = photos.find(function(p){ return p.id === placeQueue[placeIdx]; });
-    var num = ph ? extractPhotoNumber(ph.filename) : '';
+    var num = ph ? photoDisplayNum(ph) : '';
     var info = $('placement-info');
     if (info) {
       info.innerHTML = '次に置く写真：<strong>' + (num ? ('No.' + num) : '(番号なし)') + '</strong> '
@@ -10712,7 +10731,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function pinLabel(pin) {    if (pinLabelMode === 'photo' && pin.photoId) {
       var ph = photos.find(function(p){ return p.id === pin.photoId; });
       if (ph) {
-        var num = extractPhotoNumber(ph.filename);
+        var num = photoDisplayNum(ph);
         return num || pin.no;
       }
     }
@@ -11289,7 +11308,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     if (type === 'pin') {
       var phForTitle = pin.photoId ? photos.find(function(p){ return p.id === pin.photoId; }) : null;
-      var numForTitle = phForTitle ? extractPhotoNumber(phForTitle.filename) : '';
+      var numForTitle = phForTitle ? photoDisplayNum(phForTitle) : '';
       // (10 / v3-75) 番号モードトグル（pinLabelMode）に従って主従を切替（表示のみ・pin.no/pinLabel は不変）。
       if (numForTitle && pinLabelMode === 'photo') {
         // 「写真番号」表示のとき：写真番号を主表示・通し番号は副次（かっこ）
