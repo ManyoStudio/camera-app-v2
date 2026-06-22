@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.104</title>
+<title>現場写真撮影アプリ v3.106</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -282,6 +282,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .gut-toggle input { width: 18px; height: 18px; cursor: pointer; }
   .fn-kbd-btn { width:auto; margin:0; padding:6px 12px; font-size:13px; border:1px solid #d1d1d6; border-radius:8px; background:#fff; color:#1d1d1f; cursor:pointer; }
   .fn-kbd-btn.on { background:#0d47a1; color:#fff; border-color:#0d47a1; }
+  /* 自前のオンスクリーン10キー（端末非依存・データモデル非干渉＝ファイル名欄に文字を入れるだけ） */
+  #fnPad { margin-top:10px; max-width:300px; }
+  #fnPad .fn-pad-fold { -webkit-appearance:none; appearance:none; display:block; width:100%; text-align:left; margin:0 0 8px; padding:6px 10px; font-size:13px; font-weight:600; color:#0d47a1; background:#eef3fc; border:1px solid #c7d6f0; border-radius:8px; cursor:pointer; -webkit-user-select:none; user-select:none; }
+  #fnPad .fn-pad-grid { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+  #fnPad .fn-pad-key { -webkit-appearance:none; appearance:none; padding:0; height:56px; font-size:24px; font-weight:600; line-height:1; border:1px solid #c7c7cc; border-radius:12px; background:#fff; color:#1d1d1f; cursor:pointer; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; touch-action:manipulation; }
+  #fnPad .fn-pad-key:active { background:#e8eefc; border-color:#0d47a1; }
+  #fnPad .fn-pad-key.fn-pad-fn { font-size:18px; font-weight:500; color:#0d47a1; }
+  #fnPad .fn-pad-key.fn-pad-clear { color:#b00020; }
   .gut-edit-area {
     margin-top: 10px;
     padding: 10px 12px;
@@ -1800,7 +1808,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.104 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.106 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -1870,11 +1878,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       
       <div id="filenameFieldHolder"></div>
       <div id="fn-kbd-toggle" style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px;">
-        <span style="font-size:12px;color:#6e6e73;">キーボード：</span>
-        <button id="fnKbdNumeric" type="button" class="fn-kbd-btn">🔢 数字</button>
+        <span style="font-size:12px;color:#6e6e73;">入力方法：</span>
+        <button id="fnKbdPad" type="button" class="fn-kbd-btn">🔢 10キー</button>
+        <button id="fnKbdNumeric" type="button" class="fn-kbd-btn">🔢 番号</button>
         <button id="fnKbdText" type="button" class="fn-kbd-btn">⌨️ 通常</button>
-        <button id="fnKbdTel" type="button" class="fn-kbd-btn">🔢 10キー</button>
-        <span style="font-size:11px;color:#8a8a8e;">数字キーが出ないときは「通常」に切り替えてください（実機により挙動が異なります）。</span>
+        <span style="font-size:11px;color:#8a8a8e;">「10キー」はアプリ内の数字パッド（全端末で同じ）。「番号」は端末の数字キーボード。文字も入れたいときは「通常」へ。</span>
+      </div>
+      <div id="fnPad">
+        <button id="fnPadFold" type="button" class="fn-pad-fold">▾ 10キー</button>
+        <div class="fn-pad-grid" id="fnPadGrid">
+          <button type="button" class="fn-pad-key" data-fnpad="1">1</button>
+          <button type="button" class="fn-pad-key" data-fnpad="2">2</button>
+          <button type="button" class="fn-pad-key" data-fnpad="3">3</button>
+          <button type="button" class="fn-pad-key" data-fnpad="4">4</button>
+          <button type="button" class="fn-pad-key" data-fnpad="5">5</button>
+          <button type="button" class="fn-pad-key" data-fnpad="6">6</button>
+          <button type="button" class="fn-pad-key" data-fnpad="7">7</button>
+          <button type="button" class="fn-pad-key" data-fnpad="8">8</button>
+          <button type="button" class="fn-pad-key" data-fnpad="9">9</button>
+          <button type="button" class="fn-pad-key fn-pad-fn fn-pad-back" data-fnpad="back">⌫</button>
+          <button type="button" class="fn-pad-key" data-fnpad="0">0</button>
+          <button type="button" class="fn-pad-key fn-pad-fn fn-pad-clear" data-fnpad="clear">全消去</button>
+        </div>
       </div>
     </div>
 
@@ -3170,7 +3195,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.104）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.106）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11857,29 +11882,118 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
 
-  // 対象2：ファイル名入力の「10キー／数字／通常」キーボード切替（inputmode）。既定は10キー（inputmode=tel＝現場の番号入力が主用途。タブレット/スマホで大きな10キーを促す）。
-  // ※iPadOS Safari/スマホはキーボード種別をOSが決めるため効果は実機検証前提・PC/Chromeでは inputmode は無効。状態は localStorage に記憶。
+  // 対象2：ファイル名入力の「10キー／番号／通常」切替。
+  // 「10キー」＝アプリ内の自前オンスクリーン数字パッド（端末非依存＝iPad/スマホ/PCで同じ大きな10キー・折りたたみ可）。OSキーボードは inputmode="none" で抑止。既定はこれ。
+  // 「番号」＝inputmode="numeric"（端末の数字キーボード）。「通常」＝inputmode="text"（OSの通常キーボード・文字も可）。
+  // ※自前パッドはファイル名欄の値に文字を入れて 'input' を発火するだけ＝保存/復元データモデルに非干渉（手入力と同じ経路）。
   function setupFnKbdToggle() {
     var fn = (typeof getFilename === 'function') ? getFilename() : document.getElementById('filename');
-    var bN = $('fnKbdNumeric'), bT = $('fnKbdText'), bP = $('fnKbdTel');
-    if (!fn || !bN || !bT || !bP) return;
+    var bP = $('fnKbdPad'), bN = $('fnKbdNumeric'), bT = $('fnKbdText'), pad = $('fnPad');
+    var foldBtn = $('fnPadFold'), grid = $('fnPadGrid');
+    if (!fn || !bP || !bN || !bT || !pad || !foldBtn || !grid) return;
+
+    // 自前10キー：キャレット位置に文字を挿入し、既存の input リスナーへ通知する。
+    function fireInput() {
+      try { fn.dispatchEvent(new Event('input', { bubbles: true })); }
+      catch (e) {
+        try { var ev = document.createEvent('Event'); ev.initEvent('input', true, true); fn.dispatchEvent(ev); } catch (e2) {}
+      }
+    }
+    function insertChar(ch) {
+      var v = fn.value || '';
+      var s = fn.selectionStart, e = fn.selectionEnd;
+      if (typeof s === 'number' && typeof e === 'number') {
+        fn.value = v.slice(0, s) + ch + v.slice(e);
+        var pos = s + ch.length;
+        try { fn.setSelectionRange(pos, pos); } catch (_) {}
+      } else {
+        fn.value = v + ch;
+      }
+      fireInput();
+    }
+    function backspace() {
+      var v = fn.value || '';
+      var s = fn.selectionStart, e = fn.selectionEnd;
+      if (typeof s === 'number' && typeof e === 'number') {
+        if (s !== e) { fn.value = v.slice(0, s) + v.slice(e); try { fn.setSelectionRange(s, s); } catch (_) {} }
+        else if (s > 0) { fn.value = v.slice(0, s - 1) + v.slice(s); try { fn.setSelectionRange(s - 1, s - 1); } catch (_) {} }
+      } else {
+        fn.value = v.slice(0, -1);
+      }
+      fireInput();
+    }
+    function clearAll() {
+      fn.value = '';
+      try { fn.setSelectionRange(0, 0); } catch (_) {}
+      fireInput();
+    }
+    function handleKey(action) {
+      if (action === 'back') backspace();
+      else if (action === 'clear') clearAll();
+      else insertChar(action);
+    }
+    // pointerdown + preventDefault で「ボタンを押してもファイル名欄のフォーカス／キャレットを失わない」ようにする（iOS対策）。
+    var keys = pad.querySelectorAll('.fn-pad-key');
+    for (var i = 0; i < keys.length; i++) {
+      (function (btn) {
+        var action = btn.getAttribute('data-fnpad');
+        var fired = false;
+        btn.addEventListener('pointerdown', function (ev) {
+          try { ev.preventDefault(); } catch (_) {}
+          fired = true;
+          handleKey(action);
+        });
+        // pointer 非対応環境のフォールバック（pointerdown が来たら click は無視）
+        btn.addEventListener('click', function () {
+          if (fired) { fired = false; return; }
+          handleKey(action);
+        });
+      })(keys[i]);
+    }
+
+    // 折りたたみ：自前10キーのグリッドだけを開閉する（pad モードのときに有効）。状態は記憶。
+    function applyFold(folded) {
+      grid.style.display = folded ? 'none' : '';
+      foldBtn.textContent = (folded ? '▸ 10キー（開く）' : '▾ 10キー');
+      try { localStorage.setItem('fnPadFold', folded ? 'closed' : 'open'); } catch (e) {}
+    }
+    var folded0 = false;
+    try { folded0 = (localStorage.getItem('fnPadFold') === 'closed'); } catch (e) {}
+    applyFold(folded0);
+    // フォーカス（キャレット）を保ちつつ開閉（iOS対策）。
+    (function (btn) {
+      var fired = false;
+      function toggle() { applyFold(grid.style.display !== 'none'); }
+      btn.addEventListener('pointerdown', function (ev) { try { ev.preventDefault(); } catch (_) {} fired = true; toggle(); });
+      btn.addEventListener('click', function () { if (fired) { fired = false; return; } toggle(); });
+    })(foldBtn);
+
     function setMode(mode, refocus) {
-      // mode は 'tel' / 'numeric' / 'text'。未知の値は既定の 'tel' とみなす。
-      if (mode !== 'numeric' && mode !== 'text') mode = 'tel';
-      fn.setAttribute('inputmode', mode);
-      try { fn.inputMode = mode; } catch(e){}
-      bP.classList.toggle('on', mode === 'tel');
+      // mode は 'pad'（自前10キー）/ 'numeric'（端末の数字キーボード）/ 'text'（通常）。
+      // 旧保存値 'tel' や未知値は既定の 'pad'（10キー）へ寄せる＝既定10キーを全端末で担保。
+      if (mode !== 'numeric' && mode !== 'text') mode = 'pad';
+      if (mode === 'pad') {
+        fn.setAttribute('inputmode', 'none');   // OSキーボードを出さず自前パッドで入力
+        try { fn.inputMode = 'none'; } catch (e) {}
+        pad.style.display = '';
+      } else {
+        fn.setAttribute('inputmode', mode);      // 'numeric' or 'text'
+        try { fn.inputMode = mode; } catch (e) {}
+        pad.style.display = 'none';
+      }
+      bP.classList.toggle('on', mode === 'pad');
       bN.classList.toggle('on', mode === 'numeric');
       bT.classList.toggle('on', mode === 'text');
-      try { localStorage.setItem('fnKbdMode', mode); } catch(e){}
-      if (refocus) { try { fn.blur(); } catch(e){} setTimeout(function(){ try { fn.focus(); } catch(e){} }, 20); }
+      try { localStorage.setItem('fnKbdMode', mode); } catch (e) {}
+      if (refocus) { try { fn.blur(); } catch (e) {} setTimeout(function () { try { fn.focus(); } catch (e) {} }, 20); }
     }
-    var saved = 'tel';
-    try { saved = localStorage.getItem('fnKbdMode') || 'tel'; } catch(e){}
+
+    var saved = 'pad';
+    try { saved = localStorage.getItem('fnKbdMode') || 'pad'; } catch (e) {}
     setMode(saved, false);
-    bP.addEventListener('click', function(){ setMode('tel', true); });
-    bN.addEventListener('click', function(){ setMode('numeric', true); });
-    bT.addEventListener('click', function(){ setMode('text', true); });
+    bP.addEventListener('click', function () { setMode('pad', true); });
+    bN.addEventListener('click', function () { setMode('numeric', true); });
+    bT.addEventListener('click', function () { setMode('text', true); });
   }
 
   // 対象4(1)(2)：T評価の参考補助。判定対応表（メンテ/補修有無×目視劣化有無→点数）に沿って候補のTを「提案表示」するだけ。
