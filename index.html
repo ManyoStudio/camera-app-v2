@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.110</title>
+<title>現場写真撮影アプリ v3.111</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1102,6 +1102,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .pin-photo-item { display:block; width:100%; text-align:left; padding:11px 12px; margin:0 0 6px 0; font-size:14px; border:1px solid #3a3a3c; border-radius:9px; background:#2c2c2e; color:#fff; cursor:pointer; }
   .pin-photo-item:active { background:#3a3a3c; }
   .pin-photo-empty { font-size:13px; color:#b0b0b5; text-align:center; padding:16px; }
+  /* 並び替えバー（両ピッカー共用 / v3-111・表示のみ） */
+  .photo-sort-bar { display:flex; gap:6px; flex-wrap:wrap; margin:0 0 10px; }
+  .photo-sort-bar-light { margin:0; padding:0 16px 8px; }
+  .photo-sort-btn { flex:1 1 auto; padding:7px 6px; border-radius:8px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid #48484a; background:#2c2c2e; color:#fff; }
+  .photo-sort-btn.on { background:#0a84ff; color:#fff; border-color:#0a84ff; }
+  .place-select-content .photo-sort-btn { border:1px solid #d0d0d5; background:#f5f5f7; color:#1d1d1f; }
+  .place-select-content .photo-sort-btn.on { background:#0a84ff; color:#fff; border-color:#0a84ff; }
+  .photo-cat-tag { display:block; font-size:11px; font-weight:400; color:#aeaeb2; margin-top:3px; }
+  .place-cell .place-cat { font-size:10px; color:#6e6e73; line-height:1.3; padding:3px 4px 5px; text-align:center; word-break:break-word; background:#fff; }
+  .place-cell.sel .place-cat { color:#1d1d1f; }
   /* 写真取り込みプレビュー（#5/#1 / v3-65） */
   .imp-context { display:flex; gap:8px; margin-bottom:10px; }
   .imp-ctx-field { flex:1; display:flex; flex-direction:column; font-size:11px; color:#b0b0b5; gap:3px; }
@@ -1813,7 +1823,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.110 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.111 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2826,6 +2836,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="pin-sheet-card">
       <p class="pin-sheet-title">紐づける写真をえらぶ</p>
       <input type="text" id="pin-photo-picker-search" class="pin-photo-search" inputmode="text" autocomplete="off" placeholder="番号・ファイル名で検索（例 23）" />
+      <div class="photo-sort-bar" id="pin-photo-sort-bar">
+        <button type="button" class="photo-sort-btn" data-sort="num">🔢 番号順</button>
+        <button type="button" class="photo-sort-btn" data-sort="in">📥 投入順</button>
+        <button type="button" class="photo-sort-btn" data-sort="cat">🗂 カテゴリー順</button>
+        <button type="button" class="photo-sort-btn" data-sort="name">🔤 ファイル名順</button>
+      </div>
       <div id="pin-photo-picker-list" class="pin-photo-list"></div>
       <button type="button" class="pin-sheet-cancel" id="pin-photo-picker-cancel">キャンセル</button>
     </div>
@@ -2932,10 +2948,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <div id="place-select-modal" class="place-select-modal">
   <div class="place-select-content">
     <p class="place-select-title">ピン留めする写真を選ぶ</p>
-    <p class="place-select-sub">置きたい写真をタップして選び、下のボタンで開始します。選んだ番号順に、地図をタップして置いていきます。</p>
+    <p class="place-select-sub">置きたい写真をタップして選び、下のボタンで開始します。選んだ順（下の並び順）に、地図をタップして置いていきます。</p>
     <div class="place-select-actions-top">
       <button id="place-select-all" class="place-select-mini">表示中をすべて選ぶ</button>
       <button id="place-select-none" class="place-select-mini">選択を解除</button>
+    </div>
+    <div class="photo-sort-bar photo-sort-bar-light" id="place-select-sort-bar">
+      <button type="button" class="photo-sort-btn" data-sort="num">🔢 番号順</button>
+      <button type="button" class="photo-sort-btn" data-sort="in">📥 投入順</button>
+      <button type="button" class="photo-sort-btn" data-sort="cat">🗂 カテゴリー順</button>
+      <button type="button" class="photo-sort-btn" data-sort="name">🔤 ファイル名順</button>
     </div>
     <div class="place-select-filter-row">
       <input type="text" id="place-select-filter" class="place-select-filter" inputmode="numeric" placeholder="🔢 番号でしぼり込み（例：45）" />
@@ -3217,7 +3239,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.110）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.111）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10436,32 +10458,127 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     updatePlacementBanner();
   }
 
+  // ===== 写真ピッカーの並び順（両ピッカー共用 / v3-111・表示のみ・データ非干渉） =====
+  // num=番号順（既定・従来挙動） / in=投入順（photos[]の元の並び） / cat=カテゴリー順（clsCode昇順・未分類は末尾） / name=ファイル名順
+  var PHOTO_SORT_MODES = ['num', 'in', 'cat', 'name'];
+  var photoPickerSortMode = 'num';
+  try { var _psv = localStorage.getItem('photoPickerSort'); if (_psv && PHOTO_SORT_MODES.indexOf(_psv) >= 0) photoPickerSortMode = _psv; } catch (e) {}
+  function photoCatText(p) {
+    var parts = [p.clsBig, p.clsMid, p.clsSmall].filter(function (x) { return x; });
+    return parts.join(' ＞ ');
+  }
+  function photoNumInt(p) { return parseInt(extractPhotoNumber(p.filename) || '0', 10); }
+  // list（写真オブジェクト配列）を mode に従って並べ替えた新配列を返す。元配列・データは不変。
+  function sortPhotosForPicker(list, mode) {
+    var arr = list.slice();
+    if (mode === 'in') {
+      var idx = {}; photos.forEach(function (p, i) { idx[p.id] = i; });
+      arr.sort(function (a, b) {
+        var ia = (idx[a.id] == null) ? 1e9 : idx[a.id];
+        var ib = (idx[b.id] == null) ? 1e9 : idx[b.id];
+        return ia - ib;
+      });
+      return arr;
+    }
+    if (mode === 'name') {
+      arr.sort(function (a, b) { return String(a.filename || '').localeCompare(String(b.filename || ''), 'ja'); });
+      return arr;
+    }
+    if (mode === 'cat') {
+      arr.sort(function (a, b) {
+        var ca = String(a.clsCode || ''), cb = String(b.clsCode || '');
+        if (!ca && cb) return 1;      // 未分類は末尾
+        if (ca && !cb) return -1;
+        if (ca !== cb) return ca < cb ? -1 : 1;
+        var na = photoNumInt(a), nb = photoNumInt(b);
+        if (na !== nb) return na - nb;
+        return String(a.filename || '').localeCompare(String(b.filename || ''), 'ja');
+      });
+      return arr;
+    }
+    // 'num'（既定）
+    arr.sort(function (a, b) {
+      var na = photoNumInt(a), nb = photoNumInt(b);
+      if (na !== nb) return na - nb;
+      return String(a.filename || '').localeCompare(String(b.filename || ''), 'ja');
+    });
+    return arr;
+  }
+  function syncPhotoSortButtons() {
+    document.querySelectorAll('.photo-sort-btn').forEach(function (btn) {
+      btn.classList.toggle('on', btn.dataset.sort === photoPickerSortMode);
+    });
+  }
+  function setPhotoPickerSort(mode) {
+    if (PHOTO_SORT_MODES.indexOf(mode) < 0) mode = 'num';
+    photoPickerSortMode = mode;
+    try { localStorage.setItem('photoPickerSort', mode); } catch (e) {}
+    syncPhotoSortButtons();
+    // 開いているピッカーを並べ替えて再描画（どちらも安全にガード）
+    var pinPicker = $('pin-photo-picker');
+    if (pinPicker && pinPicker.style.display !== 'none') {
+      var s = $('pin-photo-picker-search');
+      renderPinPhotoPicker(s ? s.value : '');
+    }
+    var placeModal = $('place-select-modal');
+    if (placeModal && placeModal.classList.contains('show')) {
+      renderPlaceSelectGrid();
+      updatePlaceSelectCount();
+    }
+  }
+  (function setupPhotoSortButtons() {
+    document.querySelectorAll('.photo-sort-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () { setPhotoPickerSort(btn.dataset.sort); });
+    });
+    syncPhotoSortButtons();
+  })();
+
   // 写真選択モーダル
   var placeSelectIds = {};
+  var placeSelectQueue = [];   // 並べ替え元の写真配列（v3-111）
+  function buildPlaceCell(p) {
+    var cell = document.createElement('div');
+    cell.className = 'place-cell';
+    cell.dataset.pid = p.id;
+    var num = extractPhotoNumber(p.filename);
+    cell.dataset.num = num || '';
+    var catLine = '';
+    if (photoPickerSortMode === 'cat') {
+      var ct = photoCatText(p);
+      catLine = '<div class="place-cat">' + (ct ? escapeHtml(ct) : '未分類') + '</div>';
+    }
+    cell.innerHTML =
+      '<div class="place-thumb-wrap"><img src="' + p.dataUrl + '" alt=""><div class="place-check">✓</div></div>' +
+      '<div class="place-num">' + (num ? ('No.' + escapeHtml(num)) : '番号なし') + '</div>' +
+      catLine;
+    cell.addEventListener('click', function () {
+      if (placeSelectIds[p.id]) { delete placeSelectIds[p.id]; cell.classList.remove('sel'); }
+      else { placeSelectIds[p.id] = true; cell.classList.add('sel'); }
+      updatePlaceSelectCount();
+    });
+    return cell;
+  }
+  // 現在の並び順で grid を再構築（選択状態は placeSelectIds で保持）。
+  function renderPlaceSelectGrid() {
+    var grid = $('place-select-grid'); if (!grid) return;
+    grid.innerHTML = '';
+    var arr = sortPhotosForPicker(placeSelectQueue, photoPickerSortMode);
+    arr.forEach(function (p) {
+      var cell = buildPlaceCell(p);
+      if (placeSelectIds[p.id]) cell.classList.add('sel');
+      grid.appendChild(cell);
+    });
+    applyPlaceSelectFilter();
+  }
   function openPlaceSelect(queue) {
     var grid = $('place-select-grid');
     if (!grid) { beginPlacement(queue.map(function(p){ return p.id; })); return; }
     placeSelectIds = {};
-    grid.innerHTML = '';
-    queue.forEach(function(p) {
-      var cell = document.createElement('div');
-      cell.className = 'place-cell';
-      cell.dataset.pid = p.id;
-      var num = extractPhotoNumber(p.filename);
-      cell.dataset.num = num || '';
-      cell.innerHTML =
-        '<div class="place-thumb-wrap"><img src="' + p.dataUrl + '" alt=""><div class="place-check">✓</div></div>' +
-        '<div class="place-num">' + (num ? ('No.' + escapeHtml(num)) : '番号なし') + '</div>';
-      cell.addEventListener('click', function() {
-        if (placeSelectIds[p.id]) { delete placeSelectIds[p.id]; cell.classList.remove('sel'); }
-        else { placeSelectIds[p.id] = true; cell.classList.add('sel'); }
-        updatePlaceSelectCount();
-      });
-      grid.appendChild(cell);
-    });
+    placeSelectQueue = queue.slice();
+    syncPhotoSortButtons();
     var filter = $('place-select-filter');
     if (filter) filter.value = '';
-    applyPlaceSelectFilter();
+    renderPlaceSelectGrid();
     updatePlaceSelectCount();
     var modal = $('place-select-modal');
     if (modal) modal.classList.add('show');
@@ -10783,6 +10900,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function openPinPhotoPicker() {
     var el = $('pin-photo-picker'); if (!el) return;
     var s = $('pin-photo-picker-search'); if (s) s.value = '';
+    syncPhotoSortButtons();
     renderPinPhotoPicker('');
     el.style.display = 'flex';
   }
@@ -10790,11 +10908,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function renderPinPhotoPicker(filter) {
     var listEl = $('pin-photo-picker-list'); if (!listEl) return;
     var q = (filter || '').trim().toLowerCase();
-    var arr = photos.slice().sort(function(a, b){
-      var na = parseInt(extractPhotoNumber(a.filename) || '0', 10);
-      var nb = parseInt(extractPhotoNumber(b.filename) || '0', 10);
-      return na - nb;
-    });
+    var arr = sortPhotosForPicker(photos, photoPickerSortMode);
     if (q) arr = arr.filter(function(p){
       return String(p.filename).toLowerCase().indexOf(q) >= 0 || String(extractPhotoNumber(p.filename)).indexOf(q) >= 0;
     });
@@ -10803,7 +10917,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     arr.slice(0, 300).forEach(function(p){
       var b = document.createElement('button');
       b.type = 'button'; b.className = 'pin-photo-item';
-      b.textContent = p.filename;
+      if (photoPickerSortMode === 'cat') {
+        var ct = photoCatText(p);
+        b.innerHTML = escapeHtml(p.filename) + '<span class="photo-cat-tag">' + (ct ? escapeHtml(ct) : '未分類') + '</span>';
+      } else {
+        b.textContent = p.filename;
+      }
       b.addEventListener('click', async function(){
         closePinPhotoPicker();
         await createMarkerAt('pin', pendingTapX, pendingTapY, { photoId: p.id });
