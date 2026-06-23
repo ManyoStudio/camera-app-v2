@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.118</title>
+<title>現場写真撮影アプリ v3.119</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1107,6 +1107,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   /* v3-116：T評価 参考補助シート（既存 .pin-sheet-* を流用・追加のみ） */
   .t-helper-open-btn { width:100%; margin:10px 0 0; padding:12px; font-size:14px; font-weight:600; border:1px solid #c7c7cc; border-radius:10px; background:#f2f7ff; color:#0d47a1; cursor:pointer; }
   .t-helper-open-btn:active { background:#e3effe; }
+  /* v3-119：選んだ観察項目の表示窓（評価タブ・ライト） */
+  .t-basis-display { margin:8px 0 4px; padding:9px 11px; border:1px solid #c7d8ef; border-radius:8px; background:#f6fbff; font-size:13px; color:#0d2b4e; cursor:pointer; line-height:1.5; }
+  .t-basis-display:active { background:#eaf4ff; }
+  .t-basis-display-label { font-weight:700; color:#0d47a1; }
+  #t-basis-display-text.t-basis-empty { color:#8a8f98; }
+  /* v3-119：③複数選択（選択中バー／選択チップ／確定ボタン・ダークシート） */
+  .t-helper-selected { margin:0 0 8px; padding:8px; border:1px dashed #34c759; border-radius:8px; background:#10271a; }
+  .t-helper-selected-lead { font-size:11px; color:#9fe3b5; margin-right:2px; }
+  .t-helper-selected-tag { display:inline-flex; align-items:center; gap:4px; margin:3px 3px 0 0; padding:4px 6px 4px 9px; font-size:12px; background:#14532d; color:#fff; border:1px solid #34c759; border-radius:13px; }
+  .t-helper-selected-x { border:none; background:transparent; color:#cdf3d8; font-size:15px; line-height:1; cursor:pointer; padding:0 3px; }
+  .t-helper-selected-x:active { color:#fff; }
+  .t-helper-chip.selected { border-color:#34c759; background:#0b6b2f; color:#fff; box-shadow:inset 0 0 0 2px rgba(52,199,89,.45); font-weight:600; }
+  .t-helper-confirm { width:100%; margin:10px 0 0; padding:13px; font-size:14px; font-weight:700; border:none; border-radius:10px; background:#0a84ff; color:#fff; cursor:pointer; }
+  .t-helper-confirm:disabled { background:#3a3a3c; color:#8e8e93; cursor:not-allowed; }
+  .t-helper-confirm:active:not(:disabled) { background:#0060df; }
   .t-helper-sub { font-size:12px; color:#aeb4bd; text-align:center; margin:-6px 0 12px; }
   .t-helper-step { margin:0 0 14px; }
   .t-helper-q { font-size:13px; font-weight:600; margin:0 0 8px; }
@@ -1867,7 +1882,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.118 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
+  <span>📷 現場写真撮影アプリ v3.119 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2085,6 +2100,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </label>
         <div id="t-edit-area" class="gut-edit-area" style="display:none;">
           <button type="button" id="t-helper-open" class="t-helper-open-btn">📖 観察項目からTを決める</button>
+          <!-- v3-119：選んだ観察項目の表示窓（読み取り専用・タップで📖再オープン） -->
+          <div id="t-basis-display" class="t-basis-display" title="タップで観察項目を選び直す">
+            <span class="t-basis-display-label">選んだ観察項目：</span>
+            <span id="t-basis-display-text" class="t-basis-empty">未選択</span>
+          </div>
           <div class="gut-row">
             <label class="gut-label">評価対象</label>
             <div class="t-target-group">
@@ -2976,10 +2996,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
         <div class="t-helper-or"><span>または</span></div>
         <div class="t-helper-branch t-helper-branch-yes">
-          <p class="t-helper-branch-label">劣化・損傷が <strong>ある</strong> とき → 内容を下から選ぶ</p>
+          <p class="t-helper-branch-label">劣化・損傷が <strong>ある</strong> とき → 内容を下から選ぶ（<strong>複数選べます</strong>）</p>
+          <div id="t-helper-selected" class="t-helper-selected" style="display:none;"></div>
           <input type="text" id="t-helper-search" class="t-helper-search" placeholder="🔍 検索（例: 外壁・配管・漏水・クラック）" />
           <p id="t-helper-search-status" class="t-helper-search-status"></p>
           <div id="t-helper-cats"></div>
+          <button type="button" id="t-helper-confirm" class="t-helper-confirm" disabled>✓ この内容で確定（劣化あり → T4/T5）</button>
         </div>
       </div>
       <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
@@ -3332,7 +3354,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.118）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.119）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -5497,6 +5519,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!ph0) return;
     evalModeBaseId = baseId;
     tHelperBasis = ph0.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ（手で再保存しても消えない）
+    updateTBasisDisplay(tHelperBasis); // v3-119：評価タブの表示窓に反映
     endContinuousMode();        // 撮影バナーは閉じる
     var nm = $('eval-bar-name'); if (nm) nm.textContent = ph0.filename || '';
     if (evalBar) evalBar.style.display = 'flex';
@@ -5792,6 +5815,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (uInput) uInput.value = '';
       if (tInput) tInput.value = '';
       tHelperBasis = ''; // v3-117：段階B＝取り込み後はT根拠もクリア
+      tHelperSelected = []; updateTBasisDisplay(''); // v3-119：選択・表示窓もクリア
       ['g-options-buttons','u-options-buttons','t-options-buttons'].forEach(function(cid){
         var c = $(cid);
         if (c) Array.from(c.children).forEach(function(ch){ ch.classList.remove('selected'); });
@@ -5825,6 +5849,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function clearGutMemoInputs() {
     if (memo) memo.value = '';
     tHelperBasis = ''; // v3-117：段階B＝次の設備に向けてT根拠もクリア
+    tHelperSelected = []; updateTBasisDisplay(''); // v3-119：選択・表示窓もクリア
     var gI = $('g-value'), uI = $('u-value'), tI = $('t-value');
     if (gI) gI.value = ''; if (uI) uI.value = ''; if (tI) tI.value = '';
     ['g-options-buttons','u-options-buttons','t-options-buttons'].forEach(function(cid){
@@ -5839,6 +5864,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!panel) return;
     activeShotId = photo.id;
     tHelperBasis = photo.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ
+    updateTBasisDisplay(tHelperBasis); // v3-119：評価タブの表示窓に反映
     var nameEl = $('postshot-name');
     if (nameEl) nameEl.textContent = photo.filename || '';
     var gutCard = $('postshot-gut-card');
@@ -12493,8 +12519,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // プログラムからクリック＝手押しと同一経路。#t-value への直接書込みなし＝保存経路・データモデル不変）
   // v3-117：段階B＝T評価の根拠（観察項目）。📖補助で選んだときだけ値が入り、評価保存時に ph.tBasis へ書く。
   // 手動でTボタンを押した場合は空にする（ア案）。劣化なし押下時は '劣化・損傷なし'（A案）。
-  var tHelperBasis = '';        // 押した観察項目テキスト（手動Tは''）
+  // v3-119：複合評価＝複数選択。tBasis は ' / ' 区切りの1文字列（フィールド・CSV列・型は不変）。
+  var tHelperBasis = '';        // 押した観察項目テキスト（複数は ' / ' 連結／手動Tは''）
   var tHelperApplying = false;  // applyT由来のプログラムクリックを手動クリックと区別するガード
+  var tHelperSelected = [];     // v3-119：シート操作中の選択中リスト（確定で tHelperBasis へ反映）
+  // v3-119：評価タブの「選んだ観察項目」表示窓を更新（読み取り専用）
+  function updateTBasisDisplay(val){
+    var txt = document.getElementById('t-basis-display-text');
+    if (!txt) return;
+    if (!val){ txt.textContent = '未選択'; txt.className = 't-basis-empty'; }
+    else { txt.textContent = val; txt.className = ''; }
+  }
   function setupTHelperSheet() {
     var openBtn = $('t-helper-open'), sheet = $('t-helper-sheet');
     if (!openBtn || !sheet) return;
@@ -12597,10 +12632,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           if (hit) matchedItems++;
           var chip = document.createElement('button');
           chip.type = 'button';
-          chip.className = 't-helper-chip' + (hit === 'direct' ? ' matched' : (hit === 'inferred' ? ' inferred' : ''));
+          chip.className = 't-helper-chip' + (hit === 'direct' ? ' matched' : (hit === 'inferred' ? ' inferred' : '')) + (tHelperSelected.indexOf(it) >= 0 ? ' selected' : '');
           chip.textContent = it;
+          chip.setAttribute('data-item', it); // v3-119：選択ハイライトの照合キー（類推タグの影響を受けない）
           if (hit === 'inferred') { var tag = document.createElement('span'); tag.className = 't-helper-chip-tag'; tag.textContent = '類推'; chip.appendChild(tag); }
-          chip.onclick = function(){ applyT('yes', it); };
+          chip.onclick = function(){ toggleSelect(it); }; // v3-119：複数選択（トグル）。確定は確定ボタンで。
           items.appendChild(chip);
         });
         wrap.appendChild(head); wrap.appendChild(items);
@@ -12612,6 +12648,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         else if (q) status.textContent = '「' + query + '」に関連：' + shownCats + ' カテゴリー／' + matchedItems + ' 項目';
         else status.textContent = 'カテゴリーを開いて、該当する項目を選んでください（検索もできます）';
       }
+    }
+    // v3-119：複数選択の管理（選択中バー・チップ強調・確定ボタン活性）
+    function updateConfirmState(){
+      var btn = $('t-helper-confirm'); if (btn) btn.disabled = (tHelperSelected.length === 0);
+    }
+    function highlightChips(){
+      if (!catsWrap) return;
+      Array.prototype.forEach.call(catsWrap.querySelectorAll('.t-helper-chip'), function(chip){
+        var name = chip.getAttribute('data-item') || chip.textContent;
+        if (tHelperSelected.indexOf(name) >= 0) chip.classList.add('selected');
+        else chip.classList.remove('selected');
+      });
+    }
+    function renderSelectedBar(){
+      var bar = $('t-helper-selected'); if (!bar) return;
+      bar.innerHTML = '';
+      if (!tHelperSelected.length){ bar.style.display = 'none'; updateConfirmState(); return; }
+      bar.style.display = 'block';
+      var lead = document.createElement('span'); lead.className = 't-helper-selected-lead';
+      lead.textContent = '選択中（' + tHelperSelected.length + '）：';
+      bar.appendChild(lead);
+      tHelperSelected.forEach(function(it){
+        var tagEl = document.createElement('span'); tagEl.className = 't-helper-selected-tag';
+        tagEl.appendChild(document.createTextNode(it));
+        var x = document.createElement('button'); x.type = 'button'; x.className = 't-helper-selected-x'; x.textContent = '×';
+        x.setAttribute('aria-label', it + ' を外す');
+        x.onclick = function(){ toggleSelect(it, false); };
+        tagEl.appendChild(x); bar.appendChild(tagEl);
+      });
+      updateConfirmState();
+    }
+    function toggleSelect(it, force){
+      var idx = tHelperSelected.indexOf(it);
+      var on = (force === undefined) ? (idx < 0) : !!force;
+      if (on && idx < 0) tHelperSelected.push(it);
+      else if (!on && idx >= 0) tHelperSelected.splice(idx, 1);
+      highlightChips();
+      renderSelectedBar();
     }
     function applyT(deg, itemName) {
       if (!maintState) { showToast('先に「' + (isEq() ? '定期メンテナンス' : '定期補修') + '」の実施有無を選んでください'); return; }
@@ -12626,8 +12700,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       tHelperApplying = true; // ★v3-117：このクリックは手動と区別（手動クリックの根拠クリアを発火させない）
       if (target && (!hidden || hidden.value !== t)) target.click();
       tHelperApplying = false;
-      // ★v3-117：段階B＝選んだ観察項目を確定。劣化あり＝項目名／劣化なし＝'劣化・損傷なし'。保存は評価保存時。
+      // ★v3-117/119：段階B＝選んだ観察項目を確定。劣化あり＝項目（複数は ' / ' 連結）／劣化なし＝'劣化・損傷なし'。保存は評価保存時。
+      if (deg === 'no') tHelperSelected = []; // 劣化なしは排他（選択クリア）
       tHelperBasis = (deg === 'yes') ? (itemName || '') : '劣化・損傷なし';
+      updateTBasisDisplay(tHelperBasis); // v3-119：評価タブの表示窓を更新
       closeSheet();
       var tgtTxt = isEq() ? '設備' : '建築';
       var mTxt = (maintState === 'yes' ? (isEq() ? 'メンテあり' : '補修あり') : (isEq() ? 'メンテなし' : '補修なし'));
@@ -12636,8 +12712,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     function openSheet(){
       maintState=''; setMaint(''); syncLabels();
+      // v3-119：既存の根拠を選択状態に復元（' / ' 分割・劣化なしマーカーは除外）
+      tHelperSelected = (tHelperBasis && tHelperBasis !== '劣化・損傷なし') ? tHelperBasis.split(' / ').filter(Boolean) : [];
       var sb = $('t-helper-search'); if (sb) sb.value = '';
-      buildCats(''); sheet.style.display='flex';
+      buildCats(''); renderSelectedBar(); sheet.style.display='flex';
     }
     function closeSheet(){ sheet.style.display='none'; }
     openBtn.addEventListener('click', openSheet);
@@ -12652,13 +12730,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       b.addEventListener('click', function(){ setMaint(b.dataset.maint); });
     });
     var noDeg = $('t-helper-nodeg'); if (noDeg) noDeg.addEventListener('click', function(){ applyT('no', ''); });
+    // v3-119：確定ボタン＝選択中の観察項目で確定（劣化あり→T4/T5）。0件は無効（disabled）。
+    var confirmBtn = $('t-helper-confirm');
+    if (confirmBtn) confirmBtn.addEventListener('click', function(){
+      if (!tHelperSelected.length) return;
+      applyT('yes', tHelperSelected.join(' / ')); // applyT内で②未選択なら案内して中断
+    });
+    // v3-119：表示窓タップで📖シートを再オープン（選び直し）
+    var basisDisp = $('t-basis-display');
+    if (basisDisp) basisDisp.addEventListener('click', function(){ openSheet(); });
     // ★v3-117：段階B＝手動でTボタンを押したら根拠を空にする（ア案）。applyT由来のプログラムクリックはガードで除外。
     var tOptBox = $('t-options-buttons');
     if (tOptBox) tOptBox.addEventListener('click', function(e){
       if (tHelperApplying) return; // 補助シート由来のクリックは無視
       var el = e.target;
       while (el && el !== tOptBox && !(el.dataset && el.dataset.value)) el = el.parentNode;
-      if (el && el.dataset && el.dataset.value) tHelperBasis = '';
+      if (el && el.dataset && el.dataset.value) { tHelperBasis = ''; tHelperSelected = []; updateTBasisDisplay(''); } // v3-119：手動Tは根拠・選択を空に
     }, true); // capture＝ボタン自身のonclickより先に判定
   }
 
