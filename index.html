@@ -1113,6 +1113,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .t-helper-maint { display:flex; gap:8px; }
   .t-helper-mbtn { flex:1; padding:12px; font-size:14px; font-weight:600; border:2px solid #48484a; border-radius:10px; background:#2c2c2e; color:#fff; cursor:pointer; }
   .t-helper-mbtn.on { border-color:#0a84ff; background:#0a3d62; }
+  .t-helper-tbtn { flex:1; padding:12px; font-size:15px; font-weight:700; border:2px solid #48484a; border-radius:10px; background:#2c2c2e; color:#fff; cursor:pointer; }
+  .t-helper-tbtn.on { border-color:#34c759; background:#14532d; }
   .t-helper-nodeg { width:100%; margin:0 0 10px; padding:12px; font-size:14px; font-weight:600; border:none; border-radius:10px; background:#2e7d32; color:#fff; cursor:pointer; }
   .t-helper-nodeg:active { background:#256628; }
   #t-helper-cats { max-height:38vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
@@ -1121,6 +1123,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .t-helper-items { display:flex; flex-wrap:wrap; gap:6px; padding:8px 2px; }
   .t-helper-chip { padding:8px 10px; font-size:12px; border:1px solid #5a5a5e; border-radius:14px; background:#1c1c1e; color:#dfe6ee; cursor:pointer; }
   .t-helper-chip:active { background:#0a3d62; }
+  .t-helper-search { width:100%; box-sizing:border-box; padding:11px; font-size:16px; border:1px solid #48484a; border-radius:9px; background:#2c2c2e; color:#fff; margin:0 0 6px; -webkit-appearance:none; appearance:none; }
+  .t-helper-search:focus { outline:none; border-color:#0a84ff; }
+  .t-helper-search::placeholder { color:#8e8e93; }
+  .t-helper-search-status { font-size:11px; color:#aeb4bd; margin:0 0 8px; min-height:14px; }
+  .t-helper-suggest { background:#0a3d62; border:1px solid #0a84ff; border-radius:8px; padding:8px 10px; margin:0 0 8px; font-size:12px; color:#dfe9f5; }
+  .t-helper-cat-name.matched { background:#14532d; }
+  .t-helper-chip.matched { border-color:#34c759; background:#14532d; color:#fff; }
+  .t-helper-chip.inferred { border-color:#0a84ff; }
+  .t-helper-chip .t-helper-chip-tag { font-size:10px; color:#9fd0ff; margin-left:4px; }
   .pin-photo-search { width:100%; box-sizing:border-box; padding:11px; font-size:16px; border:1px solid #48484a; border-radius:9px; background:#2c2c2e; color:#fff; margin-bottom:10px; -webkit-appearance:none; appearance:none; }
   .pin-photo-list { max-height:48vh; overflow-y:auto; -webkit-overflow-scrolling:touch; margin-bottom:4px; }
   .pin-photo-item { display:block; width:100%; text-align:left; padding:11px 12px; margin:0 0 6px 0; font-size:14px; border:1px solid #3a3a3c; border-radius:9px; background:#2c2c2e; color:#fff; cursor:pointer; }
@@ -2064,6 +2075,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <span>T（傾向）をチェックする</span>
         </label>
         <div id="t-edit-area" class="gut-edit-area" style="display:none;">
+          <button type="button" id="t-helper-open" class="t-helper-open-btn">📖 観察項目からTを決める</button>
           <div class="gut-row">
             <label class="gut-label">評価対象</label>
             <div class="t-target-group">
@@ -2083,7 +2095,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <input type="hidden" id="t-value" />
           </div>
           <p class="gut-hint">判定の参考に観察項目（クラック・浮き等）が必要な場合は <strong>📖参考</strong> タブをご覧ください。</p>
-          <button type="button" id="t-helper-open" class="t-helper-open-btn">📖 観察項目からTを決める</button>
         </div>
       </div>
     </div>
@@ -2864,26 +2875,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button type="button" class="pin-sheet-cancel" data-act="cancel">キャンセル</button>
     </div>
   </div>
-  <!-- v3-116：T評価 参考補助シート（既存 .pin-sheet-overlay/.pin-sheet-card を流用・REF_CATEGORIESは読み取り専用） -->
-  <div id="t-helper-sheet" class="pin-sheet-overlay" style="display:none;">
-    <div class="pin-sheet-card">
-      <p class="pin-sheet-title">📖 観察項目から T を決める</p>
-      <p id="t-helper-target" class="t-helper-sub"></p>
-      <div class="t-helper-step">
-        <p class="t-helper-q" id="t-helper-maint-q">① 定期メンテナンスは実施していますか？</p>
-        <div class="t-helper-maint">
-          <button type="button" class="t-helper-mbtn" data-maint="yes">実施した</button>
-          <button type="button" class="t-helper-mbtn" data-maint="no">していない</button>
-        </div>
-      </div>
-      <div class="t-helper-step">
-        <p class="t-helper-q">② 目視の劣化・損傷は？（押すと T が決まります）</p>
-        <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 目視の劣化・損傷は見当たらない</button>
-        <div id="t-helper-cats"></div>
-      </div>
-      <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
-    </div>
-  </div>
   <div id="pin-photo-picker" class="pin-sheet-overlay" style="display:none;">
     <div class="pin-sheet-card">
       <p class="pin-sheet-title">紐づける写真をえらぶ</p>
@@ -2948,6 +2939,35 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
   </div>
 </div>
+
+  <!-- v3-116b：T評価 参考補助シート（pin-editorの外＝トップレベルに置き、評価タブからも最前面に表示。既存 .pin-sheet-* 流用・REF_CATEGORIESは読み取り専用。map-pick-modalと同じ常時表示パターン） -->
+  <div id="t-helper-sheet" class="pin-sheet-overlay" style="display:none;">
+    <div class="pin-sheet-card">
+      <p class="pin-sheet-title">📖 観察項目から T を決める</p>
+      <div class="t-helper-step">
+        <p class="t-helper-q">① 評価対象は？</p>
+        <div class="t-helper-maint">
+          <button type="button" class="t-helper-tbtn" data-target="equipment">⚙️ 設備</button>
+          <button type="button" class="t-helper-tbtn" data-target="building">🏛 建築</button>
+        </div>
+      </div>
+      <div class="t-helper-step">
+        <p class="t-helper-q" id="t-helper-maint-q">② 定期メンテナンスは実施していますか？</p>
+        <div class="t-helper-maint">
+          <button type="button" class="t-helper-mbtn" data-maint="yes">実施</button>
+          <button type="button" class="t-helper-mbtn" data-maint="no">未実施</button>
+        </div>
+      </div>
+      <div class="t-helper-step">
+        <p class="t-helper-q" id="t-helper-deg-q">③ 目視の劣化・損傷・振動・異音は？（押すと T が決まります）</p>
+        <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 目視の劣化・損傷は見当たらない</button>
+        <input type="text" id="t-helper-search" class="t-helper-search" placeholder="🔍 検索（例: 外壁・配管・漏水・クラック）" />
+        <p id="t-helper-search-status" class="t-helper-search-status"></p>
+        <div id="t-helper-cats"></div>
+      </div>
+      <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
+    </div>
+  </div>
 
   <!-- 一覧→マップに配置：配置先マップ選択（#6 / v3-64・v3-65でpin-editorの外へ移動して常時表示可能に） -->
   <div id="map-pick-modal" class="pin-sheet-overlay" style="display:none;">
@@ -12445,11 +12465,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var catsWrap = $('t-helper-cats');
     var maintState = '';
     function isEq(){ return (getTTarget() !== 'building'); }
+    // 評価対象（設備/建築）の選択肢ボタンの選択表示と、②③の文言を現在の対象に合わせて更新
     function syncLabels() {
-      var q = $('t-helper-maint-q');
-      if (q) q.textContent = '① ' + (isEq() ? '定期メンテナンス' : '定期補修') + 'は実施していますか？';
-      var tg = $('t-helper-target');
-      if (tg) tg.textContent = '対象：' + (isEq() ? '設備' : '建築') + '（切替は閉じてから上の「設備／建築」で）';
+      var mq = $('t-helper-maint-q');
+      if (mq) mq.textContent = '② ' + (isEq() ? '定期メンテナンス' : '定期補修') + 'は実施していますか？';
+      var dq = $('t-helper-deg-q');
+      if (dq) dq.textContent = '③ 目視の劣化・損傷' + (isEq() ? '・振動・異音' : '') + 'は？（押すと T が決まります）';
+      Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-tbtn'), function(b){
+        var isB = (b.dataset.target === 'building');
+        b.classList.toggle('on', isB ? !isEq() : isEq());
+      });
+    }
+    // 対象を選ぶ＝外側の評価対象ラジオ（name="t-target"）を実際に切替え、手動と同じ経路で
+    // renderTOptions（T選択肢の再描画）と保存tTarget（getTTarget由来）を更新する。
+    function setTarget(v) {
+      var radios = document.getElementsByName('t-target'), hit = null;
+      Array.prototype.forEach.call(radios, function(r){ if (r.value === v) { r.checked = true; hit = r; } });
+      if (hit) { try { hit.dispatchEvent(new Event('change', { bubbles: true })); } catch(e) { if (typeof renderTOptions === 'function') renderTOptions(); } }
+      syncLabels();
     }
     function setMaint(v) {
       maintState = v;
@@ -12457,30 +12490,92 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         b.classList.toggle('on', b.dataset.maint === v);
       });
     }
-    function buildCats() {
+    // ③観察項目：検索対応。参考タブと同じ概念（直接一致＋REF_THESAURUS類推＋REF_NET橋渡し）で
+    // REF_CATEGORIES/REF_THESAURUS/REF_NET を読み取り専用で流用（保護ブロック無改変）。
+    function buildCats(query) {
       if (!catsWrap) return;
+      var q = (query || '').trim().toLowerCase();
+      var status = $('t-helper-search-status');
       catsWrap.innerHTML = '';
-      REF_CATEGORIES.forEach(function(cat) {   // 保護ブロックを読み取り専用で流用
+
+      // シソーラス（俗称・別名→関連語・関連カテゴリー）
+      var thHit = null;
+      if (q) {
+        for (var i = 0; i < REF_THESAURUS.length; i++) {
+          var e = REF_THESAURUS[i], ks = [e.key].concat(e.aliases || []);
+          for (var j = 0; j < ks.length; j++) { if (ks[j].toLowerCase().indexOf(q) !== -1) { thHit = e; break; } }
+          if (thHit) break;
+        }
+      }
+      var inferredCatNames = thHit ? (thHit.categories || []) : [];
+      function checkItem(it) {
+        var lo = it.toLowerCase();
+        if (q && lo.indexOf(q) !== -1) return 'direct';
+        if (thHit) { for (var k = 0; k < thHit.related.length; k++) { if (lo.indexOf(thHit.related[k].toLowerCase()) !== -1) return 'inferred'; } }
+        return null;
+      }
+      // 用語ネットワーク（例: 外壁→建物＞外壁→関連カテゴリー）
+      var netHits = q ? refResolveNet(q) : [];
+      var netCatKeys = [];
+      netHits.forEach(function(n){ (n.cats || []).forEach(function(c){ if (netCatKeys.indexOf(c) < 0) netCatKeys.push(c); }); });
+
+      // サジェスト行（打たれた語の設備分類）
+      var suggest = catsWrap.previousElementSibling && catsWrap.previousElementSibling.id === 't-helper-suggest' ? catsWrap.previousElementSibling : null;
+      if (suggest) suggest.remove();
+      if (netHits.length > 0) {
+        var sug = document.createElement('div'); sug.id = 't-helper-suggest'; sug.className = 't-helper-suggest';
+        var paths = netHits.map(function(n){ return n.big + '＞' + n.mid; });
+        sug.textContent = '🔎「' + query + '」は ' + paths.join(' / ') + ' の関連のようです';
+        catsWrap.parentNode.insertBefore(sug, catsWrap);
+      }
+
+      var shownCats = 0, matchedItems = 0;
+      REF_CATEGORIES.forEach(function(cat) {
+        var nameLo = cat.name.toLowerCase();
+        var catDirect = q && nameLo.indexOf(q) !== -1;
+        var catInferred = false;
+        for (var ci = 0; ci < inferredCatNames.length; ci++) { if (nameLo.indexOf(inferredCatNames[ci].toLowerCase()) !== -1) { catInferred = true; break; } }
+        var catNet = false;
+        for (var ni = 0; ni < netCatKeys.length; ni++) { if (cat.name.indexOf(netCatKeys[ni]) !== -1) { catNet = true; break; } }
+        var anyHit = false;
+        (cat.items || []).forEach(function(it){ if (checkItem(it)) anyHit = true; });
+        // 検索語があり、このカテゴリーに何も該当しなければ非表示
+        if (q && !catDirect && !catInferred && !catNet && !anyHit) return;
+        shownCats++;
+
         var wrap = document.createElement('div'); wrap.className = 't-helper-cat';
         var head = document.createElement('button');
-        head.type = 'button'; head.className = 't-helper-cat-name';
-        head.textContent = '▸ ' + cat.name;
-        var items = document.createElement('div'); items.className = 't-helper-items'; items.style.display = 'none';
+        head.type = 'button'; head.className = 't-helper-cat-name' + ((catDirect || catInferred || catNet) ? ' matched' : '');
+        var items = document.createElement('div'); items.className = 't-helper-items';
+        // 検索中は関連カテゴリーを開いて見せる／無検索は畳む
+        var openInit = !!q;
+        items.style.display = openInit ? 'flex' : 'none';
+        head.textContent = (openInit ? '▾ ' : '▸ ') + cat.name;
         head.onclick = function(){
           var open = items.style.display !== 'none';
           items.style.display = open ? 'none' : 'flex';
           head.textContent = (open ? '▸ ' : '▾ ') + cat.name;
         };
         (cat.items || []).forEach(function(it) {
+          var hit = checkItem(it);
+          if (hit) matchedItems++;
           var chip = document.createElement('button');
-          chip.type = 'button'; chip.className = 't-helper-chip';
+          chip.type = 'button';
+          chip.className = 't-helper-chip' + (hit === 'direct' ? ' matched' : (hit === 'inferred' ? ' inferred' : ''));
           chip.textContent = it;
+          if (hit === 'inferred') { var tag = document.createElement('span'); tag.className = 't-helper-chip-tag'; tag.textContent = '類推'; chip.appendChild(tag); }
           chip.onclick = function(){ applyT('yes', it); };
           items.appendChild(chip);
         });
         wrap.appendChild(head); wrap.appendChild(items);
         catsWrap.appendChild(wrap);
       });
+
+      if (status) {
+        if (q && shownCats === 0) status.textContent = '「' + query + '」に一致する観察項目はありません';
+        else if (q) status.textContent = '「' + query + '」に関連：' + shownCats + ' カテゴリー／' + matchedItems + ' 項目';
+        else status.textContent = '見出しをタップで開く（または上で検索）';
+      }
     }
     function applyT(deg, itemName) {
       if (!maintState) { showToast('先に「' + (isEq() ? '定期メンテナンス' : '定期補修') + '」の実施有無を選んでください'); return; }
@@ -12494,15 +12589,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 既に同値なら何もしない（既存onclickのトグルで解除されるのを防止）。違えばクリックして確定。
       if (target && (!hidden || hidden.value !== t)) target.click();
       closeSheet();
-      var mTxt = (maintState === 'yes' ? '実施あり' : '実施なし');
+      var tgtTxt = isEq() ? '設備' : '建築';
+      var mTxt = (maintState === 'yes' ? (isEq() ? 'メンテあり' : '補修あり') : (isEq() ? 'メンテなし' : '補修なし'));
       var dTxt = (deg === 'yes' ? ('劣化あり：' + (itemName || '')) : '劣化なし');
-      showToast('T' + t + ' に設定しました（' + mTxt + '・' + dTxt + '）');
+      showToast('T' + t + ' に設定しました（' + tgtTxt + '・' + mTxt + '・' + dTxt + '）');
     }
-    function openSheet(){ maintState=''; setMaint(''); syncLabels(); buildCats(); sheet.style.display='flex'; }
+    function openSheet(){
+      maintState=''; setMaint(''); syncLabels();
+      var sb = $('t-helper-search'); if (sb) sb.value = '';
+      buildCats(''); sheet.style.display='flex';
+    }
     function closeSheet(){ sheet.style.display='none'; }
     openBtn.addEventListener('click', openSheet);
+    var searchBox = $('t-helper-search');
+    if (searchBox) searchBox.addEventListener('input', function(){ buildCats(searchBox.value); });
     var cancel = $('t-helper-cancel'); if (cancel) cancel.addEventListener('click', closeSheet);
     sheet.addEventListener('click', function(e){ if (e.target === sheet) closeSheet(); });
+    Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-tbtn'), function(b){
+      b.addEventListener('click', function(){ setTarget(b.dataset.target); });
+    });
     Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-mbtn'), function(b){
       b.addEventListener('click', function(){ setMaint(b.dataset.maint); });
     });
