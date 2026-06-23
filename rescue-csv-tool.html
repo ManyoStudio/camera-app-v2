@@ -131,7 +131,7 @@ function sortPhotos(){
 
 /* ---- 補い合いマージ（同じ写真は1件にまとめ、空欄を他方で補う） ---- */
 function isEmpty(v){ return v == null || String(v).trim() === ''; }
-var SCALAR_KEYS = ['client','site','building','filename','memo','gValue','uValue','tValue','tTarget','guEdited','tChecked','geoLat','geoLng','geoAccuracy','geoError','time','size','noPhoto','path','clsCode','clsBig','clsMid','clsSmall','clsGInit','clsUInit'];
+var SCALAR_KEYS = ['client','site','building','filename','memo','gValue','uValue','tValue','tTarget','guEdited','tChecked','geoLat','geoLng','geoAccuracy','geoError','time','size','noPhoto','path','clsCode','clsBig','clsMid','clsSmall','clsGInit','clsUInit','tBasis'];
 function mergeRecord(dst, src){
   for (var i = 0; i < SCALAR_KEYS.length; i++){
     var k = SCALAR_KEYS[i];
@@ -317,7 +317,8 @@ function buildColumns(){
     { id:'geoAcc',  label:'精度(m)', get:function(p){ var a=p.geoAccuracy; return (a==null||a==='')?'':Math.round(Number(a)); } },
     { id:'time',    label:'撮影日時', get:function(p){ return fmtTime(p.time); } },
     { id:'noPhoto', label:'写真なし', get:function(p){ return p.noPhoto ? 'はい' : ''; } },
-    { id:'size',    label:'容量(KB)', get:function(p){ var s=p.size; return (s==null||s==='')?'':(Number(s)/1024).toFixed(1); } }
+    { id:'size',    label:'容量(KB)', get:function(p){ var s=p.size; return (s==null||s==='')?'':(Number(s)/1024).toFixed(1); } },
+    { id:'tBasis',  label:'T評価の根拠（観察項目）', get:function(p){ return p.tBasis; } }
   );
   cols.forEach(function(c){ if (!(c.id in colShown)) colShown[c.id] = true; });
   return cols;
