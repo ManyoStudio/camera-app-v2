@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.117</title>
+<title>現場写真撮影アプリ v3.118</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1115,8 +1115,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .t-helper-mbtn.on { border-color:#0a84ff; background:#0a3d62; }
   .t-helper-tbtn { flex:1; padding:12px; font-size:15px; font-weight:700; border:2px solid #48484a; border-radius:10px; background:#2c2c2e; color:#fff; cursor:pointer; }
   .t-helper-tbtn.on { border-color:#34c759; background:#14532d; }
-  .t-helper-nodeg { width:100%; margin:0 0 10px; padding:12px; font-size:14px; font-weight:600; border:none; border-radius:10px; background:#2e7d32; color:#fff; cursor:pointer; }
+  .t-helper-nodeg { width:100%; margin:0; padding:12px; font-size:14px; font-weight:600; border:none; border-radius:10px; background:#2e7d32; color:#fff; cursor:pointer; }
   .t-helper-nodeg:active { background:#256628; }
+  /* v3-118：③の2分岐（なし＝緑枠／あり＝青枠）と「または」区切り（表示のみ） */
+  .t-helper-branch { border:1.5px solid #3a3a3c; border-radius:12px; padding:10px; background:#242426; }
+  .t-helper-branch-no { border-color:#2e7d32; }
+  .t-helper-branch-yes { border-color:#0a84ff; }
+  .t-helper-branch-label { font-size:12px; color:#c7ccd3; margin:0 0 8px; }
+  .t-helper-branch-label strong { color:#fff; font-size:13px; }
+  .t-helper-or { display:flex; align-items:center; text-align:center; color:#8e8e93; font-size:12px; font-weight:600; margin:8px 0; }
+  .t-helper-or::before, .t-helper-or::after { content:''; flex:1; height:1px; background:#48484a; }
+  .t-helper-or span { padding:0 12px; }
   #t-helper-cats { max-height:38vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
   .t-helper-cat { margin:0 0 6px; }
   .t-helper-cat-name { width:100%; text-align:left; padding:10px; font-size:13px; font-weight:600; border:none; border-radius:8px; background:#3a3a3c; color:#fff; cursor:pointer; }
@@ -1858,7 +1867,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.117 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
+  <span>📷 現場写真撮影アプリ v3.118 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2959,11 +2968,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
       </div>
       <div class="t-helper-step">
-        <p class="t-helper-q" id="t-helper-deg-q">③ 目視の劣化・損傷・振動・異音は？（押すと T が決まります）</p>
-        <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 目視の劣化・損傷は見当たらない</button>
-        <input type="text" id="t-helper-search" class="t-helper-search" placeholder="🔍 検索（例: 外壁・配管・漏水・クラック）" />
-        <p id="t-helper-search-status" class="t-helper-search-status"></p>
-        <div id="t-helper-cats"></div>
+        <p class="t-helper-q" id="t-helper-deg-q">③ 目視の劣化・損傷・振動・異音は？（どちらかを選ぶと T が決まります）</p>
+        <!-- v3-118：③を「劣化なし／あり」の2分岐に分離（二者択一を視覚化・表示のみ） -->
+        <div class="t-helper-branch t-helper-branch-no">
+          <p class="t-helper-branch-label">劣化・損傷が <strong>ない</strong> とき</p>
+          <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 見当たらない（良好）</button>
+        </div>
+        <div class="t-helper-or"><span>または</span></div>
+        <div class="t-helper-branch t-helper-branch-yes">
+          <p class="t-helper-branch-label">劣化・損傷が <strong>ある</strong> とき → 内容を下から選ぶ</p>
+          <input type="text" id="t-helper-search" class="t-helper-search" placeholder="🔍 検索（例: 外壁・配管・漏水・クラック）" />
+          <p id="t-helper-search-status" class="t-helper-search-status"></p>
+          <div id="t-helper-cats"></div>
+        </div>
       </div>
       <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
     </div>
@@ -3315,7 +3332,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.117）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.118）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -12489,7 +12506,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var mq = $('t-helper-maint-q');
       if (mq) mq.textContent = '② ' + (isEq() ? '定期メンテナンス' : '定期補修') + 'は実施していますか？';
       var dq = $('t-helper-deg-q');
-      if (dq) dq.textContent = '③ 目視の劣化・損傷' + (isEq() ? '・振動・異音' : '') + 'は？（押すと T が決まります）';
+      if (dq) dq.textContent = '③ 目視の劣化・損傷' + (isEq() ? '・振動・異音' : '') + 'は？（どちらかを選ぶと T が決まります）';
       Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-tbtn'), function(b){
         var isB = (b.dataset.target === 'building');
         b.classList.toggle('on', isB ? !isEq() : isEq());
@@ -12593,7 +12610,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (status) {
         if (q && shownCats === 0) status.textContent = '「' + query + '」に一致する観察項目はありません';
         else if (q) status.textContent = '「' + query + '」に関連：' + shownCats + ' カテゴリー／' + matchedItems + ' 項目';
-        else status.textContent = '見出しをタップで開く（または上で検索）';
+        else status.textContent = 'カテゴリーを開いて、該当する項目を選んでください（検索もできます）';
       }
     }
     function applyT(deg, itemName) {
