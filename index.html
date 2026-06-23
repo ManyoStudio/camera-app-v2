@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.115</title>
+<title>現場写真撮影アプリ v3.116</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1104,6 +1104,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .pin-sheet-btn { width:100%; margin:0 0 8px 0; padding:14px; font-size:15px; font-weight:600; border:none; border-radius:10px; background:#2c2c2e; color:#fff; cursor:pointer; text-align:left; }
   .pin-sheet-btn:active { background:#3a3a3c; }
   .pin-sheet-cancel { width:100%; margin:6px 0 0 0; padding:12px; font-size:14px; border:none; border-radius:10px; background:#48484a; color:#fff; cursor:pointer; }
+  /* v3-116：T評価 参考補助シート（既存 .pin-sheet-* を流用・追加のみ） */
+  .t-helper-open-btn { width:100%; margin:10px 0 0; padding:12px; font-size:14px; font-weight:600; border:1px solid #c7c7cc; border-radius:10px; background:#f2f7ff; color:#0d47a1; cursor:pointer; }
+  .t-helper-open-btn:active { background:#e3effe; }
+  .t-helper-sub { font-size:12px; color:#aeb4bd; text-align:center; margin:-6px 0 12px; }
+  .t-helper-step { margin:0 0 14px; }
+  .t-helper-q { font-size:13px; font-weight:600; margin:0 0 8px; }
+  .t-helper-maint { display:flex; gap:8px; }
+  .t-helper-mbtn { flex:1; padding:12px; font-size:14px; font-weight:600; border:2px solid #48484a; border-radius:10px; background:#2c2c2e; color:#fff; cursor:pointer; }
+  .t-helper-mbtn.on { border-color:#0a84ff; background:#0a3d62; }
+  .t-helper-nodeg { width:100%; margin:0 0 10px; padding:12px; font-size:14px; font-weight:600; border:none; border-radius:10px; background:#2e7d32; color:#fff; cursor:pointer; }
+  .t-helper-nodeg:active { background:#256628; }
+  #t-helper-cats { max-height:38vh; overflow-y:auto; -webkit-overflow-scrolling:touch; }
+  .t-helper-cat { margin:0 0 6px; }
+  .t-helper-cat-name { width:100%; text-align:left; padding:10px; font-size:13px; font-weight:600; border:none; border-radius:8px; background:#3a3a3c; color:#fff; cursor:pointer; }
+  .t-helper-items { display:flex; flex-wrap:wrap; gap:6px; padding:8px 2px; }
+  .t-helper-chip { padding:8px 10px; font-size:12px; border:1px solid #5a5a5e; border-radius:14px; background:#1c1c1e; color:#dfe6ee; cursor:pointer; }
+  .t-helper-chip:active { background:#0a3d62; }
   .pin-photo-search { width:100%; box-sizing:border-box; padding:11px; font-size:16px; border:1px solid #48484a; border-radius:9px; background:#2c2c2e; color:#fff; margin-bottom:10px; -webkit-appearance:none; appearance:none; }
   .pin-photo-list { max-height:48vh; overflow-y:auto; -webkit-overflow-scrolling:touch; margin-bottom:4px; }
   .pin-photo-item { display:block; width:100%; text-align:left; padding:11px 12px; margin:0 0 6px 0; font-size:14px; border:1px solid #3a3a3c; border-radius:9px; background:#2c2c2e; color:#fff; cursor:pointer; }
@@ -1830,7 +1847,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.115 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-22）</span></span>
+  <span>📷 現場写真撮影アプリ v3.116 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2066,6 +2083,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <input type="hidden" id="t-value" />
           </div>
           <p class="gut-hint">判定の参考に観察項目（クラック・浮き等）が必要な場合は <strong>📖参考</strong> タブをご覧ください。</p>
+          <button type="button" id="t-helper-open" class="t-helper-open-btn">📖 観察項目からTを決める</button>
         </div>
       </div>
     </div>
@@ -2846,6 +2864,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button type="button" class="pin-sheet-cancel" data-act="cancel">キャンセル</button>
     </div>
   </div>
+  <!-- v3-116：T評価 参考補助シート（既存 .pin-sheet-overlay/.pin-sheet-card を流用・REF_CATEGORIESは読み取り専用） -->
+  <div id="t-helper-sheet" class="pin-sheet-overlay" style="display:none;">
+    <div class="pin-sheet-card">
+      <p class="pin-sheet-title">📖 観察項目から T を決める</p>
+      <p id="t-helper-target" class="t-helper-sub"></p>
+      <div class="t-helper-step">
+        <p class="t-helper-q" id="t-helper-maint-q">① 定期メンテナンスは実施していますか？</p>
+        <div class="t-helper-maint">
+          <button type="button" class="t-helper-mbtn" data-maint="yes">実施した</button>
+          <button type="button" class="t-helper-mbtn" data-maint="no">していない</button>
+        </div>
+      </div>
+      <div class="t-helper-step">
+        <p class="t-helper-q">② 目視の劣化・損傷は？（押すと T が決まります）</p>
+        <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 目視の劣化・損傷は見当たらない</button>
+        <div id="t-helper-cats"></div>
+      </div>
+      <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
+    </div>
+  </div>
   <div id="pin-photo-picker" class="pin-sheet-overlay" style="display:none;">
     <div class="pin-sheet-card">
       <p class="pin-sheet-title">紐づける写真をえらぶ</p>
@@ -3257,7 +3295,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.115）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.116）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -12399,6 +12437,78 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     update();
   }
 
+  // v3-116：T評価 参考補助シート（読み取り専用。算出Tに対応する #t-options-buttons を
+  // プログラムからクリック＝手押しと同一経路。#t-value への直接書込みなし＝保存経路・データモデル不変）
+  function setupTHelperSheet() {
+    var openBtn = $('t-helper-open'), sheet = $('t-helper-sheet');
+    if (!openBtn || !sheet) return;
+    var catsWrap = $('t-helper-cats');
+    var maintState = '';
+    function isEq(){ return (getTTarget() !== 'building'); }
+    function syncLabels() {
+      var q = $('t-helper-maint-q');
+      if (q) q.textContent = '① ' + (isEq() ? '定期メンテナンス' : '定期補修') + 'は実施していますか？';
+      var tg = $('t-helper-target');
+      if (tg) tg.textContent = '対象：' + (isEq() ? '設備' : '建築') + '（切替は閉じてから上の「設備／建築」で）';
+    }
+    function setMaint(v) {
+      maintState = v;
+      Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-mbtn'), function(b){
+        b.classList.toggle('on', b.dataset.maint === v);
+      });
+    }
+    function buildCats() {
+      if (!catsWrap) return;
+      catsWrap.innerHTML = '';
+      REF_CATEGORIES.forEach(function(cat) {   // 保護ブロックを読み取り専用で流用
+        var wrap = document.createElement('div'); wrap.className = 't-helper-cat';
+        var head = document.createElement('button');
+        head.type = 'button'; head.className = 't-helper-cat-name';
+        head.textContent = '▸ ' + cat.name;
+        var items = document.createElement('div'); items.className = 't-helper-items'; items.style.display = 'none';
+        head.onclick = function(){
+          var open = items.style.display !== 'none';
+          items.style.display = open ? 'none' : 'flex';
+          head.textContent = (open ? '▸ ' : '▾ ') + cat.name;
+        };
+        (cat.items || []).forEach(function(it) {
+          var chip = document.createElement('button');
+          chip.type = 'button'; chip.className = 't-helper-chip';
+          chip.textContent = it;
+          chip.onclick = function(){ applyT('yes', it); };
+          items.appendChild(chip);
+        });
+        wrap.appendChild(head); wrap.appendChild(items);
+        catsWrap.appendChild(wrap);
+      });
+    }
+    function applyT(deg, itemName) {
+      if (!maintState) { showToast('先に「' + (isEq() ? '定期メンテナンス' : '定期補修') + '」の実施有無を選んでください'); return; }
+      var t;
+      if (maintState === 'yes' && deg === 'no') t = '2';
+      else if (maintState === 'yes' && deg === 'yes') t = '4';
+      else if (maintState === 'no' && deg === 'no') t = '3';
+      else t = '5';
+      var hidden = $('t-value'), box = $('t-options-buttons'), target = null;
+      if (box) Array.prototype.forEach.call(box.children, function(b){ if (b.dataset && b.dataset.value === t) target = b; });
+      // 既に同値なら何もしない（既存onclickのトグルで解除されるのを防止）。違えばクリックして確定。
+      if (target && (!hidden || hidden.value !== t)) target.click();
+      closeSheet();
+      var mTxt = (maintState === 'yes' ? '実施あり' : '実施なし');
+      var dTxt = (deg === 'yes' ? ('劣化あり：' + (itemName || '')) : '劣化なし');
+      showToast('T' + t + ' に設定しました（' + mTxt + '・' + dTxt + '）');
+    }
+    function openSheet(){ maintState=''; setMaint(''); syncLabels(); buildCats(); sheet.style.display='flex'; }
+    function closeSheet(){ sheet.style.display='none'; }
+    openBtn.addEventListener('click', openSheet);
+    var cancel = $('t-helper-cancel'); if (cancel) cancel.addEventListener('click', closeSheet);
+    sheet.addEventListener('click', function(e){ if (e.target === sheet) closeSheet(); });
+    Array.prototype.forEach.call(sheet.querySelectorAll('.t-helper-mbtn'), function(b){
+      b.addEventListener('click', function(){ setMaint(b.dataset.maint); });
+    });
+    var noDeg = $('t-helper-nodeg'); if (noDeg) noDeg.addEventListener('click', function(){ applyT('no', ''); });
+  }
+
   async function init() {
     if (!loadState()) {
       initFields();
@@ -12411,6 +12521,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setupDescCollapsibles();   // 説明文の折りたたみ（UX：動線短縮）
     setupQA();                 // Q&A（困ったとき）の初期化
     setupTHelper();            // T評価の参考補助（候補提案・自動入力なし）
+    setupTHelperSheet();       // v3-116：T評価 参考補助シート（押すだけ確定・スキーマ非変更）
     var descCloseAll = $('descCloseAllBtn');
     var descOpenAll = $('descOpenAllBtn');
     if (descCloseAll) descCloseAll.addEventListener('click', function(){ setAllDescCollapsed(true); });
