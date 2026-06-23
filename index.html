@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.116</title>
+<title>現場写真撮影アプリ v3.117</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1858,7 +1858,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.116 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
+  <span>📷 現場写真撮影アプリ v3.117 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-23）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3315,7 +3315,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.116）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.117）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3578,7 +3578,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     fieldKeysArr.forEach(function(fk) {
       headers.push(fk.split('|')[1]);
     });
-    headers.push('分類コード', '大分類', '中分類', '小分類', '分類G初期', '分類U初期', 'メモ', 'G値', 'U値', 'T値', 'T評価対象', 'G/U変更', 'Tチェック済', '緯度', '経度', '位置精度(m)', '撮影日時', '容量(KB)');
+    headers.push('分類コード', '大分類', '中分類', '小分類', '分類G初期', '分類U初期', 'メモ', 'G値', 'U値', 'T値', 'T評価対象', 'G/U変更', 'Tチェック済', '緯度', '経度', '位置精度(m)', '撮影日時', '容量(KB)', 'T評価の根拠（観察項目）'); // v3-117：段階B＝末尾に1列追加（既存列の位置不変・後方互換）
     
     var csv = headers.map(csvEscape).join(',') + '\n';
     
@@ -3608,6 +3608,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       row.push(p.geoAccuracy !== '' && p.geoAccuracy !== undefined ? Math.round(p.geoAccuracy) : '');
       row.push(new Date(p.time).toLocaleString('ja-JP'));
       row.push((p.size / 1024).toFixed(1));
+      row.push(p.tBasis || ''); // v3-117：段階B＝T評価の根拠（観察項目）。無ければ空欄＝後方互換
       csv += row.map(csvEscape).join(',') + '\n';
     });
     
@@ -4875,6 +4876,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function copyEval(from, to) {
     to.memo = from.memo || ''; to.gValue = from.gValue || ''; to.uValue = from.uValue || '';
     to.tValue = from.tValue || ''; to.tTarget = from.tTarget || '';
+    to.tBasis = from.tBasis || ''; // v3-117：段階B＝T評価の根拠（任意・後方互換：無ければ空）
     to.guEdited = from.guEdited || 0; to.tChecked = from.tChecked || 0;
     // 分類キー（段階1で追加・後方互換：from に無ければ空のまま）
     to.clsCode = from.clsCode || ''; to.clsBig = from.clsBig || ''; to.clsMid = from.clsMid || '';
@@ -4947,6 +4949,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       uValue: guEdited ? parseGutValue(uInput.value) : '',
       tValue: tChecked ? parseGutValue(tInput.value) : '',
       tTarget: tChecked ? getTTarget() : '',
+      tBasis: tChecked ? (tHelperBasis || '') : '', // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
       guEdited: guEdited ? 1 : 0, tChecked: tChecked ? 1 : 0,
       clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
       clsSmall: selectedCls?selectedCls.small:'', clsGInit: selectedCls?selectedCls.g:'', clsUInit: selectedCls?selectedCls.u:'',
@@ -5124,7 +5127,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           client: p.client, site: p.site, building: p.building, filename: p.filename,
           fields: p.fields, memo: p.memo,
           gValue: p.gValue, uValue: p.uValue, tValue: p.tValue,
-          tTarget: p.tTarget, guEdited: p.guEdited, tChecked: p.tChecked,
+          tTarget: p.tTarget, guEdited: p.guEdited, tChecked: p.tChecked, tBasis: p.tBasis,
           clsCode: p.clsCode, clsBig: p.clsBig, clsMid: p.clsMid, clsSmall: p.clsSmall, clsGInit: p.clsGInit, clsUInit: p.clsUInit
         };
         // 古い1枚を削除
@@ -5476,6 +5479,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ph0 = photos.find(function(p){ return p.id === baseId; });
     if (!ph0) return;
     evalModeBaseId = baseId;
+    tHelperBasis = ph0.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ（手で再保存しても消えない）
     endContinuousMode();        // 撮影バナーは閉じる
     var nm = $('eval-bar-name'); if (nm) nm.textContent = ph0.filename || '';
     if (evalBar) evalBar.style.display = 'flex';
@@ -5603,6 +5607,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         ph0.uValue = guEdited ? parseGutValue(uI.value) : '';
         ph0.tValue = tChecked ? parseGutValue(tI.value) : '';
         ph0.tTarget = tChecked ? getTTarget() : '';
+        ph0.tBasis = tChecked ? (tHelperBasis || '') : ''; // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
         ph0.guEdited = guEdited ? 1 : 0;
         ph0.tChecked = tChecked ? 1 : 0;
         ph0.clsCode = selectedCls?selectedCls.code:''; ph0.clsBig = selectedCls?selectedCls.big:''; ph0.clsMid = selectedCls?selectedCls.mid:'';
@@ -5734,6 +5739,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             }),
             memo: '',
             gValue: gVal, uValue: uVal, tValue: tVal, tTarget: tTarget,
+            tBasis: tChecked ? (tHelperBasis || '') : '', // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
             guEdited: guEdited ? 1 : 0, tChecked: tChecked ? 1 : 0,
             clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
             clsSmall: selectedCls?selectedCls.small:'', clsGInit: selectedCls?selectedCls.g:'', clsUInit: selectedCls?selectedCls.u:'',
@@ -5768,6 +5774,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (gInput) gInput.value = '';
       if (uInput) uInput.value = '';
       if (tInput) tInput.value = '';
+      tHelperBasis = ''; // v3-117：段階B＝取り込み後はT根拠もクリア
       ['g-options-buttons','u-options-buttons','t-options-buttons'].forEach(function(cid){
         var c = $(cid);
         if (c) Array.from(c.children).forEach(function(ch){ ch.classList.remove('selected'); });
@@ -5800,6 +5807,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   function clearGutMemoInputs() {
     if (memo) memo.value = '';
+    tHelperBasis = ''; // v3-117：段階B＝次の設備に向けてT根拠もクリア
     var gI = $('g-value'), uI = $('u-value'), tI = $('t-value');
     if (gI) gI.value = ''; if (uI) uI.value = ''; if (tI) tI.value = '';
     ['g-options-buttons','u-options-buttons','t-options-buttons'].forEach(function(cid){
@@ -5813,6 +5821,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var panel = $('postshot-panel');
     if (!panel) return;
     activeShotId = photo.id;
+    tHelperBasis = photo.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ
     var nameEl = $('postshot-name');
     if (nameEl) nameEl.textContent = photo.filename || '';
     var gutCard = $('postshot-gut-card');
@@ -5852,6 +5861,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           ph.uValue = guEdited ? parseGutValue(uI.value) : '';
           ph.tValue = tChecked ? parseGutValue(tI.value) : '';
           ph.tTarget = tChecked ? getTTarget() : '';
+          ph.tBasis = tChecked ? (tHelperBasis || '') : ''; // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
           ph.guEdited = guEdited ? 1 : 0;
           ph.tChecked = tChecked ? 1 : 0;
         }
@@ -5954,6 +5964,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         uValue: '',
         tValue: '',
         tTarget: '',
+        tBasis: '', // v3-117：段階B＝後方互換（評価なし＝空欄）
         guEdited: 0,
         tChecked: 0,
         clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
@@ -5973,6 +5984,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         photo.memo = rc.memo || '';
         photo.gValue = rc.gValue || ''; photo.uValue = rc.uValue || ''; photo.tValue = rc.tValue || '';
         photo.tTarget = rc.tTarget || ''; photo.guEdited = rc.guEdited || 0; photo.tChecked = rc.tChecked || 0;
+        photo.tBasis = rc.tBasis || ''; // v3-117：段階B＝後方互換（無ければ空欄）
         photo.clsCode = rc.clsCode || ''; photo.clsBig = rc.clsBig || ''; photo.clsMid = rc.clsMid || '';
         photo.clsSmall = rc.clsSmall || ''; photo.clsGInit = rc.clsGInit || ''; photo.clsUInit = rc.clsUInit || '';
       }
@@ -6643,6 +6655,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         iGU = idx('G/U変更'), iTc = idx('Tチェック済'),
         iLat = idx('緯度'), iLng = idx('経度'), iAcc = idx('位置精度(m)'), iTime = idx('撮影日時');
     var iCC = idx('分類コード'), iCB = idx('大分類'), iCM = idx('中分類'), iCS = idx('小分類'), iCG = idx('分類G初期'), iCU = idx('分類U初期'); // 分類6列（v3-49・CSV復元の整合）
+    var iTb = idx('T評価の根拠（観察項目）'); // v3-117：段階B＝末尾列（無ければ -1＝旧CSVは空欄で後方互換）
     for (var r = 1; r < rows.length; r++) {
       var c = rows[r]; if (!c || !c.length) continue;
       var fname = iFile >= 0 ? c[iFile] : '';
@@ -6660,7 +6673,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         geoAccuracy: iAcc >= 0 ? c[iAcc] : '',
         time: iTime >= 0 ? c[iTime] : '',
         clsCode: iCC>=0 ? c[iCC] : '', clsBig: iCB>=0 ? c[iCB] : '', clsMid: iCM>=0 ? c[iCM] : '',
-        clsSmall: iCS>=0 ? c[iCS] : '', clsGInit: iCG>=0 ? c[iCG] : '', clsUInit: iCU>=0 ? c[iCU] : ''
+        clsSmall: iCS>=0 ? c[iCS] : '', clsGInit: iCG>=0 ? c[iCG] : '', clsUInit: iCU>=0 ? c[iCU] : '',
+        tBasis: iTb>=0 ? c[iTb] : '' // v3-117：段階B＝末尾列（無ければ空欄＝後方互換）
       };
     }
     return map;
@@ -6779,6 +6793,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             memo: meta.memo || '',
             gValue: meta.gValue || '', uValue: meta.uValue || '', tValue: meta.tValue || '',
             tTarget: meta.tTarget || '',
+            tBasis: meta.tBasis || '', // v3-117：段階B＝後方互換（無ければ空欄）
             guEdited: meta.guEdited || 0, tChecked: meta.tChecked || 0,
             clsCode: meta.clsCode || '', clsBig: meta.clsBig || '', clsMid: meta.clsMid || '',
             clsSmall: meta.clsSmall || '', clsGInit: meta.clsGInit || '', clsUInit: meta.clsUInit || '',
@@ -11313,7 +11328,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             var v = (x.key==='client') ? cl : (x.key==='site') ? st : (x.key==='building') ? bl : '';
             return { key: x.key, label: x.label, value: v, included: x.included, folder: x.folder };
           }),
-          memo: '', gValue: '', uValue: '', tValue: '', tTarget: '', guEdited: 0, tChecked: 0,
+          memo: '', gValue: '', uValue: '', tValue: '', tTarget: '', guEdited: 0, tChecked: 0, tBasis: '',
           clsCode: '', clsBig: '', clsMid: '', clsSmall: '', clsGInit: '', clsUInit: '',
           geoLat: '', geoLng: '', geoAccuracy: '', geoError: '', imported: 1
         };
@@ -12459,6 +12474,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // v3-116：T評価 参考補助シート（読み取り専用。算出Tに対応する #t-options-buttons を
   // プログラムからクリック＝手押しと同一経路。#t-value への直接書込みなし＝保存経路・データモデル不変）
+  // v3-117：段階B＝T評価の根拠（観察項目）。📖補助で選んだときだけ値が入り、評価保存時に ph.tBasis へ書く。
+  // 手動でTボタンを押した場合は空にする（ア案）。劣化なし押下時は '劣化・損傷なし'（A案）。
+  var tHelperBasis = '';        // 押した観察項目テキスト（手動Tは''）
+  var tHelperApplying = false;  // applyT由来のプログラムクリックを手動クリックと区別するガード
   function setupTHelperSheet() {
     var openBtn = $('t-helper-open'), sheet = $('t-helper-sheet');
     if (!openBtn || !sheet) return;
@@ -12587,7 +12606,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var hidden = $('t-value'), box = $('t-options-buttons'), target = null;
       if (box) Array.prototype.forEach.call(box.children, function(b){ if (b.dataset && b.dataset.value === t) target = b; });
       // 既に同値なら何もしない（既存onclickのトグルで解除されるのを防止）。違えばクリックして確定。
+      tHelperApplying = true; // ★v3-117：このクリックは手動と区別（手動クリックの根拠クリアを発火させない）
       if (target && (!hidden || hidden.value !== t)) target.click();
+      tHelperApplying = false;
+      // ★v3-117：段階B＝選んだ観察項目を確定。劣化あり＝項目名／劣化なし＝'劣化・損傷なし'。保存は評価保存時。
+      tHelperBasis = (deg === 'yes') ? (itemName || '') : '劣化・損傷なし';
       closeSheet();
       var tgtTxt = isEq() ? '設備' : '建築';
       var mTxt = (maintState === 'yes' ? (isEq() ? 'メンテあり' : '補修あり') : (isEq() ? 'メンテなし' : '補修なし'));
@@ -12612,6 +12635,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       b.addEventListener('click', function(){ setMaint(b.dataset.maint); });
     });
     var noDeg = $('t-helper-nodeg'); if (noDeg) noDeg.addEventListener('click', function(){ applyT('no', ''); });
+    // ★v3-117：段階B＝手動でTボタンを押したら根拠を空にする（ア案）。applyT由来のプログラムクリックはガードで除外。
+    var tOptBox = $('t-options-buttons');
+    if (tOptBox) tOptBox.addEventListener('click', function(e){
+      if (tHelperApplying) return; // 補助シート由来のクリックは無視
+      var el = e.target;
+      while (el && el !== tOptBox && !(el.dataset && el.dataset.value)) el = el.parentNode;
+      if (el && el.dataset && el.dataset.value) tHelperBasis = '';
+    }, true); // capture＝ボタン自身のonclickより先に判定
   }
 
   async function init() {
