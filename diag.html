@@ -236,6 +236,25 @@ function buildRescuePath(p, fallbackIdx){
   segs.push(fn);
   return segs.join('/');
 }
+// 救出mapDataの各ピンに photoKey を付与（本体 mapDataWithPhotoKeys と同規則）。
+// ピンは photoId（ローカルID）で写真を指すが、復元で写真には新IDが振られるためIDでは再リンクできない。
+// そこで端末をまたいでも不変の住所キー（client/site/building/filename）を書き添える。
+// 本体 relinkPin が photoKey でキー照合し写真を正しく再リンクできる（正規バックアップと同じ挙動）。
+// ※追加のみ・元 loadedMapData は非破壊（ディープコピーして加工）。古い photoKey 無しZIPも本体は従来どおり読める。
+function photoKeyOfRescued(p){ return (p.client||'')+'/'+(p.site||'')+'/'+(p.building||'')+'/'+(p.filename||''); }
+function mapDataWithPhotoKeysRescued(src){
+  if(!src || !src.buildings) return src;
+  var byId={}; (loadedPhotos||[]).forEach(function(p){ if(p && p.id!=null) byId[p.id]=p; });
+  var out; try{ out=JSON.parse(JSON.stringify(src)); }catch(e){ return src; }   // 元データを壊さない
+  function fixSheet(s){ (s.pins||[]).forEach(function(pin){
+    if(pin && pin.photoId!=null){ var ph=byId[pin.photoId]; pin.photoKey = ph ? photoKeyOfRescued(ph) : null; }
+  }); }
+  (out.buildings||[]).forEach(function(b){
+    (b.sheets||[]).forEach(fixSheet);
+    (b.areas||[]).forEach(function(a){ (a.sheets||[]).forEach(fixSheet); });
+  });
+  return out;
+}
 function makeSaveLink(bytes,filename,mime,holderId){
   var blob=new Blob([bytes],{type:mime||'application/octet-stream'});
   var url=URL.createObjectURL(blob);
@@ -294,7 +313,7 @@ $('nextChunkBtn').addEventListener('click', function(){
     files.push({name:'_backup/photos.json',bytes:sB('\uFEFF'+pj)});
     // 最初のかたまりに位置記録も同梱
     if(chunkIndex===0 && loadedMapData && loadedMapData.buildings && loadedMapData.buildings.length){
-      var mj=JSON.stringify({version:1,app:'camera-app',rescued:true,exportedAt:new Date().toISOString(),mapData:loadedMapData},null,2);
+      var mj=JSON.stringify({version:1,app:'camera-app',rescued:true,exportedAt:new Date().toISOString(),mapData:mapDataWithPhotoKeysRescued(loadedMapData)},null,2);
       files.push({name:'_backup/mapdata.json',bytes:sB('\uFEFF'+mj)});
     }
     var zip=buildZip(files);
@@ -315,7 +334,7 @@ $('jsonBtn').addEventListener('click', function(){
   try{
     if(!loadedPhotos){$('rescueStatus').textContent='先に「救出をはじめる」を押してください。';return;}
     // 予備は「位置記録のみ」をJSONで（軽い）。写真本体はZIP小分けで保存済み前提。
-    var dump={version:1,app:'camera-app',rescued:true,kind:'mapdata-only',exportedAt:new Date().toISOString(),mapData:loadedMapData,floorplan:loadedFloorplan};
+    var dump={version:1,app:'camera-app',rescued:true,kind:'mapdata-only',exportedAt:new Date().toISOString(),mapData:mapDataWithPhotoKeysRescued(loadedMapData),floorplan:loadedFloorplan};
     appendSaveLink(sB(JSON.stringify(dump)),'位置記録のみ_'+stamp()+'.json','application/json','saveLinkJson');
     $('rescueStatus').innerHTML='✅ 位置記録（棟・マップ）の予備JSONを用意しました。下のオレンジ枠を保存してください。';
   }catch(e){ $('rescueStatus').textContent='⚠️ JSON保存エラー：'+(e&&e.message?e.message:e); }
