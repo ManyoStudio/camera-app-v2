@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.133</title>
+<title>現場写真撮影アプリ v3.134</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1888,7 +1888,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.133 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.134 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3379,7 +3379,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.133）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.134）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3595,6 +3595,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     }
     var res = $('link-status-result'); if (res) res.style.display = 'block';
+  }
+  // (v3-134) 取り込み・全削除のあとに、紐づけ状況カードが開いていれば再集計して再描画する（読み取り専用・データ不変）。
+  //   以前は import 後 renderList() のみ・全削除後も再集計されず、開いたままだと古い表示が残っていた。
+  function refreshLinkStatusIfOpen() {
+    try {
+      var res = $('link-status-result');
+      if (res && res.style.display !== 'none') {
+        var u = $('link-status-undone');
+        renderLinkStatus(!!(u && u.checked));
+      }
+    } catch (e) {}
   }
   function exportLinkStatusCsv() {
     var data = buildLinkStatus();
@@ -6272,6 +6283,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       photos = [];
       dismissedReminder = false;
       renderList();
+      refreshLinkStatusIfOpen();   // (v3-134) 全削除後も紐づけ状況を更新
       alert('すべて削除しました');
     }
   });
@@ -6937,9 +6949,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ledgerByFilename = {};
     if (ledger) {
       var _lfDup = {};
+      var _nfc = function(s){ s = String(s||''); return s.normalize ? s.normalize('NFC') : s; };   // (v3-134) NFC正規化（iPad/macOSのNFD対策）
       ledger.forEach(function(m) {
         var fn = m && m.filename;
         if (!fn) return;
+        fn = _nfc(fn);
         if (Object.prototype.hasOwnProperty.call(ledgerByFilename, fn)) { _lfDup[fn] = true; }
         else { ledgerByFilename[fn] = m; }
       });
@@ -6982,7 +6996,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         var b64 = await entries[i].entry.async('base64');
         var photo;
-        var led = ledgerByPath[path] || ledgerByPath[key] || ledgerByFilename[pp.filename];   // (v3-133) ファイル名でも台帳を引く
+        var led = ledgerByPath[path] || ledgerByPath[key] || ledgerByFilename[pp.filename] || ledgerByFilename[(pp.filename && pp.filename.normalize) ? pp.filename.normalize('NFC') : pp.filename];   // (v3-133/134) ファイル名でも台帳を引く（NFC正規化対応）
         if (led) {
           // 無損失：台帳の全項目をそのまま採用（id/path/dataUrlは除外して再構築）
           photo = {};
@@ -7119,6 +7133,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (positionOnly) {
       setImpStatus('✅ 位置記録を読み込みました（棟' + mapData.buildings.length + '）。「📍 位置記録」タブで確認できます。', true);
     }
+    refreshLinkStatusIfOpen();   // (v3-134) 取り込み（写真＋位置記録の再リンク）後に紐づけ状況を更新
     alert(doneMsg);
   }
   if (photoImportInput) photoImportInput.addEventListener('change', function(e) {
@@ -7132,6 +7147,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       await clearAllPhotosFromDB();
       photos = [];
       renderList();
+      refreshLinkStatusIfOpen();   // (v3-134) 削除後も紐づけ状況を更新
       exportClearBtn.style.display = 'none';
       alert('データを削除しました');
     }
@@ -12256,7 +12272,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (np.photoId == null && pin.photoKey) {
       var _pkName = String(pin.photoKey).split('/').pop();
       if (_pkName) {
-        var _cands = photos.filter(function(p){ return (p.filename || '') === _pkName; });
+        var _nfcName = _pkName.normalize ? _pkName.normalize('NFC') : _pkName;   // (v3-134) NFC正規化（iPad NFD対策）
+        var _cands = photos.filter(function(p){ var f = (p.filename || ''); f = f.normalize ? f.normalize('NFC') : f; return f === _nfcName; });
         if (_cands.length === 1) np.photoId = _cands[0].id;
       }
     }
