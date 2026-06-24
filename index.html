@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.132</title>
+<title>現場写真撮影アプリ v3.133</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1888,7 +1888,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.132 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.133 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3379,7 +3379,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.132）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.133）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -6929,6 +6929,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // 台帳をパスで引けるよう辞書化
     var ledgerByPath = {};
     if (ledger) ledger.forEach(function(m) { if (m.path) ledgerByPath[m.path] = m; });
+    // (v3-133) 台帳をファイル名でも引けるよう辞書化（一意なファイル名だけ登録）。
+    //   背景：写真はZIP内では番号バケット等のフォルダに保存される一方、台帳pathは client/site/building/filename。
+    //   別ブラウザ取込でこの2つが食い違うと path/key 照合が外れ、フォールバックで client/site/building が
+    //   バケット名等に化けて photoKey が一致せず、ピン⇔写真の紐づきが切れていた。ファイル名で台帳を引ければ
+    //   正しい client/site/building を復元でき、紐づき＆G/U/T等のロスレス復元も回復する（追加のみ・保存形式不変）。
+    var ledgerByFilename = {};
+    if (ledger) {
+      var _lfDup = {};
+      ledger.forEach(function(m) {
+        var fn = m && m.filename;
+        if (!fn) return;
+        if (Object.prototype.hasOwnProperty.call(ledgerByFilename, fn)) { _lfDup[fn] = true; }
+        else { ledgerByFilename[fn] = m; }
+      });
+      // 同名が複数ある台帳は誤対応を避けるため、その名前は使わない
+      for (var _dn in _lfDup) { if (Object.prototype.hasOwnProperty.call(_lfDup, _dn)) delete ledgerByFilename[_dn]; }
+    }
 
     var lossless = !!ledger;
     var mode = 'merge';
@@ -6965,7 +6982,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         var b64 = await entries[i].entry.async('base64');
         var photo;
-        var led = ledgerByPath[path] || ledgerByPath[key];
+        var led = ledgerByPath[path] || ledgerByPath[key] || ledgerByFilename[pp.filename];   // (v3-133) ファイル名でも台帳を引く
         if (led) {
           // 無損失：台帳の全項目をそのまま採用（id/path/dataUrlは除外して再構築）
           photo = {};
@@ -12231,6 +12248,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       np.photoId = ph ? ph.id : null;
     } else if (crossDevice) {
       np.photoId = null;   // 旧形式（キー無し）の他端末データは誤紐づけ防止でnull
+    }
+    // (v3-133) 別ブラウザ取込でプレフィックス差（バケットフォルダ／未分類／棟名等）により photoKey が
+    //          完全一致しないとき、ファイル名が photos 内でちょうど1枚に定まる場合だけ救済紐づけする。
+    //          ※番号(extractPhotoNumber)は重複し得る（例：…No.1 が多数）ため使わず、ファイル名で照合。
+    //          複数該当・該当なし・台帳ファイル名なしのときは付けない（誤紐づけ防止＝従来どおり null 維持）。
+    if (np.photoId == null && pin.photoKey) {
+      var _pkName = String(pin.photoKey).split('/').pop();
+      if (_pkName) {
+        var _cands = photos.filter(function(p){ return (p.filename || '') === _pkName; });
+        if (_cands.length === 1) np.photoId = _cands[0].id;
+      }
     }
     // (v3-124) 写真が無い端末でも設備番号を表示：photoKey のファイル名から番号を取り出し、
     //          写真が解決できず手動ラベルも無いピンに限り pin.label に固定する（写真があれば従来どおり photoId 経由）。
