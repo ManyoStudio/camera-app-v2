@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.130</title>
+<title>現場写真撮影アプリ v3.132</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1828,18 +1828,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .place-select-mini { flex: 1 1 auto; padding: 8px; border: 1px solid #d0d0d5; background: #f5f5f7; border-radius: 8px; font-size: 13px; color: #1d1d1f; cursor: pointer; }
   .place-select-grid {
     flex: 1; overflow-y: auto; padding: 0 16px 12px;
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; align-content: start;
+    display: grid; grid-template-columns: 1fr; gap: 8px; align-content: start;
   }
-  .place-cell { position: relative; cursor: pointer; border-radius: 12px; overflow: hidden; border: 3px solid #e0e0e5; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
-  .place-cell.sel { border-color: #007aff; box-shadow: 0 0 0 1px #007aff; }
+  /* v3-131/132：テキスト行。左✓○＝選択／番号・ファイル名（と🔍）＝写真プレビュー。 */
+  .place-cell { position: relative; cursor: default; border-radius: 10px; border: 1px solid #d6d6dc; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 10px; padding: 10px 12px; }
+  .place-cell.sel { border-color: #007aff; background: #eef6ff; box-shadow: 0 0 0 1px #007aff; }
   .place-cell.place-hidden { display: none; }
-  .place-thumb-wrap { position: relative; line-height: 0; min-height: 92px; background: #f0f0f3; }
-  .place-cell img { width: 100%; height: 92px; object-fit: cover; display: block; background: #f0f0f3; }
-  .place-cell .place-num { background: #1d1d1f; color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0.3px; padding: 6px 4px; text-align: center; line-height: 1.2; }
+  .place-cell .place-check { flex: 0 0 auto; width: 30px; height: 30px; border-radius: 50%; background: #e5e5ea; border: 1px solid #c0c0c5; display: flex; align-items: center; justify-content: center; font-size: 16px; color: transparent; cursor: pointer; }
+  .place-cell.sel .place-check { background: #007aff; border-color: #007aff; color: #fff; }
+  .place-main { flex: 1 1 auto; min-width: 0; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+  .place-cell .place-num { flex: 0 0 auto; background: #1d1d1f; color: #fff; font-size: 13px; font-weight: 800; letter-spacing: 0.3px; padding: 4px 9px; border-radius: 8px; line-height: 1.2; }
   .place-cell.sel .place-num { background: #007aff; }
-  .place-cell .place-name { font-size: 11px; color: #3a3a3c; padding: 4px 6px 5px; text-align: center; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .place-cell .place-check { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border-radius: 50%; background: rgba(255,255,255,0.9); border: 1px solid #c0c0c5; display: flex; align-items: center; justify-content: center; font-size: 15px; color: transparent; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-  .place-cell.sel .place-check { background: #007aff; border-color: #fff; color: #fff; }
+  .place-cell .place-name { flex: 1 1 auto; min-width: 0; font-size: 13px; color: #3a3a3c; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .place-cell .place-eye { flex: 0 0 auto; width: 36px; height: 34px; border-radius: 8px; background: #eef5ff; color: #0a6cff; border: 1px solid #cfe0ff; display: flex; align-items: center; justify-content: center; font-size: 16px; cursor: pointer; }
+  .place-cell .place-eye:active { background: #dcebff; }
   .place-select-filter-row { position: relative; margin: 0 16px 8px; }
   .place-select-filter { width: 100%; box-sizing: border-box; padding: 13px 44px 13px 14px; border: 1px solid #c7c7cc; border-radius: 10px; font-size: 16px; -webkit-appearance: none; }
   .place-select-filter:focus { outline: none; border-color: #007aff; box-shadow: 0 0 0 2px rgba(0,122,255,0.25); }
@@ -1886,7 +1888,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.130 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.132 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2290,7 +2292,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     <div class="card">
       <p style="font-size:12px;color:#6e6e73;margin:0 0 8px 0;line-height:1.6;">写真も含めて安全に残すには <strong>💾 保存（バックアップ）</strong> で ZIP 保存してください。（下の「撮影記録（CSV）」は<strong>記録だけ</strong>で<strong>写真は入りません</strong>）</p>
-      <button id="goto-save-btn">💾 保存（バックアップ）を開く</button>
+      <button id="goto-save-btn">💾 すべて保存（写真も含む）を開く</button>
       <button id="exportCsvBtn" class="secondary">📄 撮影記録（CSV）だけ書き出す（写真は入りません）</button>
       <button id="clearAllBtn" class="danger">🗑 すべて削除（撮り直し）</button>
     </div>
@@ -2345,7 +2347,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
     </details>
 
-    <div class="card">
+    <div class="card" id="export-full-card">
       <p class="card-title">📤 データを保存（バックアップ）</p>
       <div class="info-box">
         <strong>動作内容：</strong><br>
@@ -3085,7 +3087,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <div id="place-select-modal" class="place-select-modal">
   <div class="place-select-content">
     <p class="place-select-title">ピン留めする写真を選ぶ</p>
-    <p class="place-select-sub">置きたい写真をタップして選び、下のボタンで開始します。選んだ順（下の並び順）に、地図をタップして置いていきます。</p>
+    <p class="place-select-sub">左の ○ をタップして選び、下のボタンで開始します。<strong>番号・ファイル名（または🔍）をタップすると、その写真を拡大して確認</strong>できます。選んだ順（下の並び順）に、地図をタップして置いていきます。</p>
     <div class="place-select-actions-top">
       <button id="place-select-all" class="place-select-mini">表示中をすべて選ぶ</button>
       <button id="place-select-none" class="place-select-mini">選択を解除</button>
@@ -3377,7 +3379,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.130）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.132）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3609,7 +3611,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       else { var u = $('link-status-undone'); renderLinkStatus(!!(u && u.checked)); showBtn.textContent = '🔼 紐づけ状況を閉じる'; }
     });
     var gotoSave = $('goto-save-btn');
-    if (gotoSave) gotoSave.addEventListener('click', function(){ var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click(); });
+    if (gotoSave) gotoSave.addEventListener('click', function(){
+      var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click();
+      // v3-132：保存タブを開いたら「📤 データを保存（バックアップ）＝写真・CSV・位置記録をまとめて保存」へ確実に誘導。
+      // 以前はタブ切替だけで、下段の「位置記録だけ保存」に着地して見える場合があった。写真も含む全保存を第一に促す。
+      setTimeout(function(){ var c = document.getElementById('export-full-card'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    });
     var u = $('link-status-undone');
     if (u) u.addEventListener('change', function(){
       var res = $('link-status-result');
@@ -10872,42 +10879,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 写真選択モーダル
   var placeSelectIds = {};
   var placeSelectQueue = [];   // 並べ替え元の写真配列（v3-111）
-  var placePhotoById = {};     // v3-130：id→写真（dataUrlはDOMに載せずJS側から後追い読込）
-  // v3-130：配置ピッカーのサムネは「DOMにbase64を一切載せず」、JS側 placePhotoById から後追いで読み込む。
-  // 631枚のフルbase64をDOM属性(data-ph-src)に積むと iPad で内容が materialize されず空セル(枠だけの
-  // スケルトン)になる不具合の根因を除去。番号・ファイル名は buildPlaceCell が即時描画＝必ず見えて選べる。
-  function lazyLoadPlaceThumbs(grid) {
-    if (!grid) return;
-    if (grid._phIO) { try { grid._phIO.disconnect(); } catch (e) {} grid._phIO = null; }
-    var imgs = grid.querySelectorAll('img.place-thumb-img');
-    if (!imgs.length) return;
-    function loadFor(im) {
-      if (im.getAttribute('src')) return;
-      var cell = (im.closest ? im.closest('.place-cell') : null);
-      var pid = cell ? cell.dataset.pid : null;
-      var p = (pid != null) ? placePhotoById[pid] : null;
-      if (p && p.dataUrl) { im.src = p.dataUrl; }
-    }
-    if (typeof IntersectionObserver === 'function') {
-      var io = new IntersectionObserver(function (entries, obs) {
-        entries.forEach(function (en) {
-          if (!en.isIntersecting) return;
-          loadFor(en.target);
-          obs.unobserve(en.target);
-        });
-      }, { root: grid, rootMargin: '300px 0px' });
-      grid._phIO = io;
-      Array.prototype.forEach.call(imgs, function (im) { io.observe(im); });
-    } else {
-      // 古い環境のフォールバック：24枚ずつ順次読み込み（同時デコードを避ける）
-      var list = Array.prototype.slice.call(imgs), i = 0;
-      (function chunk() {
-        var end = Math.min(i + 24, list.length);
-        for (; i < end; i++) { loadFor(list[i]); }
-        if (i < list.length) { (window.requestAnimationFrame || window.setTimeout)(chunk); }
-      })();
-    }
-  }
   // v3-120：写真サムネの遅延読み込み（見えたセルだけ src を入れてフリーズ防止）。
   // セルは src 空＋data-ph-src に dataUrl を保持し、スクロール容器(root)に入った時だけ実画像を読み込む。
   function lazyLoadImagesIn(root) {
@@ -10947,16 +10918,31 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var ct = photoCatText(p);
       catLine = '<div class="place-cat">' + (ct ? escapeHtml(ct) : '未分類') + '</div>';
     }
+    // v3-131：完全テキスト行（画像・遅延読込・IO 不使用＝多件数でも確実に即時表示）。
+    // v3-132：左の✓○＝選択トグル／番号・ファイル名（と🔍）タップ＝その写真を1枚だけ全画面プレビュー
+    //          （既存 showPhotoViewer を流用＝1枚ずつ読み込むのでメモリ問題なし）。
     cell.innerHTML =
-      '<div class="place-thumb-wrap"><img class="place-thumb-img" alt=""><div class="place-check">✓</div></div>' +
-      '<div class="place-num">' + (num ? ('No.' + escapeHtml(num)) : '番号なし') + '</div>' +
-      '<div class="place-name">' + escapeHtml(p.filename || '') + '</div>' +
-      catLine;
-    cell.addEventListener('click', function () {
+      '<div class="place-check" role="button" aria-label="選ぶ／外す">✓</div>' +
+      '<div class="place-main">' +
+        '<span class="place-num">' + (num ? ('No.' + escapeHtml(num)) : '番号なし') + '</span>' +
+        '<span class="place-name">' + escapeHtml(p.filename || '') + '</span>' +
+        catLine +
+      '</div>' +
+      '<div class="place-eye" role="button" aria-label="写真を見る">🔍</div>';
+    // 選択：左の✓○のみ
+    cell.querySelector('.place-check').addEventListener('click', function (ev) {
+      ev.stopPropagation();
       if (placeSelectIds[p.id]) { delete placeSelectIds[p.id]; cell.classList.remove('sel'); }
       else { placeSelectIds[p.id] = true; cell.classList.add('sel'); }
       updatePlaceSelectCount();
     });
+    // プレビュー：番号・ファイル名／🔍（1枚だけ全画面表示。選択は変えない）
+    function preview(ev) {
+      ev.stopPropagation();
+      if (typeof showPhotoViewer === 'function') showPhotoViewer(p.dataUrl, p.filename || '');
+    }
+    cell.querySelector('.place-main').addEventListener('click', preview);
+    cell.querySelector('.place-eye').addEventListener('click', preview);
     return cell;
   }
   // 現在の並び順で grid を再構築（選択状態は placeSelectIds で保持）。
@@ -10964,15 +10950,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var grid = $('place-select-grid'); if (!grid) return;
     grid.innerHTML = '';
     var arr = sortPhotosForPicker(placeSelectQueue, photoPickerSortMode);
-    placePhotoById = {};                                  // v3-130：id→写真（dataUrlはJS側に保持）
-    arr.forEach(function (p) { placePhotoById[p.id] = p; });
     arr.forEach(function (p) {
       var cell = buildPlaceCell(p);
       if (placeSelectIds[p.id]) cell.classList.add('sel');
       grid.appendChild(cell);
     });
     applyPlaceSelectFilter();
-    lazyLoadPlaceThumbs(grid); // v3-130：DOMにbase64を載せず、見えたセルだけJS側dataUrlで後追い読込
+    // v3-131：完全テキスト行＝画像読込なし（同期描画のみ）。
   }
   function openPlaceSelect(queue) {
     var grid = $('place-select-grid');
@@ -10986,10 +10970,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     updatePlaceSelectCount();
     var modal = $('place-select-modal');
     if (modal) modal.classList.add('show');
-    // v3-130：modal を表示してから（＝grid が可視・レイアウト確定後に）サムネ後追い読込を登録。
-    // セル本体（番号・ファイル名）は renderPlaceSelectGrid で即時描画済み＝表示は画像に依存しない。
-    // lazyLoadPlaceThumbs は grid._phIO で前回 observer を切るので再実行は冪等。データ・選択状態は不変。
-    requestAnimationFrame(function () { lazyLoadPlaceThumbs(grid); });
   }
 
   // 番号でしぼり込み（表示のみ・選択状態は保持）。表示件数も更新。
