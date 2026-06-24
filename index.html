@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.137</title>
+<title>現場写真撮影アプリ v3.138</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1745,6 +1745,77 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   .save-link-pulse { animation: saveLinkPulse 1.4s ease-out 4; }
 
+  /* v3-138：iPad/iPhone 保存ガイドのモーダル（保存し忘れ／保存前削除を物理的に防ぐ）。
+     背景タップ・×では閉じない＝前進は「📤 ファイルに保存（共有）」の成功 or 明示確認のみ。 */
+  .saveguide-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.62);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2100; padding: 18px;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .saveguide-modal.show { display: flex; }
+  .saveguide-content {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 440px;
+    padding: 22px 20px 18px; text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.32);
+    border-top: 8px solid #ff3b30;
+    animation: backupPop 0.22s ease-out;
+    max-height: 88vh; overflow-y: auto;
+  }
+  .saveguide-content.ok-top { border-top-color: #34c759; }
+  .saveguide-icon { font-size: 50px; line-height: 1; margin-bottom: 8px; }
+  .saveguide-status {
+    font-size: 22px; font-weight: 800; margin: 0 0 6px;
+  }
+  .saveguide-status.danger { color: #c0392b; }
+  .saveguide-status.ok { color: #1b7f3b; }
+  .saveguide-sub { font-size: 14px; color: #4a4a4f; line-height: 1.7; margin: 0 0 14px; }
+  .saveguide-steps {
+    text-align: left; background: #fff3e0; border-radius: 12px;
+    padding: 12px 14px; margin: 0 0 16px;
+  }
+  .saveguide-step {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 15px; font-weight: 700; color: #7a4d00; line-height: 1.5;
+    padding: 4px 0;
+  }
+  .saveguide-step .sg-num {
+    flex: 0 0 auto; font-size: 18px; font-weight: 800; color: #ff9500;
+  }
+  .saveguide-go {
+    width: 100%; background: #34c759; color: #fff; border: none;
+    border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 800;
+    cursor: pointer; margin: 0 0 4px;
+  }
+  .saveguide-go:active { background: #28a347; }
+  .saveguide-dlinfo {
+    font-size: 14px; font-weight: 700; color: #7a4d00;
+    background: #fff7e6; border: 1px solid #f0a000; border-radius: 10px;
+    padding: 10px 12px; margin: 0 0 10px; line-height: 1.6; text-align: left;
+  }
+  .saveguide-dl {
+    display: block; padding: 14px; margin: 0 0 10px;
+    background: #fff7e6; border: 2px solid #f0a000; border-radius: 12px;
+    color: #7a4d00; font-weight: 700; font-size: 14px;
+    text-decoration: none; word-break: break-all;
+  }
+  .saveguide-confirm {
+    width: 100%; background: #0a84ff; color: #fff; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer; margin: 0 0 4px;
+  }
+  .saveguide-done {
+    width: 100%; background: #34c759; color: #fff; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer; margin: 6px 0 0;
+  }
+  .saveguide-later {
+    width: 100%; background: transparent; color: #8e8e93; border: none;
+    border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600;
+    cursor: pointer; margin: 12px 0 0; text-decoration: underline;
+  }
+
   /* 一覧：複数選択して削除 */
   .list-select-bar { margin: 8px 0 12px; }
   .list-select-toggle { width: 100%; }
@@ -1896,7 +1967,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.137 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.138 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3198,6 +3269,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </div>
 </div>
 
+<!-- v3-138：iPad/iPhone 保存ガイド（ZIP生成後に必ず挟む／前進＝共有成功 or 明示確認のみ） -->
+<div id="saveGuideModal" class="saveguide-modal">
+  <div class="saveguide-content" id="saveGuideContent">
+    <div class="saveguide-icon" id="saveGuideIcon">📤</div>
+    <p class="saveguide-status danger" id="saveGuideStatus">まだ保存できていません</p>
+    <p class="saveguide-sub" id="saveGuideSub">ZIPファイルを作りました。下のボタンで「ファイル」アプリなど消えない場所に保存してください。保存するまで、右上の未保存の数字は消えません。</p>
+    <div class="saveguide-steps" id="saveGuideSteps">
+      <div class="saveguide-step"><span class="sg-num">①</span><span>下の「📤 ファイルに保存（共有）」を押す</span></div>
+      <div class="saveguide-step"><span class="sg-num">②</span><span>「"ファイル"に保存」を選んで保存する</span></div>
+    </div>
+    <div id="saveGuideActions"></div>
+    <button id="saveGuideLater" class="saveguide-later">あとで保存する（未保存のまま閉じる）</button>
+  </div>
+</div>
+
 <script>
 (function(){
   var $ = function(id) { return document.getElementById(id); };
@@ -3374,12 +3460,107 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           holder.appendChild(cb);
         }
         try { pulseTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
+        // v3-138：ZIP生成完了後に「保存ガイド」モーダルを必ず1枚挟む（保存し忘れ／保存前削除を物理的に防ぐ）。
+        // 前進＝共有成功 or 明示確認のみ＝同じ markSavedState を呼ぶ（未保存0化・削除ボタン解放はここからも発火）。
+        // オレンジ枠（上で作った a / 共有ボタン）は背後に保険として残る。
+        try { showSaveGuide(blob, filename, markSavedState); } catch(e){}
       } else {
         // PC(Chrome/Edge)/Android＝生成直後に自動DL（確実な保存先は未確認のため、ここではリセットしない＝オレンジ枠タップで0に）
         try { a.click(); } catch(e){}
       }
     }
     return a;
+  }
+
+  // v3-138：iPad/iPhone 用の保存ガイドモーダル。背景タップ・×では閉じない。
+  // 前進ボタンは「📤 ファイルに保存（共有）」のみ（共有成功で確定）。共有不可端末は
+  // ダウンロード案内＋「✅ 保存できた」明示確認でのみ確定。いずれも onConfirmedSave を1回呼ぶ。
+  // onConfirmedSave は呼び出し側の markSavedState（冪等＝onFirstTap は二重発火しない）。
+  function showSaveGuide(blob, filename, onConfirmedSave) {
+    var modal = $('saveGuideModal'); if (!modal) return;
+    var content = $('saveGuideContent');
+    var iconEl = $('saveGuideIcon');
+    var statusEl = $('saveGuideStatus');
+    var subEl = $('saveGuideSub');
+    var stepsEl = $('saveGuideSteps');
+    var laterBtn = $('saveGuideLater');
+    var actions = $('saveGuideActions');
+    if (!actions) return;
+    var confirmed = false;
+
+    // 「まだ保存できていません」状態にリセット
+    if (content) content.classList.remove('ok-top');
+    iconEl.textContent = '📤';
+    statusEl.textContent = 'まだ保存できていません';
+    statusEl.className = 'saveguide-status danger';
+    subEl.style.display = '';
+    stepsEl.style.display = '';
+    laterBtn.style.display = '';
+    actions.innerHTML = '';
+
+    function showSavedState() {
+      if (confirmed) return;
+      confirmed = true;
+      if (content) content.classList.add('ok-top');
+      iconEl.textContent = '✅';
+      statusEl.textContent = '保存できました';
+      statusEl.className = 'saveguide-status ok';
+      subEl.style.display = 'none';
+      stepsEl.style.display = 'none';
+      laterBtn.style.display = 'none';
+      actions.innerHTML = '';
+      var done = document.createElement('button');
+      done.type = 'button';
+      done.className = 'saveguide-done';
+      done.textContent = '閉じる';
+      done.addEventListener('click', function(){ modal.classList.remove('show'); });
+      actions.appendChild(done);
+      if (typeof onConfirmedSave === 'function') { try { onConfirmedSave(); } catch(e){} }
+    }
+
+    // 端末が files 共有に対応しているか
+    var f = null, canShareFiles = false;
+    try {
+      f = new File([blob], filename, { type: blob.type || 'application/zip' });
+      canShareFiles = !!(navigator.canShare && navigator.canShare({ files: [f] }));
+    } catch(e) {}
+
+    if (canShareFiles) {
+      var go = document.createElement('button');
+      go.type = 'button';
+      go.className = 'saveguide-go save-link-pulse';
+      go.textContent = '📤 ファイルに保存（共有）';
+      go.addEventListener('click', function(){
+        try {
+          navigator.share({ files: [f], title: filename })
+            .then(function(){ showSavedState(); })          // 共有成立＝確実な保存
+            .catch(function(){ /* キャンセル等は保存未完了のまま（確定しない） */ });
+        } catch(e){}
+      });
+      actions.appendChild(go);
+    } else {
+      // 共有が使えない端末：ダウンロード経路を前後の明示確認で挟む（(2)の事前/事後案内）。
+      var info = document.createElement('p');
+      info.className = 'saveguide-dlinfo';
+      info.textContent = 'このあと「ダウンロードしますか？」と出たら、必ず「ダウンロード」を押してください。';
+      actions.appendChild(info);
+      var dl = document.createElement('a');
+      dl.href = URL.createObjectURL(blob);
+      dl.download = filename;
+      dl.className = 'saveguide-dl';
+      dl.textContent = '⬇ ダウンロードして保存：' + filename;
+      actions.appendChild(dl);
+      var ok = document.createElement('button');
+      ok.type = 'button';
+      ok.className = 'saveguide-confirm';
+      ok.textContent = '✅ ファイルに保存できた（確認した）';
+      ok.addEventListener('click', function(){ showSavedState(); });   // 明示確認のみで確定
+      actions.appendChild(ok);
+    }
+
+    // 唯一の退避：保存扱いにしない（未保存のまま閉じる）。背景タップ・×では閉じない。
+    laterBtn.onclick = function(){ modal.classList.remove('show'); };
+    modal.classList.add('show');
   }
 
   // ===== 説明文の折りたたみ（UX：動線短縮） =====
@@ -3451,7 +3632,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.137）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.138）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
