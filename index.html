@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.129</title>
+<title>現場写真撮影アプリ v3.130</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1833,7 +1833,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .place-cell { position: relative; cursor: pointer; border-radius: 12px; overflow: hidden; border: 3px solid #e0e0e5; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); }
   .place-cell.sel { border-color: #007aff; box-shadow: 0 0 0 1px #007aff; }
   .place-cell.place-hidden { display: none; }
-  .place-thumb-wrap { position: relative; line-height: 0; }
+  .place-thumb-wrap { position: relative; line-height: 0; min-height: 92px; background: #f0f0f3; }
   .place-cell img { width: 100%; height: 92px; object-fit: cover; display: block; background: #f0f0f3; }
   .place-cell .place-num { background: #1d1d1f; color: #fff; font-size: 15px; font-weight: 800; letter-spacing: 0.3px; padding: 6px 4px; text-align: center; line-height: 1.2; }
   .place-cell.sel .place-num { background: #007aff; }
@@ -1886,7 +1886,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.129 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.130 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3377,7 +3377,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.129）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.130）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10872,6 +10872,42 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 写真選択モーダル
   var placeSelectIds = {};
   var placeSelectQueue = [];   // 並べ替え元の写真配列（v3-111）
+  var placePhotoById = {};     // v3-130：id→写真（dataUrlはDOMに載せずJS側から後追い読込）
+  // v3-130：配置ピッカーのサムネは「DOMにbase64を一切載せず」、JS側 placePhotoById から後追いで読み込む。
+  // 631枚のフルbase64をDOM属性(data-ph-src)に積むと iPad で内容が materialize されず空セル(枠だけの
+  // スケルトン)になる不具合の根因を除去。番号・ファイル名は buildPlaceCell が即時描画＝必ず見えて選べる。
+  function lazyLoadPlaceThumbs(grid) {
+    if (!grid) return;
+    if (grid._phIO) { try { grid._phIO.disconnect(); } catch (e) {} grid._phIO = null; }
+    var imgs = grid.querySelectorAll('img.place-thumb-img');
+    if (!imgs.length) return;
+    function loadFor(im) {
+      if (im.getAttribute('src')) return;
+      var cell = (im.closest ? im.closest('.place-cell') : null);
+      var pid = cell ? cell.dataset.pid : null;
+      var p = (pid != null) ? placePhotoById[pid] : null;
+      if (p && p.dataUrl) { im.src = p.dataUrl; }
+    }
+    if (typeof IntersectionObserver === 'function') {
+      var io = new IntersectionObserver(function (entries, obs) {
+        entries.forEach(function (en) {
+          if (!en.isIntersecting) return;
+          loadFor(en.target);
+          obs.unobserve(en.target);
+        });
+      }, { root: grid, rootMargin: '300px 0px' });
+      grid._phIO = io;
+      Array.prototype.forEach.call(imgs, function (im) { io.observe(im); });
+    } else {
+      // 古い環境のフォールバック：24枚ずつ順次読み込み（同時デコードを避ける）
+      var list = Array.prototype.slice.call(imgs), i = 0;
+      (function chunk() {
+        var end = Math.min(i + 24, list.length);
+        for (; i < end; i++) { loadFor(list[i]); }
+        if (i < list.length) { (window.requestAnimationFrame || window.setTimeout)(chunk); }
+      })();
+    }
+  }
   // v3-120：写真サムネの遅延読み込み（見えたセルだけ src を入れてフリーズ防止）。
   // セルは src 空＋data-ph-src に dataUrl を保持し、スクロール容器(root)に入った時だけ実画像を読み込む。
   function lazyLoadImagesIn(root) {
@@ -10912,7 +10948,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       catLine = '<div class="place-cat">' + (ct ? escapeHtml(ct) : '未分類') + '</div>';
     }
     cell.innerHTML =
-      '<div class="place-thumb-wrap"><img data-ph-src="' + p.dataUrl + '" alt=""><div class="place-check">✓</div></div>' +
+      '<div class="place-thumb-wrap"><img class="place-thumb-img" alt=""><div class="place-check">✓</div></div>' +
       '<div class="place-num">' + (num ? ('No.' + escapeHtml(num)) : '番号なし') + '</div>' +
       '<div class="place-name">' + escapeHtml(p.filename || '') + '</div>' +
       catLine;
@@ -10928,13 +10964,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var grid = $('place-select-grid'); if (!grid) return;
     grid.innerHTML = '';
     var arr = sortPhotosForPicker(placeSelectQueue, photoPickerSortMode);
+    placePhotoById = {};                                  // v3-130：id→写真（dataUrlはJS側に保持）
+    arr.forEach(function (p) { placePhotoById[p.id] = p; });
     arr.forEach(function (p) {
       var cell = buildPlaceCell(p);
       if (placeSelectIds[p.id]) cell.classList.add('sel');
       grid.appendChild(cell);
     });
     applyPlaceSelectFilter();
-    lazyLoadImagesIn(grid); // v3-120：見えたサムネだけ読み込む（584枚でも固まらない）
+    lazyLoadPlaceThumbs(grid); // v3-130：DOMにbase64を載せず、見えたセルだけJS側dataUrlで後追い読込
   }
   function openPlaceSelect(queue) {
     var grid = $('place-select-grid');
@@ -10948,11 +10986,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     updatePlaceSelectCount();
     var modal = $('place-select-modal');
     if (modal) modal.classList.add('show');
-    // v3-129：modal を表示してから（＝grid が可視・レイアウト確定後に）遅延読込を登録し直す。
-    // openPlaceSelect は renderPlaceSelectGrid() を .show 前に呼ぶため、IntersectionObserver が
-    // display:none のグリッドを root に登録→一度も発火せず全サムネがグレーのままになっていた不具合の是正。
-    // lazyLoadImagesIn は root._phIO で前回 observer を切るので再実行は冪等。データ・選択状態は不変。
-    requestAnimationFrame(function () { lazyLoadImagesIn(grid); });
+    // v3-130：modal を表示してから（＝grid が可視・レイアウト確定後に）サムネ後追い読込を登録。
+    // セル本体（番号・ファイル名）は renderPlaceSelectGrid で即時描画済み＝表示は画像に依存しない。
+    // lazyLoadPlaceThumbs は grid._phIO で前回 observer を切るので再実行は冪等。データ・選択状態は不変。
+    requestAnimationFrame(function () { lazyLoadPlaceThumbs(grid); });
   }
 
   // 番号でしぼり込み（表示のみ・選択状態は保持）。表示件数も更新。
