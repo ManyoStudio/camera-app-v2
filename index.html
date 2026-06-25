@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.143</title>
+<title>現場写真撮影アプリ v3.144</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2109,12 +2109,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .qa-group-head .qa-group-count { color:#8a94a6; font-weight:700; font-size:13px; }
   .qa-group-head .qa-group-chevron { color:#8a8a8e; font-size:12px; flex-shrink:0; }
   .qa-group-body { margin:2px 0 4px; }
+  /* v3-144：Q&A先頭の「はじめての方へ」（基本の流れ＋各タブの役割）。固定の入口・折りたたみ可。 */
+  .qa-intro { border:1px solid #cfe6d6; background:#f1faf3; border-radius:12px; margin:0 0 12px; overflow:hidden; }
+  .qa-intro-head { width:100%; display:flex; align-items:center; gap:8px; padding:13px 14px; background:#e3f5e8; border:none; cursor:pointer; -webkit-user-select:none; user-select:none; margin:0; }
+  .qa-intro-head:active { background:#d6efdd; }
+  .qa-intro-title { flex:1; text-align:left; font-size:14px; font-weight:800; color:#1b7f3b; }
+  .qa-intro-chevron { color:#5aa873; font-size:12px; flex-shrink:0; }
+  .qa-intro-body { padding:12px 14px 14px; font-size:13px; color:#2f3a33; line-height:1.7; }
+  .qa-intro.collapsed .qa-intro-body { display:none; }
+  .qa-intro-lead { margin:0 0 10px; }
+  .qa-intro-steps { display:flex; flex-direction:column; gap:8px; margin:0 0 12px; }
+  .qa-intro-step { display:flex; gap:9px; align-items:flex-start; background:#fff; border:1px solid #e0eee5; border-radius:9px; padding:9px 10px; }
+  .qa-intro-num { flex:0 0 auto; width:22px; height:22px; border-radius:50%; background:#34c759; color:#fff; font-weight:800; font-size:13px; display:flex; align-items:center; justify-content:center; }
+  .qa-intro-sub { font-weight:800; color:#33415c; margin:0 0 6px; font-size:13px; }
+  .qa-intro-tabs { display:flex; flex-direction:column; gap:4px; margin:0 0 12px; }
+  .qa-intro-tabs > div { padding:2px 0; }
+  .qa-intro-tip { margin:0; background:#fff7e6; border:1px solid #ffe0a3; border-radius:9px; padding:9px 11px; color:#7a5a10; }
 </style>
 </head>
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.143 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
+  <span>📷 現場写真撮影アプリ v3.144 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2930,6 +2946,32 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <p style="font-size:12px; color:#6e6e73; margin:0 0 10px; line-height:1.6;">
         インターネットがなくても使えます。下のボタンで種類をえらぶか、上のマスにキーワード（例：保存、救出、ネット）を入れて探せます。<strong>カテゴリ名（📂）をタップで開閉</strong>でき、<strong>質問をタップすると答えが開きます</strong>。キーワードで探すと、関係する答えが自動で開きます。
       </p>
+      <div id="qa-intro" class="qa-intro">
+        <button type="button" class="qa-intro-head" id="qa-intro-head" aria-expanded="true">
+          <span class="qa-intro-title">🌱 はじめての方へ（基本の流れ）</span>
+          <span class="qa-intro-chevron" id="qa-intro-chevron">▲</span>
+        </button>
+        <div class="qa-intro-body" id="qa-intro-body">
+          <p class="qa-intro-lead">むずかしく考えなくて大丈夫。まずはこの<strong>3つ</strong>だけ。</p>
+          <div class="qa-intro-steps">
+            <div class="qa-intro-step"><span class="qa-intro-num">①</span><span><strong>撮る</strong>（📸 撮影）— 設備の番号を入れて写真を撮ります。同じ設備を続けて撮ると、自動で1グループ（枝番）にまとまります。</span></div>
+            <div class="qa-intro-step"><span class="qa-intro-num">②</span><span><strong>こまめに保存</strong>（💾 保存）— 右上の<strong>赤い数字（未保存）</strong>がたまったら保存。<strong>数字が0</strong>になれば、外に保存できた合図です。</span></div>
+            <div class="qa-intro-step"><span class="qa-intro-num">③</span><span><strong>困ったら探す</strong>（❓ Q&A）— 下の🔍に言葉を入れるか、📂カテゴリを開いて答えを見つけます。</span></div>
+          </div>
+          <p class="qa-intro-sub">各タブの役割（ざっくり）</p>
+          <div class="qa-intro-tabs">
+            <div><strong>📸 撮影</strong>：写真を撮る／番号を入れる</div>
+            <div><strong>📊 評価</strong>：写真にG・U・Tや分類をつける</div>
+            <div><strong>📋 撮影リスト</strong>：撮った写真の確認・見直し／マップへの紐づけ状況</div>
+            <div><strong>📍 位置記録</strong>：図面（マップ）にピンを置いて場所を記録</div>
+            <div><strong>📖 評価参考</strong>：設備の名前・分類・観察項目をさがす</div>
+            <div><strong>💾 保存</strong>：写真やデータをZIPで外に保存（バックアップ）</div>
+            <div><strong>📥 読込</strong>：保存したZIPを取り込んで復元・合流</div>
+            <div><strong>⚙️ 設定</strong>：撮る番号のルールやお知らせの設定</div>
+          </div>
+          <p class="qa-intro-tip">💡 いちばん大事なのは「②こまめに保存」。<strong>赤い数字を0</strong>に保つのがコツです。</p>
+        </div>
+      </div>
       <input id="qa-search" type="text" placeholder="🔍 キーワードで探す（例：保存・救出・ネット）" style="width:100%; padding:11px 12px; font-size:14px; border:1px solid #d1d1d6; border-radius:10px; margin-bottom:10px;" />
       <div id="qa-cats" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
       <div id="qa-list"></div>
@@ -3822,7 +3864,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.143）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.144）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3970,8 +4012,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'ネット・テザリング', q:'機内モードでも使えますか？', a:'はい、<strong>機内モードでも使えます</strong>（オフライン動作）。電波の弱い現場でも撮影・保存・マップ操作ができます。むしろ保存中は通信が不安定だと不具合のもとになるため、<strong>通信を切って作業</strong>するのも一つの方法です。' },
     // ── その他（追加） ──
     { cat:'その他', q:'使い方を他の人に教えたいです', a:'この<strong>❓ Q&A</strong>を見せるのがいちばん早道です（オフラインで開けます）。最初に教えるべきは3つ＝<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong>。マップや評価は慣れてから少しずつで大丈夫です。' },
-    { cat:'その他', q:'不具合や「こうしてほしい」はどこへ伝えればいい？', a:'お使いの<strong>配布元・管理担当へ伝えてください</strong>。そのとき<strong>「どの画面で・何をしたら・どうなったか」「上のバーのバージョン（例 v3.143）」</strong>を一緒に伝えると、原因が分かりやすく、改善が早くなります。' }
+    { cat:'その他', q:'不具合や「こうしてほしい」はどこへ伝えればいい？', a:'お使いの<strong>配布元・管理担当へ伝えてください</strong>。そのとき<strong>「どの画面で・何をしたら・どうなったか」「上のバーのバージョン（例 v3.143）」</strong>を一緒に伝えると、原因が分かりやすく、改善が早くなります。' },
+    { cat:'はじめ・設定', q:'まず何から始めればいい？基本の流れを知りたい', a:'この<strong>❓ Q&A のいちばん上</strong>にある <strong>「🌱 はじめての方へ（基本の流れ）」</strong> をご覧ください。<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong> の3ステップと、各タブ（📸撮影・📊評価・📋撮影リスト・📍位置記録・📖評価参考・💾保存・📥読込・⚙️設定）の役割をまとめています。タップで開閉でき、いちばん大事なのは<strong>こまめな保存</strong>です。' }
   ];
+
+  // v3-144：Q&A先頭「はじめての方へ」の開閉（既定=開く。閉じた状態は localStorage に記憶）。
+  function setupQaIntro() {
+    var box = $('qa-intro'), head = $('qa-intro-head'), chev = $('qa-intro-chevron');
+    if (!box || !head) return;
+    var collapsed = false;
+    try { collapsed = (localStorage.getItem('qaIntroCollapsed') === '1'); } catch (e) {}
+    function apply() {
+      box.classList.toggle('collapsed', collapsed);
+      if (chev) chev.textContent = collapsed ? '▼' : '▲';
+      head.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+    }
+    apply();
+    head.addEventListener('click', function(){
+      collapsed = !collapsed;
+      try { localStorage.setItem('qaIntroCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+      apply();
+    });
+  }
 
   function setupQA() {
     var listEl = $('qa-list'), catsEl = $('qa-cats'), searchEl = $('qa-search'), emptyEl = $('qa-empty');
@@ -13886,6 +13948,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     updatePreview();
     setupDescCollapsibles();   // 説明文の折りたたみ（UX：動線短縮）
     setupQA();                 // Q&A（困ったとき）の初期化
+    setupQaIntro();            // v3-144：Q&A先頭「はじめての方へ」の開閉
     setupLinkStatus();         // (β) 紐づけ状況の見える化（読み取り専用）
     setupBulkLink();           // (v3-141) 一括紐づけ（番号一致・一意のみ・プレビュー付）
     setupTHelper();            // T評価の参考補助（候補提案・自動入力なし）
