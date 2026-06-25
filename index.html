@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.138</title>
+<title>現場写真撮影アプリ v3.140</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1373,6 +1373,39 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     padding: 0;
   }
   .pinrec-banner-close:active { background: rgba(255,255,255,0.3); }
+  /* v3-140：先行ピンの逆算ループ＝「このピン用に撮影中」表示バナー（撮ると自動で紐づく）。 */
+  .shoot-for-pin-banner {
+    position: sticky;
+    top: 0;
+    z-index: 49;
+    background: #5856d6;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .shoot-for-pin-text {
+    flex: 1;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .shoot-for-pin-text .sfp-name { color: #ffd54f; }
+  .shoot-for-pin-cancel {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.55);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 0;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .shoot-for-pin-cancel:active { background: rgba(255,255,255,0.32); }
   .folder-toggle {
     display: flex; align-items: center; gap: 6px;
     padding: 5px 10px; margin: 6px 0 0 0;
@@ -1816,6 +1849,50 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     cursor: pointer; margin: 12px 0 0; text-decoration: underline;
   }
 
+  /* v3-139：破壊的操作（アプリ内データ削除）の専用確認モーダル。背景タップでは閉じない。 */
+  .delguard-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.62);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2200; padding: 18px;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .delguard-modal.show { display: flex; }
+  .delguard-content {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 440px;
+    padding: 22px 20px 18px; text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.32);
+    border-top: 8px solid #ff3b30;
+    animation: backupPop 0.22s ease-out;
+    max-height: 88vh; overflow-y: auto;
+  }
+  .delguard-icon { font-size: 48px; line-height: 1; margin-bottom: 8px; }
+  .delguard-title { font-size: 21px; font-weight: 800; color: #c0392b; margin: 0 0 8px; }
+  .delguard-body { font-size: 14px; color: #4a4a4f; line-height: 1.7; margin: 0 0 14px; }
+  .delguard-warn {
+    font-size: 14px; font-weight: 800; color: #c0392b;
+    background: #fff3e0; border: 1px solid #ffcc80; border-radius: 10px;
+    padding: 12px; margin: 0 0 14px; line-height: 1.6;
+  }
+  .delguard-del {
+    width: 100%; background: #ff3b30; color: #fff; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer; margin: 0 0 8px;
+  }
+  .delguard-del:active { background: #d92c22; }
+  .delguard-cancel {
+    width: 100%; background: #f0f0f3; color: #1d1d1f; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer;
+  }
+
+  /* v3-139：整列トグル（未登録を上に・番号順）。表示の並べ替えのみ。 */
+  .sort-undone-row {
+    display: inline-flex; align-items: center; gap: 7px;
+    font-size: 13px; color: #444; cursor: pointer; margin: 8px 0 4px;
+  }
+  .sort-undone-row input { width: auto; margin: 0; flex: 0 0 auto; }
+
   /* 一覧：複数選択して削除 */
   .list-select-bar { margin: 8px 0 12px; }
   .list-select-toggle { width: 100%; }
@@ -1967,7 +2044,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.138 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.140 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -1995,6 +2072,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <div id="pinrec-banner" class="pinrec-banner" style="display:none;">
   <button id="pinrec-banner-btn" class="pinrec-banner-btn">📍 今撮った位置を図面に記録</button>
   <button id="pinrec-banner-close" class="pinrec-banner-close">×</button>
+</div>
+
+<!-- v3-140：先行ピンの逆算ループ＝「📷この位置で撮影」から来たときの自動紐づけ案内（撮ると起点ピンへ自動でつながる）。 -->
+<div id="shoot-for-pin-banner" class="shoot-for-pin-banner" style="display:none;">
+  <span class="shoot-for-pin-text">📍 先行ピン「<span class="sfp-name" id="shoot-for-pin-name"></span>」用に撮影中。<br>このまま撮ると、その写真が自動で紐づきます。</span>
+  <button id="shoot-for-pin-cancel" class="shoot-for-pin-cancel">解除</button>
 </div>
 
 <div class="container">
@@ -2341,6 +2424,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <label id="link-status-undone-row" style="display:inline-flex;align-items:center;gap:7px;font-size:13px;color:#444;cursor:pointer;margin:0 0 6px 0;">
           <input type="checkbox" id="link-status-undone" style="width:auto;margin:0;flex:0 0 auto;"> 未だけ表示
         </label>
+        <label class="sort-undone-row" id="link-sort-undone-row">
+          <input type="checkbox" id="link-sort-undone"> 🔼 未を上にまとめる（番号順）
+        </label>
         <div id="link-status-list"></div>
         <button id="link-status-csv" class="secondary" style="margin-top:10px;">📄 CSVで書き出す</button>
         <div id="link-status-save"></div>
@@ -2355,6 +2441,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
       <p id="storageEstimate" class="storage-estimate"></p>
       <input type="text" id="list-search" class="ref-search" placeholder="🔍 番号・ファイル名で絞り込み（例: 0089／3001）" />
+      <label class="sort-undone-row" id="list-sort-undone-row">
+        <input type="checkbox" id="list-sort-undone"> 🔼 地図に未登録のものを上に・番号順
+      </label>
       <div id="listSelectBar" class="list-select-bar">
         <button id="listSelectToggle" class="secondary list-select-toggle">☑ 選択して削除（一部撮り直し）</button>
         <div id="listSelectActions" class="list-select-actions" style="display:none;">
@@ -3284,6 +3373,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </div>
 </div>
 
+<!-- v3-139：アプリ内データ削除の専用確認モーダル（背景タップでは閉じない／「削除する」確定後のみ削除） -->
+<div id="deleteGuardModal" class="delguard-modal">
+  <div class="delguard-content">
+    <div class="delguard-icon">🗑</div>
+    <p class="delguard-title">ファイルアプリで保存を確認しましたか？</p>
+    <p class="delguard-body" id="deleteGuardBody">撮影済みデータをこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。</p>
+    <div class="delguard-warn" id="deleteGuardWarn" style="display:none;"></div>
+    <button id="deleteGuardConfirm" class="delguard-del">🗑 保存を確認した。削除する</button>
+    <button id="deleteGuardCancel" class="delguard-cancel">やめる（削除しない）</button>
+  </div>
+</div>
+
 <script>
 (function(){
   var $ = function(id) { return document.getElementById(id); };
@@ -3632,7 +3733,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.138）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.140）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3672,7 +3773,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・地図', q:'PCで位置記録を見る・印刷したい', a:'💾 保存タブの位置記録の保存にある <strong>📄 閲覧用HTMLを書き出す</strong> で、インストール不要のHTMLを作れます。PC・タブレットのブラウザで開くと、マップ・ピン・メモ・矢印を閲覧・編集・印刷でき、<strong>ピンをタップすると設備分類も表示</strong>されます。' },
     { cat:'位置記録・地図', q:'位置記録だけを別端末・PCで用意したい', a:'位置記録（棟・マップ・ピン）は写真がなくても保存できます。💾 保存タブで位置記録をZIP保存し、相手の端末の <strong>📥 読込</strong> タブで読み込めば、現場ですぐ使えます。あとで写真担当のデータと合流もできます。' },
     { cat:'位置記録・地図', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
-    { cat:'位置記録・地図', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。写真を紐づけたピンの詳細に <strong>📷 この位置で撮影</strong>・<strong>🟢 GUT評価</strong> のボタンが出ます。📷撮影では<strong>同じ設備番号が入った状態</strong>で撮影画面が開くので、枝番でつながります。' },
+    { cat:'位置記録・地図', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
     { cat:'位置記録・地図', q:'ピンの詳細に「📷この位置で撮影」「🟢GUT評価」が出ない', a:'<strong>📷 この位置で撮影</strong>は<strong>ピン</strong>のとき出ます。<strong>🟢 GUT評価</strong>は<strong>写真を紐づけたピン</strong>のときだけ出ます（評価は写真にひもづくため）。メモ・矢印や写真のないピンでは出ません。先に写真を紐づけると<strong>🟢 GUT評価</strong>も使えます。' },
 
     { cat:'位置記録・地図', q:'図面（平面図）の写真からマップを一括で作りたい', a:'<strong>📥 読込</strong>タブの「📍 位置記録だけを読み込む」カードにある <strong>「🖼 図面・写真からマップを作る（複数・ZIP可）」</strong> から、図面や写真をまとめて取り込むと、棟とマップを<strong>一括で作成</strong>できます（ZIPもOK）。作成後、各マップに写真を選んでピンを置けます。<strong>撮影記録CSVの番号や写真には影響しません</strong>（マップ整理用です）。' },
@@ -3826,6 +3927,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var listEl = $('link-status-list');
     if (listEl) {
       var shown = data.rows.filter(function(r){ return undoneOnly ? !r.linked : true; });
+      // v3-139：整列トグルON＝未を上に（番号順は data.rows で保証済み＝安定ソートで未優先のみ再配置）。
+      //   buildLinkStatus / linkStatusCsvText（CSV）は不変＝CSVの行順は番号順のまま。
+      var lsu2 = $('link-sort-undone'); if (lsu2) lsu2.checked = getSortUndoneFirst();
+      if (getSortUndoneFirst()) {
+        shown = shown.slice().sort(function(a, b){ return (a.linked?1:0) - (b.linked?1:0); });
+      }
       if (!shown.length) {
         listEl.innerHTML = '<p class="empty" style="padding:8px;">' + (undoneOnly ? '未紐づけはありません。' : '設備がありません。') + '</p>';
       } else {
@@ -3888,6 +3995,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     var csvBtn = $('link-status-csv');
     if (csvBtn) csvBtn.addEventListener('click', exportLinkStatusCsv);
+    // v3-139：整列トグル（未を上に）。共有状態を更新し、両サーフェスを再描画。
+    var lsu = $('link-sort-undone');
+    if (lsu) {
+      lsu.checked = getSortUndoneFirst();
+      lsu.addEventListener('change', function(){
+        setSortUndoneFirst(lsu.checked);
+        var res = $('link-status-result');
+        var uu = $('link-status-undone');
+        if (res && res.style.display !== 'none') renderLinkStatus(!!(uu && uu.checked));
+        try { renderList(); } catch(e){}
+      });
+    }
   }
 
   function formatSize(bytes) {
@@ -5418,6 +5537,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       photos.push(saved);
       lastShotPhotoId = saved.id;
       equipmentBaseId = saved.id;
+      // (逆算ループ / v3-140) 先行ピンから来ていれば、この写真なし登録を起点ピンへ自動リンク。
+      try { await linkPendingShootPin(saved.id); } catch(e) {}
       updateStats();
       renderList();
       showToast('✅ 保存しました'); // 写真なし登録の確定（v3-49）
@@ -5447,6 +5568,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (q) list = list.filter(function(p) {
       return String(p.filename).toLowerCase().indexOf(q) >= 0 || String(extractPhotoNumber(p.filename)).indexOf(q) >= 0;
     });
+    // v3-139：整列トグルON＝「地図に未登録のものを上・番号順」（表示の並べ替えのみ・photos配列は不変）。
+    //   OFFのときは従来どおり（新しく撮った順＝reverse）。
+    var lsu = $('list-sort-undone'); if (lsu) lsu.checked = getSortUndoneFirst();
+    if (getSortUndoneFirst()) {
+      var linkedSet = linkedPhotoIdSet();
+      list.sort(function(a, b){
+        var la = linkedSet[a.id] ? 1 : 0, lb = linkedSet[b.id] ? 1 : 0;
+        if (la !== lb) return la - lb;   // 未登録(0)を上へ
+        var na = parseInt(extractPhotoNumber(a.filename) || '0', 10);
+        var nb = parseInt(extractPhotoNumber(b.filename) || '0', 10);
+        if (na !== nb) return na - nb;   // 番号昇順
+        return String(a.filename).localeCompare(String(b.filename), 'ja');
+      });
+    }
     photoList.innerHTML = '';
     if (list.length === 0) {
       photoList.innerHTML = '<div class="empty">「' + (se ? se.value.trim() : '') + '」に一致する写真はありません</div>';
@@ -5706,6 +5841,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   (function setupListSearch() {
     var el = $('list-search');
     if (el) el.addEventListener('input', function(){ renderList(); });
+    // v3-139：撮影リストの整列トグル（未登録を上・番号順）。共有状態を更新し再描画。
+    var lsu = $('list-sort-undone');
+    if (lsu) {
+      lsu.checked = getSortUndoneFirst();
+      lsu.addEventListener('change', function(){
+        setSortUndoneFirst(lsu.checked);
+        renderList();
+        try {
+          var res = $('link-status-result');
+          if (res && res.style.display !== 'none') { var uu = $('link-status-undone'); renderLinkStatus(!!(uu && uu.checked)); }
+        } catch(e){}
+      });
+    }
   })();
   (function setupListSelect() {
     var toggle = $('listSelectToggle');
@@ -5841,6 +5989,52 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
   }
+
+  // ===== (逆算ループ / v3-140) 先行ピン「📷この位置で撮影」→ 撮った新規写真を起点ピンへ自動リンク =====
+  // pendingShootPin = { buildingId, areaId, sheetId, pinId, label } をランタイムに保持（保存スキーマ不変・reloadで消える）。
+  // 既存の前方経路（写真→ピン＝pendingAutoPhotoId）の鏡像。リンクは pin.photoId への書込みのみ＝前方配置と同一作法。
+  var pendingShootPin = null;
+  function setPendingShootPin(ref, pinId, label) {
+    if (!ref || pinId == null) return;
+    pendingShootPin = { buildingId: ref.buildingId, areaId: ref.areaId || null, sheetId: ref.sheetId, pinId: pinId, label: label || '' };
+    showShootForPinBanner();
+  }
+  function clearPendingShootPin(silent) {
+    var had = !!pendingShootPin;
+    pendingShootPin = null;
+    hideShootForPinBanner();
+    if (had && !silent) showToast('先行ピンへの自動紐づけを解除しました');
+  }
+  function showShootForPinBanner() {
+    var b = $('shoot-for-pin-banner');
+    if (!b || !pendingShootPin) return;
+    var nm = $('shoot-for-pin-name');
+    if (nm) nm.textContent = pendingShootPin.label || 'ピン';
+    b.style.display = 'flex';
+  }
+  function hideShootForPinBanner() {
+    var b = $('shoot-for-pin-banner');
+    if (b) b.style.display = 'none';
+  }
+  // 撮った写真を起点ピンへ紐づける（成功で true）。連続2枚目以降・撮り直しからは呼ばない（最初の1枚だけ＝clearで自動的に止まる）。
+  async function linkPendingShootPin(newPhotoId) {
+    if (!pendingShootPin || newPhotoId == null) return false;
+    var ref = { buildingId: pendingShootPin.buildingId, areaId: pendingShootPin.areaId, sheetId: pendingShootPin.sheetId };
+    var lbl = pendingShootPin.label || 'ピン';
+    var sheet = resolveSheet(ref);
+    var pin = sheet && (sheet.pins || []).find(function(p){ return p.id === pendingShootPin.pinId; });
+    if (!sheet || !pin || (pin.type && pin.type !== 'pin')) { clearPendingShootPin(true); return false; }
+    if (pin.photoId != null) { clearPendingShootPin(true); return false; } // 念のため：既に写真があるピンは上書きしない
+    pin.photoId = newPhotoId;
+    try { ensurePinNumRuleDecided(photos.find(function(p){ return p.id === newPhotoId; })); } catch (e) {}
+    try { await saveMapData(mapData); } catch (e) {}
+    try { refreshLinkStatusIfOpen(); } catch (e) {}
+    clearPendingShootPin(true);
+    showToast('🔗 先行ピン「' + lbl + '」に今の写真を紐づけました');
+    return true;
+  }
+  var shootForPinCancel = $('shoot-for-pin-cancel');
+  if (shootForPinCancel) shootForPinCancel.addEventListener('click', function(){ clearPendingShootPin(false); });
 
   // 連続撮影バナーの表示/非表示
   function showContinuousBanner() {
@@ -5991,6 +6185,29 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
       return found;
     }catch(e){ return false; }
+  }
+  // v3-139：整列トグル（未登録を上に・番号順）の共有状態。表示の並べ替えのみ・データ不変。既定OFF＝現状維持。
+  function getSortUndoneFirst(){
+    try { return localStorage.getItem('sortUndoneFirst') === '1'; } catch(e){ return false; }
+  }
+  function setSortUndoneFirst(v){
+    try { localStorage.setItem('sortUndoneFirst', v ? '1' : '0'); } catch(e){}
+    // 両サーフェスのチェックを同期
+    var a = $('list-sort-undone'); if (a) a.checked = !!v;
+    var b = $('link-sort-undone'); if (b) b.checked = !!v;
+  }
+  // いま全マップのピンに紐づいている写真idの集合（読み取り専用・renderListの整列で使用）。
+  function linkedPhotoIdSet(){
+    var set = {};
+    try {
+      if (mapData && mapData.buildings) {
+        mapData.buildings.forEach(function(b){
+          (b.sheets||[]).forEach(function(sh){ (sh.pins||[]).forEach(function(pn){ if(pn.photoId!=null) set[pn.photoId]=true; }); });
+          (b.areas||[]).forEach(function(a){ (a.sheets||[]).forEach(function(sh){ (sh.pins||[]).forEach(function(pn){ if(pn.photoId!=null) set[pn.photoId]=true; }); }); });
+        });
+      }
+    } catch(e){}
+    return set;
   }
   function currentStages(){
     var p0=currentEquipP0(); if(!p0) return null;
@@ -6456,6 +6673,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         photos.push(photo);
         updateStats();
         lastShotPhotoId = photo.id;
+        // (逆算ループ / v3-140) 先行ピン「📷この位置で撮影」から来た最初の1枚を起点ピンへ自動リンク（撮り直しは除外）。
+        if (!retakeContext) { try { await linkPendingShootPin(photo.id); } catch(e) {} }
         
         camera.value = '';
         var shotKind = retakeContext ? 'retake' : (isContinuousShot ? 'continuous' : 'first');
@@ -7402,16 +7621,41 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (f) importBackupZip(f);
   });
 
-  exportClearBtn.addEventListener('click', async function() {
-    if (confirm('撮影済みデータ ' + photos.length + ' 枚をアプリから削除します。\n（ダウンロード済みZIPは残ります）\n\n本当に削除しますか？')) {
+  // v3-139：破壊的操作（アプリ内データ削除）は専用確認モーダルの後ろに置く。背景タップでは閉じない。
+  function performDataDelete() {
+    return (async function() {
       await clearAllPhotosFromDB();
       photos = [];
       renderList();
       refreshLinkStatusIfOpen();   // (v3-134) 削除後も紐づけ状況を更新
       exportClearBtn.style.display = 'none';
-      alert('データを削除しました');
+    })();
+  }
+  function openDeleteGuard() {
+    var modal = $('deleteGuardModal'); if (!modal) { /* 念のためのフォールバック */ return; }
+    var body = $('deleteGuardBody');
+    if (body) body.innerHTML = '撮影済みデータ <strong>' + photos.length + '</strong> 枚をこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。';
+    var warn = $('deleteGuardWarn');
+    if (warn) {
+      var u = (typeof getUnsavedCount === 'function') ? getUnsavedCount() : 0;
+      if (u > 0) { warn.style.display = 'block'; warn.innerHTML = '⚠️ まだ保存していない写真が <strong>' + u + '</strong> 枚あります。削除すると元に戻せません。'; }
+      else { warn.style.display = 'none'; warn.textContent = ''; }
     }
-  });
+    modal.classList.add('show');
+  }
+  exportClearBtn.addEventListener('click', function() { openDeleteGuard(); });
+  (function setupDeleteGuard() {
+    var modal = $('deleteGuardModal'); if (!modal) return;
+    var cancel = $('deleteGuardCancel');
+    var confirmBtn = $('deleteGuardConfirm');
+    if (cancel) cancel.addEventListener('click', function(){ modal.classList.remove('show'); });
+    if (confirmBtn) confirmBtn.addEventListener('click', async function(){
+      modal.classList.remove('show');
+      await performDataDelete();
+      try { showToast('🗑 アプリ内データを削除しました'); } catch(e){ alert('データを削除しました'); }
+    });
+    // 背景タップ・×では閉じない（cancel ボタンのみ）。
+  })();
   
   recoveryKeepBtn.addEventListener('click', function() {
     recoveryModal.classList.remove('show');
@@ -12062,6 +12306,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var ph = photos.find(function(p){ return p.id === pin.photoId; });
       if (ph) num = extractPhotoNumber(ph.filename) || '';
     }
+    // (逆算ループ / v3-140) 写真がまだ無い先行ピンのときだけ、起点ピンを記憶して撮影タブへ。
+    // 次に保存した写真がこのピンへ自動で紐づく（写真ありのピンは _0 を代表として温存＝上書きしない）。
+    if (!pin.photoId) {
+      var sfpLabel = (pin.label != null && String(pin.label).trim() !== '') ? String(pin.label).trim() : ('ピン ' + (pin.no != null ? pin.no : ''));
+      setPendingShootPin(editSheetRef, pin.id, sfpLabel);
+    }
     closePinDetail();
     closePinEditor(); // 全画面の地図エディタを閉じてから撮影タブへ
     var st = document.querySelector('.tab[data-view="shoot"]'); if (st) st.click();
@@ -12072,6 +12322,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         try { fn.dispatchEvent(new Event('input', { bubbles: true })); } catch(e) { if (typeof updatePreview === 'function') updatePreview(); }
       }
       showToast('📷 撮影タブへ：番号 ' + num + ' をセットしました');
+    } else if (pendingShootPin) {
+      showToast('📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）');
     } else {
       showToast('📷 撮影タブへ移動しました。番号を入力して撮影してください');
     }
