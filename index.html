@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.140</title>
+<title>現場写真撮影アプリ v3.141</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1886,6 +1886,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     cursor: pointer;
   }
 
+  /* v3-141：一括紐づけ（番号一致・一意のみ）のプレビューモーダル。追加・表示のみ／背景タップでは閉じない。 */
+  .bulklink-modal {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.58);
+    display: none; align-items: center; justify-content: center;
+    z-index: 2200; padding: 18px;
+    -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .bulklink-modal.show { display: flex; }
+  .bulklink-content {
+    background: #fff; border-radius: 18px; width: 100%; max-width: 480px;
+    padding: 22px 20px 18px; text-align: center;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.32);
+    border-top: 8px solid #007aff;
+    animation: backupPop 0.22s ease-out;
+    max-height: 88vh; overflow-y: auto;
+  }
+  .bulklink-icon { font-size: 44px; line-height: 1; margin-bottom: 8px; }
+  .bulklink-title { font-size: 20px; font-weight: 800; color: #0d47a1; margin: 0 0 8px; }
+  .bulklink-summary { font-size: 14px; color: #4a4a4f; line-height: 1.7; margin: 0 0 12px; }
+  .bulklink-list { text-align: left; margin: 0 0 14px; max-height: 46vh; overflow-y: auto; }
+  .bulklink-list table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .bulklink-list th { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e2e6ea; background: #f2f4f7; position: sticky; top: 0; }
+  .bulklink-list td { padding: 6px 8px; border-bottom: 1px solid #eef1f4; vertical-align: top; }
+  .bulklink-list td.num { font-weight: 700; color: #0d47a1; white-space: nowrap; }
+  .bulklink-list td.fn { color: #4a4a4f; word-break: break-all; }
+  .bulklink-confirm {
+    width: 100%; background: #007aff; color: #fff; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer; margin: 0 0 8px;
+  }
+  .bulklink-confirm:active { background: #0062cc; }
+  .bulklink-cancel {
+    width: 100%; background: #f0f0f3; color: #1d1d1f; border: none;
+    border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
+    cursor: pointer;
+  }
+
   /* v3-139：整列トグル（未登録を上に・番号順）。表示の並べ替えのみ。 */
   .sort-undone-row {
     display: inline-flex; align-items: center; gap: 7px;
@@ -2044,7 +2082,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.140 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-24）</span></span>
+  <span>📷 現場写真撮影アプリ v3.141 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2428,6 +2466,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <input type="checkbox" id="link-sort-undone"> 🔼 未を上にまとめる（番号順）
         </label>
         <div id="link-status-list"></div>
+        <button id="bulk-link-btn" class="secondary" style="margin-top:10px;">🔗 番号一致の写真を一括で紐づける（一意のみ）</button>
         <button id="link-status-csv" class="secondary" style="margin-top:10px;">📄 CSVで書き出す</button>
         <div id="link-status-save"></div>
       </div>
@@ -3284,6 +3323,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <p class="pin-detail-title" id="pin-detail-title">ピン</p>
     <div class="pin-detail-photo" id="pin-detail-photo"></div>
     <button id="pin-detail-link" class="secondary">🔗 写真を紐づける／変更する</button>
+    <button id="pin-detail-autolink" class="secondary" style="display:none;"></button>
     <button id="pin-detail-rename" class="secondary" style="display:none;">✏️ 名称を変更する</button>
     <button id="pin-detail-memo" class="secondary">📝 メモを編集する</button>
     <button id="pin-detail-shoot" class="secondary" style="display:none;">📷 この位置で撮影</button>
@@ -3382,6 +3422,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="delguard-warn" id="deleteGuardWarn" style="display:none;"></div>
     <button id="deleteGuardConfirm" class="delguard-del">🗑 保存を確認した。削除する</button>
     <button id="deleteGuardCancel" class="delguard-cancel">やめる（削除しない）</button>
+  </div>
+</div>
+
+<!-- v3-141：一括紐づけ（番号一致・一意のみ）の確認プレビュー。背景タップでは閉じない／「この内容で紐づける」確定後のみ実行。 -->
+<div id="bulkLinkModal" class="bulklink-modal">
+  <div class="bulklink-content">
+    <div class="bulklink-icon">🔗</div>
+    <p class="bulklink-title">番号一致の写真を一括で紐づける</p>
+    <p class="bulklink-summary" id="bulkLinkSummary"></p>
+    <div class="bulklink-list" id="bulkLinkList"></div>
+    <button id="bulkLinkConfirm" class="bulklink-confirm">🔗 この内容で紐づける</button>
+    <button id="bulkLinkCancel" class="bulklink-cancel">やめる（紐づけしない）</button>
   </div>
 </div>
 
@@ -3733,7 +3785,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.140）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.141）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3775,6 +3827,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・地図', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
     { cat:'位置記録・地図', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
     { cat:'位置記録・地図', q:'ピンの詳細に「📷この位置で撮影」「🟢GUT評価」が出ない', a:'<strong>📷 この位置で撮影</strong>は<strong>ピン</strong>のとき出ます。<strong>🟢 GUT評価</strong>は<strong>写真を紐づけたピン</strong>のときだけ出ます（評価は写真にひもづくため）。メモ・矢印や写真のないピンでは出ません。先に写真を紐づけると<strong>🟢 GUT評価</strong>も使えます。' },
+    { cat:'位置記録・地図', q:'番号は分かっているのに写真が紐づいていないピンをまとめて直したい', a:'別の端末で位置記録だけ先に取り込むと、ピンに<strong>設備番号は表示されるのに写真が紐づいていない</strong>ことがあります。そのときは <strong>📋 撮影リスト</strong> の <strong>「🔗 マップへの紐づけ状況」</strong> を開き、<strong>「🔗 番号一致の写真を一括で紐づける（一意のみ）」</strong> を押してください。<strong>番号がぴったり一致し、写真もピンも1つに定まる分だけ</strong>を、確認用の一覧（プレビュー）を見てから<strong>まとめて紐づけ</strong>られます。同じ番号の写真やピンが複数ある「あいまいな分」は<strong>安全のため自動では紐づけません</strong>（個別の「🔗 写真を紐づける／変更する」でどうぞ）。' },
+    { cat:'位置記録・地図', q:'特定のピン1つだけ、番号一致の写真をすぐ紐づけたい', a:'写真のないピンの<strong>詳細</strong>を開くと、その番号に一致する写真が<strong>ちょうど1枚だけある</strong>ときに <strong>「🔗 番号◯◯の写真をこのピンに紐づける」</strong> ボタンが出ます。1タップでそのピンに紐づき、<strong>🟢 GUT評価</strong> も使えるようになります（候補が複数あるあいまいなときは出ません）。' },
 
     { cat:'位置記録・地図', q:'図面（平面図）の写真からマップを一括で作りたい', a:'<strong>📥 読込</strong>タブの「📍 位置記録だけを読み込む」カードにある <strong>「🖼 図面・写真からマップを作る（複数・ZIP可）」</strong> から、図面や写真をまとめて取り込むと、棟とマップを<strong>一括で作成</strong>できます（ZIPもOK）。作成後、各マップに写真を選んでピンを置けます。<strong>撮影記録CSVの番号や写真には影響しません</strong>（マップ整理用です）。' },
     { cat:'位置記録・地図', q:'ピンを置く写真の並び順を変えたい', a:'写真を選んでピンを置く画面の上部に <strong>番号順／投入順／カテゴリー順／ファイル名順</strong> の並べ替えがあります（<strong>初期は番号順</strong>）。選んだ並び順は次回も覚えています。<strong>カテゴリー順</strong>では分類のラベルも一緒に表示されます。' },
@@ -6209,6 +6263,102 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     } catch(e){}
     return set;
   }
+  // ===== (v3-141) 一括紐づけ：番号一致・一意のみ・プレビュー付（追加・読み取り中心／書込みは pin.photoId のみ＝前方配置・逆算ループと同一作法） =====
+  // ある番号(num)に表示番号が厳密一致する写真が photos 内にちょうど1枚なら、その写真を返す（無い/複数はnull）。読み取り専用。
+  function uniquePhotoForNum(num) {
+    if (num == null) return null;
+    var k = String(num).trim();
+    if (k === '') return null;
+    var cands = photos.filter(function(p){ return photoDisplayNum(p) === k; });
+    return (cands.length === 1) ? cands[0] : null;
+  }
+  // 全マップ横断で「写真がまだ無い・番号(pin.label)がある」ピンを集め、番号が写真・ピンとも1つに定まる組だけを提案する。
+  //   写真側が複数該当（multiPhoto）／同番号の未紐づけピンが複数（multiPin）はあいまいとして見送り（誤紐づけ防止＝手動に委ねる）。
+  //   ※ photoDisplayNum は読み取り専用で使用（無改変）。pin.label は v3-124 で設備番号が補完される既存フィールド。
+  function bulkLinkBuildPlan() {
+    var byNum = {};
+    photos.forEach(function(p){ var k = photoDisplayNum(p); if (k) { (byNum[k] = byNum[k] || []).push(p); } });
+    var pinsByNum = {};
+    var candidates = [];
+    function consider(pin, bname) {
+      if (!pin) return;
+      if ((pin.type || 'pin') !== 'pin') return;   // メモ・矢印は対象外
+      if (pin.photoId != null) return;             // 既に写真があるピンは触らない
+      var lbl = (pin.label != null) ? String(pin.label).trim() : '';
+      if (lbl === '') return;                       // 番号なし＝対象外
+      candidates.push({ pin: pin, building: bname || '', num: lbl });
+      (pinsByNum[lbl] = pinsByNum[lbl] || []).push(pin);
+    }
+    ((mapData && mapData.buildings) || []).forEach(function(b){
+      (b.sheets || []).forEach(function(sh){ (sh.pins || []).forEach(function(pn){ consider(pn, b.name); }); });
+      (b.areas || []).forEach(function(a){ (a.sheets || []).forEach(function(sh){ (sh.pins || []).forEach(function(pn){ consider(pn, b.name); }); }); });
+    });
+    var links = [], multiPhoto = 0, multiPin = 0, noMatch = 0;
+    candidates.forEach(function(c){
+      var phs = byNum[c.num];
+      if (!phs || phs.length === 0) { noMatch++; return; }
+      if (phs.length > 1) { multiPhoto++; return; }
+      if (pinsByNum[c.num].length > 1) { multiPin++; return; }
+      links.push({ pin: c.pin, building: c.building, num: c.num, photo: phs[0] });
+    });
+    links.sort(function(a, b){ var na = parseInt(a.num || '0', 10), nb = parseInt(b.num || '0', 10); return (na - nb) || String(a.num).localeCompare(String(b.num)); });
+    return { links: links, multiPhoto: multiPhoto, multiPin: multiPin, noMatch: noMatch, candidateCount: candidates.length };
+  }
+  // 提案を適用：各ピンの pin.photoId に書き込み、まとめて1回 saveMapData（前方配置・逆算ループと同一作法）。
+  async function bulkLinkApply(plan) {
+    if (!plan || !plan.links || !plan.links.length) return 0;
+    var n = 0;
+    plan.links.forEach(function(l){ if (l.pin && l.pin.photoId == null && l.photo) { l.pin.photoId = l.photo.id; n++; } });
+    try { ensurePinNumRuleDecided(plan.links[0].photo); } catch (e) {}
+    try { await saveMapData(mapData); } catch (e) {}
+    try { refreshLinkStatusIfOpen(); } catch (e) {}
+    try { renderPins(); } catch (e) {}
+    return n;
+  }
+  var bulkLinkPlanCache = null;
+  function openBulkLinkModal() {
+    var plan = bulkLinkBuildPlan();
+    bulkLinkPlanCache = plan;
+    var modal = $('bulkLinkModal'); if (!modal) return;
+    var sumEl = $('bulkLinkSummary'), listEl = $('bulkLinkList'), confirmBtn = $('bulkLinkConfirm');
+    var skip = plan.multiPhoto + plan.multiPin;
+    if (!plan.links.length) {
+      if (sumEl) sumEl.innerHTML = '一括で紐づけできる候補は見つかりませんでした。';
+      if (listEl) listEl.innerHTML = '<p class="empty" style="padding:10px;text-align:center;">番号がぴったり一致し、写真・ピンとも1つに定まる「写真のない番号付きピン」がありません。' +
+        (skip ? '<br>（あいまいなため見送り：' + skip + ' 件。個別の「🔗 写真を紐づける／変更する」でどうぞ）' : '') + '</p>';
+      if (confirmBtn) confirmBtn.style.display = 'none';
+    } else {
+      if (sumEl) sumEl.innerHTML = '番号がぴったり一致し、写真・ピンとも1つに定まる <strong>' + plan.links.length + '</strong> 件を紐づけます。' +
+        (skip ? '<br><span style="color:#c0392b;">あいまいなため見送り：' + skip + ' 件（個別に対応してください）</span>' : '');
+      if (listEl) {
+        var h = '<table><thead><tr><th>番号</th><th>棟</th><th>紐づく写真</th></tr></thead><tbody>';
+        plan.links.forEach(function(l){
+          h += '<tr><td class="num">' + trkEsc(l.num) + '</td><td>' + trkEsc(l.building || '—') + '</td><td class="fn">' + trkEsc(l.photo.filename || '') + '</td></tr>';
+        });
+        h += '</tbody></table>';
+        listEl.innerHTML = h;
+      }
+      if (confirmBtn) confirmBtn.style.display = 'block';
+    }
+    modal.classList.add('show');
+  }
+  function setupBulkLink() {
+    var btn = $('bulk-link-btn');
+    if (btn) btn.addEventListener('click', openBulkLinkModal);
+    var modal = $('bulkLinkModal'); if (!modal) return;
+    var cancel = $('bulkLinkCancel'), confirmBtn = $('bulkLinkConfirm');
+    if (cancel) cancel.addEventListener('click', function(){ modal.classList.remove('show'); });
+    if (confirmBtn) confirmBtn.addEventListener('click', async function(){
+      var plan = bulkLinkPlanCache;
+      modal.classList.remove('show');
+      var n = await bulkLinkApply(plan);
+      bulkLinkPlanCache = null;
+      try { showToast('🔗 ' + n + ' 件のピンに写真を紐づけました'); } catch (e) {}
+    });
+    // 背景タップ・×では閉じない（cancel ボタンのみ）。
+  }
+  // (v3-141 抱き合わせ) ピン詳細「1タップ提案紐づけ」で使う候補写真id（openPinDetail が設定）。
+  var pinDetailAutolinkPhotoId = null;
   function currentStages(){
     var p0=currentEquipP0(); if(!p0) return null;
     var eq=equipPhotosOf(p0);
@@ -12238,6 +12388,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (linkBtn) linkBtn.style.display = (type === 'pin') ? 'block' : 'none';
     if (renameBtn) renameBtn.style.display = (type === 'pin') ? 'block' : 'none';
     if (memoBtn) memoBtn.style.display = (type === 'memo') ? 'block' : 'none';
+    // (v3-141 抱き合わせ) 1タップ提案紐づけボタンは既定で隠す（写真の無いピンで一意候補があるときだけ下で表示）。
+    var _autolinkBtn = $('pin-detail-autolink'); if (_autolinkBtn) _autolinkBtn.style.display = 'none'; pinDetailAutolinkPhotoId = null;
     // (11 / v3-77) 先行配置ピンからの導線：📷この位置で撮影＝ピン全般／🟢GUT評価＝写真紐づけピンのみ（enterEvalModeは写真id必須）
     var shootBtn = $('pin-detail-shoot');
     var evalBtn = $('pin-detail-eval');
@@ -12277,6 +12429,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (pdImg) pdImg.addEventListener('click', function() { showPhotoViewer(ph.dataUrl, ph.filename); });
       } else {
         pinDetailPhoto.innerHTML = '<div class="pin-detail-noimg">写真は紐づけられていません</div>';
+        // (v3-141 抱き合わせ) 番号(pin.label)が写真1枚に一意一致するなら、その場で1タップ紐づけを提案。
+        var _alBtn = $('pin-detail-autolink');
+        var _alLbl = (pin.label != null) ? String(pin.label).trim() : '';
+        var _alCand = uniquePhotoForNum(_alLbl);
+        if (_alBtn && _alCand) {
+          pinDetailAutolinkPhotoId = _alCand.id;
+          _alBtn.textContent = '🔗 番号 ' + _alLbl + ' の写真をこのピンに紐づける';
+          _alBtn.style.display = 'block';
+        }
       }
     } else if (type === 'memo') {
       pinDetailTitle.textContent = 'メモ・' + pinColorLabel;
@@ -12342,6 +12503,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     closePinDetail();
     closePinEditor(); // 全画面の地図エディタを閉じてから評価タブへ
     enterEvalMode(pin.photoId); // 既存の評価フロー（評価タブへ遷移・評価バー表示）に乗せる
+  });
+
+  // (v3-141 抱き合わせ) ピン詳細「1タップ提案紐づけ」：番号一致の一意写真をこのピンへ即紐づけ（書込みは pin.photoId のみ）。
+  var pinDetailAutolink = $('pin-detail-autolink');
+  if (pinDetailAutolink) pinDetailAutolink.addEventListener('click', async function() {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet || !editingPinId || pinDetailAutolinkPhotoId == null) return;
+    var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
+    if (!pin || pin.photoId != null) return;
+    var ph = photos.find(function(p){ return p.id === pinDetailAutolinkPhotoId; });
+    if (!ph) { showToast('紐づける写真が見つかりませんでした'); return; }
+    pin.photoId = ph.id;
+    try { ensurePinNumRuleDecided(ph); } catch (e) {}
+    try { await saveMapData(mapData); } catch (e) {}
+    try { refreshLinkStatusIfOpen(); } catch (e) {}
+    try { renderPins(); } catch (e) {}
+    showToast('🔗 番号一致の写真を紐づけました');
+    openPinDetail(editingPinId); // 再描画して写真表示・🟢GUT評価ボタンを反映
   });
 
   // 写真の全画面ビューア
@@ -13538,6 +13717,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setupDescCollapsibles();   // 説明文の折りたたみ（UX：動線短縮）
     setupQA();                 // Q&A（困ったとき）の初期化
     setupLinkStatus();         // (β) 紐づけ状況の見える化（読み取り専用）
+    setupBulkLink();           // (v3-141) 一括紐づけ（番号一致・一意のみ・プレビュー付）
     setupTHelper();            // T評価の参考補助（候補提案・自動入力なし）
     setupTHelperSheet();       // v3-116：T評価 参考補助シート（押すだけ確定・スキーマ非変更）
     var descCloseAll = $('descCloseAllBtn');
