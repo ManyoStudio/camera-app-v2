@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.147</title>
+<title>現場写真撮影アプリ v3.149</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2110,6 +2110,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .qa-group-head .qa-group-chevron { color:#8a8a8e; font-size:12px; flex-shrink:0; }
   .qa-group-body { margin:2px 0 4px; }
   /* v3-144：Q&A先頭の「はじめての方へ」（基本の流れ＋各タブの役割）。固定の入口・折りたたみ可。 */
+  /* v3-148：「アプリが使えないときは」トラブル誘導パネル（症状から選ぶ・最上部・目立つ警告色）。 */
+  .qa-trouble { border:1px solid #f2c9a8; background:#fff6ef; border-radius:12px; margin:0 0 12px; overflow:hidden; }
+  .qa-trouble-head { width:100%; display:flex; align-items:center; gap:8px; padding:13px 14px; background:#ffe9d6; border:none; cursor:pointer; -webkit-user-select:none; user-select:none; margin:0; }
+  .qa-trouble-head:active { background:#ffdcc0; }
+  .qa-trouble-title { flex:1; text-align:left; font-size:14px; font-weight:800; color:#b3460a; }
+  .qa-trouble-chevron { color:#cf7b45; font-size:12px; flex-shrink:0; }
+  .qa-trouble-body { padding:12px 14px 14px; font-size:13px; color:#3a2f29; line-height:1.7; }
+  .qa-trouble.collapsed .qa-trouble-body { display:none; }
+  .qa-trouble-lead { margin:0 0 8px; }
+  .qa-trouble-syms { display:flex; flex-direction:column; gap:7px; margin:0 0 12px; }
+  .qa-trouble-sym { width:100%; text-align:left; background:#fff; border:1px solid #f0cdb0; border-radius:10px; padding:11px 12px; font-size:14px; font-weight:700; color:#1d1d1f; cursor:pointer; margin:0; }
+  .qa-trouble-sym:active { background:#fff1e6; }
+  .qa-trouble-rule { margin:0 0 10px; background:#fff; border:1px solid #f0cdb0; border-radius:9px; padding:9px 11px; }
+  .qa-trouble-cant { margin:0; background:#fdecec; border:1px solid #f3b4b4; border-radius:9px; padding:9px 11px; color:#9a2828; }
   .qa-intro { border:1px solid #cfe6d6; background:#f1faf3; border-radius:12px; margin:0 0 12px; overflow:hidden; }
   .qa-intro-head { width:100%; display:flex; align-items:center; gap:8px; padding:13px 14px; background:#e3f5e8; border:none; cursor:pointer; -webkit-user-select:none; user-select:none; margin:0; }
   .qa-intro-head:active { background:#d6efdd; }
@@ -2130,7 +2144,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.147 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
+  <span>📷 現場写真撮影アプリ v3.149 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2946,6 +2960,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <p style="font-size:12px; color:#6e6e73; margin:0 0 10px; line-height:1.6;">
         インターネットがなくても使えます。下のボタンで種類をえらぶか、上のマスにキーワード（例：保存、救出、ネット）を入れて探せます。<strong>カテゴリ名（📂）をタップで開閉</strong>でき、<strong>質問をタップすると答えが開きます</strong>。キーワードで探すと、関係する答えが自動で開きます。
       </p>
+      <div id="qa-trouble" class="qa-trouble">
+        <button type="button" class="qa-trouble-head" id="qa-trouble-head" aria-expanded="true">
+          <span class="qa-trouble-title">❗ アプリが使えない・調子が悪いときは（まずここ）</span>
+          <span class="qa-trouble-chevron" id="qa-trouble-chevron">▲</span>
+        </button>
+        <div class="qa-trouble-body" id="qa-trouble-body">
+          <p class="qa-trouble-lead"><strong>あてはまる症状をタップ</strong>すると、対処の説明が開きます。</p>
+          <div class="qa-trouble-syms">
+            <button type="button" class="qa-trouble-sym" data-q="開かない">アプリが開かない・真っ白になる</button>
+            <button type="button" class="qa-trouble-sym" data-q="固まる">重い・固まる・動かない</button>
+            <button type="button" class="qa-trouble-sym" data-q="クラッシュ">クラッシュする・落ちる</button>
+            <button type="button" class="qa-trouble-sym" data-q="繋がっていない">写真がピンに出ない・繋がらない</button>
+            <button type="button" class="qa-trouble-sym" data-q="未保存">「未保存」が消えない・保存できているか不安</button>
+            <button type="button" class="qa-trouble-sym" data-q="機種変更">機種変更・別の端末へ移したい</button>
+          </div>
+          <p class="qa-trouble-rule">どの場合も合言葉は <strong>「① 取り出す → ② 消してリセット → ③ 📥 読込で戻す」</strong>。<strong>消す前に必ず取り出す</strong>（💾 全保存／開けないなら救出ページ）。</p>
+          <p class="qa-trouble-cant"><strong>⚠ アプリが「まったく開かない」ときは、この画面も見られません。</strong> その場合は<strong>救出ページ「diag.html」</strong>を開いてデータを取り出してください。<strong>いざという時のために、今のうちに diag.html もブックマーク</strong>しておくと安心です。</p>
+        </div>
+      </div>
       <div id="qa-intro" class="qa-intro">
         <button type="button" class="qa-intro-head" id="qa-intro-head" aria-expanded="true">
           <span class="qa-intro-title">🌱 はじめての方へ（基本の流れ）</span>
@@ -3864,7 +3897,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.147）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.149）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -4016,13 +4049,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'まず何から始めればいい？基本の流れを知りたい', a:'この<strong>❓ Q&A のいちばん上</strong>にある <strong>「🌱 はじめての方へ（基本の流れ）」</strong> をご覧ください。<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong> の3ステップと、各タブ（📸撮影・📊評価・📋撮影リスト・📍位置記録・📖評価参考・💾保存・📥読込・⚙️設定）の役割をまとめています。タップで開閉でき、いちばん大事なのは<strong>こまめな保存</strong>です。' },
 
     // ── v3-145→v3-146：ブラウザ別「このアプリ（サイト）のデータだけ削除」手順（タブレット／PC × Safari／Chrome／Edge を網羅・早見表つき） ──
-    { cat:'こまったとき（救出・復旧）', q:'【クラッシュ・固まる・開かない】データを守ってリセットし、アプリをまた使えるようにする（完全手順）', a:'アプリが<strong>クラッシュする・固まる・開かない・動作がおかしい</strong>とき、多くは<strong>ブラウザ内にたまった保存データの不調</strong>が原因です。<strong>このアプリのデータを消して初期状態に戻すと直り、また使えるようになります</strong>。大切なのは<strong>消す前に必ず取り出しておく</strong>ことです。<br><strong>① 取り出す</strong>：開けるなら 💾「写真も含む全保存」でZIPを作る。<strong>開けない・固まって保存できないときは救出ページ diag.html</strong> から取り出す。<br><strong>② 確認</strong>：そのZIPが「ファイル」アプリ・PC・クラウドに<strong>実際にある</strong>ことを確かめる。<br><strong>③ 消す（リセット）</strong>：自分の端末・ブラウザを「早見表」で確認。<strong>1サイトだけ消せるなら</strong>そのブラウザ別手順（Safari／Chrome／Edge）で。<strong>1サイトだけ消せない（❌：iPadのChrome・Edge／AndroidのEdge）ときは、そのブラウザの「閲覧データをクリア（Cookieとサイトデータ）」で消します</strong>。これで<strong>アプリは初期状態に戻り、また使えるようになります</strong>（そのブラウザの他サイトはログアウトされますが、<strong>他のアプリ・他のブラウザには影響しません</strong>）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で①のZIPを取り込んで復元</strong>。写真もマップも評価も戻ります。<br><strong>いちばんの注意</strong>：<strong>取り出せないまま全消しすると、そのブラウザ内のデータは戻りません</strong>（外部に残したバックアップだけが頼りになります）。だから<strong>①の取り出しを最優先</strong>に。どうしても開けず救出もできない場合は、全消しでアプリは使えるようになりますが、<strong>復元は過去に保存しておいたZIPから</strong>になります。' },
-    { cat:'こまったとき（救出・復旧）', q:'【重要・順番】このアプリのデータだけ消して入れ直したい（復旧→保存確認→削除→再利用）', a:'<strong>順番がとても大切です</strong>。サイトデータを消すと、その時点で<strong>アプリ内の写真・マップ・評価は消えます</strong>。必ず次の順で行ってください。<br><strong>① 取り出す</strong>：💾 保存タブの<strong>「写真も含む全保存」</strong>でZIPを作る（アプリが開けないときは救出ページ <strong>diag.html</strong> から）。<br><strong>② 保存できたか確認</strong>：<strong>「ファイル」アプリやPCにZIPが実際にある</strong>こと、右上の<strong>赤い数字が0</strong>であることを確かめる。<br><strong>③ このアプリ（サイト）のデータだけ削除</strong>：下のブラウザ別の手順へ。<strong>消すのは「いつもアプリを開いているブラウザ」</strong>です（Safari・Chrome・Edge は<strong>それぞれ別々にデータを保存</strong>しているため、別のブラウザから消しても効きません）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込でZIPを取り込んで復元</strong>。<br><strong>※「すべての閲覧データを削除」や Ctrl+Shift+Delete は使わない</strong>でください（他サイトまで消えます）。なお<strong>端末・ブラウザによっては「1サイトだけ」消せない</strong>ものがあります（→次の「早見表」を参照）。' },
-    { cat:'こまったとき（救出・復旧）', q:'【早見表】タブレット・PC × Safari／Chrome／Edge で「1サイトだけ削除」できる？', a:'消すのは<strong>「いつもアプリを開いているブラウザ」</strong>です（各ブラウザは別保存）。「このアプリ1サイトだけ」消せるかは次のとおり。<br><strong>● PC（Windows）</strong>：Edge ✅／Chrome ✅／Safari ＝（Windowsには無し）<br><strong>● PC（Mac）</strong>：Safari ✅／Chrome ✅／Edge ✅<br><strong>● タブレット（iPad）</strong>：Safari ✅／Chrome ❌／Edge ❌ … <strong>iPadで1サイトだけ消せるのは Safari だけ</strong><br><strong>● タブレット（Android）</strong>：Chrome ✅／Edge ❌／Safari ＝（Androidには無し）<br><strong>❌（1サイトだけ消せない）ときの対処</strong>：(a) <strong>消せるブラウザでアプリを開き直して使う</strong>のがおすすめ（iPad→Safari、Android→Chrome）。(b) どうしても今のブラウザで消すなら「<strong>閲覧データをクリア（Cookieとサイトデータ）</strong>」を使う＝<strong>他のサイトもログアウト</strong>されますが、<strong>それでもアプリは初期状態に戻って再び使えるようになり、あとから📥 読込で元に戻せます</strong>（クラッシュ時の最終手段）。<br>※ いずれも<strong>先に「全保存→保存確認」</strong>を済ませてから。' },
-    { cat:'こまったとき（救出・復旧）', q:'【Safari】このアプリ（サイト）のデータだけ削除する手順（タブレット＝iPad／PC＝Mac）', a:'Safariは<strong>Apple製品（iPad・iPhone・Mac）専用</strong>です（WindowsやAndroidにはありません）。必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ タブレット（iPad）・iPhone</strong>：「設定」アプリ →（iOS／iPadOS 18は「<strong>アプリ</strong>」→）<strong>Safari</strong> →「<strong>詳細</strong>」→「<strong>Webサイトデータ</strong>」→ 一覧から<strong>このアプリのサイト名（URLの一部）</strong>を探し、<strong>左にスワイプして「削除」</strong>（または右上「編集」から削除）。他のサイトは残ります。ボタンが灰色のときは「設定→スクリーンタイム→コンテンツとプライバシーの制限」を確認。<br><strong>■ PC（Mac）</strong>：Safariメニュー →「設定」→「<strong>プライバシー</strong>」→「<strong>Webサイトデータを管理</strong>」→ 検索にサイト名 → 選んで「<strong>削除</strong>」→「完了」。<br>このあと<strong>アプリを開き直し、📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'【Google Chrome】このアプリ（サイト）のデータだけ削除する手順（タブレット＝Android／PC・iPadの注意）', a:'必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）</strong>：このアプリを開いた状態で、<strong>アドレスバー左端のアイコン（鍵や調整マーク）</strong>をクリック →「<strong>Cookieとサイトデータ</strong>」→「<strong>デバイス上のサイトデータを管理</strong>」→ <strong>ゴミ箱</strong>で削除 →「完了」→ <strong>再読み込み</strong>。（別ルート：右上「⋮」→「設定」→「プライバシーとセキュリティ」→「サードパーティCookie」→「<strong>すべてのサイトデータと権限を表示</strong>」→ 検索 → ゴミ箱）。<br><strong>■ タブレット（Android）</strong>：アプリを開く → アドレスバー左の<strong>ページ情報アイコン</strong> →「<strong>Cookieとサイトデータ</strong>」→ 保存データの<strong>削除</strong>。<br><strong>■ タブレット（iPad）・iPhone の Chrome は「1サイトだけ」削除できません</strong>。→ iPadでは<strong>Safariの手順</strong>で消す（普段からこのアプリを Safari で開いておくのが確実）か、Chromeで使い続けたい場合は「設定→プライバシー→閲覧履歴データの削除→Cookie・サイトデータ（全期間）」で消す＝<strong>他サイトもログアウト</strong>。<br>削除後は<strong>開き直して📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'【Microsoft Edge】このアプリ（サイト）のデータだけ削除する手順（PC／タブレットの注意）', a:'必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）＝1サイトだけ削除できます</strong>。かんたん：このアプリを開いた状態で<strong>アドレスバー左端の鍵／情報アイコン</strong>→ 表示された<strong>このサイトのCookie・サイトデータ</strong>を<strong>ゴミ箱</strong>で削除。設定から：右上「…」→「設定」→「<strong>Cookieとサイトのアクセス許可</strong>」→「<strong>Cookieとサイトデータの管理と削除</strong>」→「<strong>すべてのCookieとサイトデータを表示する</strong>」→ 検索にサイト名 → 右端の「<strong>…</strong>（その他の操作）→ 削除」（または「∨」で展開しゴミ箱）。（アドレスバーに <strong>edge://settings/siteData</strong> でも可）。<br><strong>■ タブレット（Android／iPad）の Edge は「1サイトだけ」削除する画面がありません</strong>。→ <strong>iPadは Safari の手順</strong>、<strong>Androidは Chrome の手順</strong>で消すのが確実です（普段からその対応ブラウザでアプリを開いておくのがおすすめ）。どうしても Edge のまま消す場合は「設定→プライバシー、検索、サービス→閲覧データをクリア→Cookieとサイトデータ」＝<strong>他サイトもログアウト</strong>。<br><strong>※ Ctrl+Shift+Delete や「すべてクリア」は他サイトまで消える</strong>ので、PCでは上の「1サイトだけ」の手順を使ってください。削除後は<strong>開き直して📥 読込で復元</strong>します。' }
+    { cat:'こまったとき（救出・復旧）', q:'アプリが使えない・開かない・動かない・真っ白になった（直し方＝データを守ってリセット→復元）', a:'アプリが<strong>クラッシュする・固まる・開かない・動作がおかしい</strong>とき、多くは<strong>ブラウザ内にたまった保存データの不調</strong>が原因です。<strong>このアプリのデータを消して初期状態に戻すと直り、また使えるようになります</strong>。大切なのは<strong>消す前に必ず取り出しておく</strong>ことです。<br><strong>① 取り出す</strong>：開けるなら 💾「写真も含む全保存」でZIPを作る。<strong>開けない・固まって保存できないときは救出ページ diag.html</strong> から取り出す。<br><strong>② 確認</strong>：そのZIPが「ファイル」アプリ・PC・クラウドに<strong>実際にある</strong>ことを確かめる。<br><strong>③ 消す（リセット）</strong>：自分の端末・ブラウザを「早見表」で確認。<strong>1サイトだけ消せるなら</strong>そのブラウザ別手順（Safari／Chrome／Edge）で。<strong>1サイトだけ消せない（❌：iPadのChrome・Edge／AndroidのEdge）ときは、そのブラウザの「閲覧データをクリア（Cookieとサイトデータ）」で消します</strong>。これで<strong>アプリは初期状態に戻り、また使えるようになります</strong>（そのブラウザの他サイトはログアウトされますが、<strong>他のアプリ・他のブラウザには影響しません</strong>）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で①のZIPを取り込んで復元</strong>。写真もマップも評価も戻ります。<br><strong>いちばんの注意</strong>：<strong>取り出せないまま全消しすると、そのブラウザ内のデータは戻りません</strong>（外部に残したバックアップだけが頼りになります）。だから<strong>①の取り出しを最優先</strong>に。どうしても開けず救出もできない場合は、全消しでアプリは使えるようになりますが、<strong>復元は過去に保存しておいたZIPから</strong>になります。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリのデータを消す（リセット）と、なぜ直るの？何が消えるの？（＝消す前に必ず保存）', a:'<strong>こんなとき</strong>：アプリが重い・固まる・表示がおかしい・直したい。<br><strong>なぜ消すと直るの？</strong>：このアプリは写真やマップを<strong>ブラウザの中（端末内）</strong>に保存しています。そこに溜まったデータが<strong>古くなったり壊れたり</strong>すると不調が出ます。<strong>このアプリのデータを一度消して初期状態に戻す（リセット）</strong>と、不調が取れて直ることが多いのです。<br><strong>何が消えるの？</strong>：リセットすると<strong>アプリ内の写真・マップ・評価も消えます</strong>（だから順番が大切）。<br><strong>だから、この順番で</strong>：<strong>① 取り出す</strong>（💾 全保存／開けないなら救出ページ diag.html）→ <strong>② 保存できたか確認</strong>（ZIPが実際にある・赤い数字が0）→ <strong>③ リセット（消す）</strong>（下の「自分の端末でできる？早見表」とブラウザ別の手順へ）→ <strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で戻す</strong>。<br><strong>※ 取り出さずに消すと戻せません。</strong>必ず「保存→確認」してから消してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'自分の端末で“アプリのリセット（このアプリだけ消去）”はできる？【早見表】', a:'<strong>「リセット」とは</strong>：アプリの調子が悪いときに<strong>このアプリの保存データだけを消して</strong>初期状態に戻し、直すための操作です。ただし<strong>「このアプリ1つだけ」消せる端末・ブラウザは限られます</strong>。自分の組み合わせを下で確認してください。<br>消すのは<strong>「いつもアプリを開いているブラウザ」</strong>です（各ブラウザは別保存）。「このアプリ1サイトだけ」消せるかは次のとおり。<br><strong>● PC（Windows）</strong>：Edge ✅／Chrome ✅／Safari ＝（Windowsには無し）<br><strong>● PC（Mac）</strong>：Safari ✅／Chrome ✅／Edge ✅<br><strong>● タブレット（iPad）</strong>：Safari ✅／Chrome ❌／Edge ❌ … <strong>iPadで1サイトだけ消せるのは Safari だけ</strong><br><strong>● タブレット（Android）</strong>：Chrome ✅／Edge ❌／Safari ＝（Androidには無し）<br><strong>❌（1サイトだけ消せない）ときの対処</strong>：(a) <strong>消せるブラウザでアプリを開き直して使う</strong>のがおすすめ（iPad→Safari、Android→Chrome）。(b) どうしても今のブラウザで消すなら「<strong>閲覧データをクリア（Cookieとサイトデータ）</strong>」を使う＝<strong>他のサイトもログアウト</strong>されますが、<strong>それでもアプリは初期状態に戻って再び使えるようになり、あとから📥 読込で元に戻せます</strong>（クラッシュ時の最終手段）。<br>※ いずれも<strong>先に「全保存→保存確認」</strong>を済ませてから。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Safari：iPad・iPhone／Mac】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>Safariは<strong>Apple製品（iPad・iPhone・Mac）専用</strong>です（WindowsやAndroidにはありません）。必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ タブレット（iPad）・iPhone</strong>：「設定」アプリ →（iOS／iPadOS 18は「<strong>アプリ</strong>」→）<strong>Safari</strong> →「<strong>詳細</strong>」→「<strong>Webサイトデータ</strong>」→ 一覧から<strong>このアプリのサイト名（URLの一部）</strong>を探し、<strong>左にスワイプして「削除」</strong>（または右上「編集」から削除）。他のサイトは残ります。ボタンが灰色のときは「設定→スクリーンタイム→コンテンツとプライバシーの制限」を確認。<br><strong>■ PC（Mac）</strong>：Safariメニュー →「設定」→「<strong>プライバシー</strong>」→「<strong>Webサイトデータを管理</strong>」→ 検索にサイト名 → 選んで「<strong>削除</strong>」→「完了」。<br>このあと<strong>アプリを開き直し、📥 読込で復元</strong>します。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Google Chrome：PC・Androidタブレット／iPadの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）</strong>：このアプリを開いた状態で、<strong>アドレスバー左端のアイコン（鍵や調整マーク）</strong>をクリック →「<strong>Cookieとサイトデータ</strong>」→「<strong>デバイス上のサイトデータを管理</strong>」→ <strong>ゴミ箱</strong>で削除 →「完了」→ <strong>再読み込み</strong>。（別ルート：右上「⋮」→「設定」→「プライバシーとセキュリティ」→「サードパーティCookie」→「<strong>すべてのサイトデータと権限を表示</strong>」→ 検索 → ゴミ箱）。<br><strong>■ タブレット（Android）</strong>：アプリを開く → アドレスバー左の<strong>ページ情報アイコン</strong> →「<strong>Cookieとサイトデータ</strong>」→ 保存データの<strong>削除</strong>。<br><strong>■ タブレット（iPad）・iPhone の Chrome は「1サイトだけ」削除できません</strong>。→ iPadでは<strong>Safariの手順</strong>で消す（普段からこのアプリを Safari で開いておくのが確実）か、Chromeで使い続けたい場合は「設定→プライバシー→閲覧履歴データの削除→Cookie・サイトデータ（全期間）」で消す＝<strong>他サイトもログアウト</strong>。<br>削除後は<strong>開き直して📥 読込で復元</strong>します。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Microsoft Edge：PC／タブレットの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）＝1サイトだけ削除できます</strong>。かんたん：このアプリを開いた状態で<strong>アドレスバー左端の鍵／情報アイコン</strong>→ 表示された<strong>このサイトのCookie・サイトデータ</strong>を<strong>ゴミ箱</strong>で削除。設定から：右上「…」→「設定」→「<strong>Cookieとサイトのアクセス許可</strong>」→「<strong>Cookieとサイトデータの管理と削除</strong>」→「<strong>すべてのCookieとサイトデータを表示する</strong>」→ 検索にサイト名 → 右端の「<strong>…</strong>（その他の操作）→ 削除」（または「∨」で展開しゴミ箱）。（アドレスバーに <strong>edge://settings/siteData</strong> でも可）。<br><strong>■ タブレット（Android／iPad）の Edge は「1サイトだけ」削除する画面がありません</strong>。→ <strong>iPadは Safari の手順</strong>、<strong>Androidは Chrome の手順</strong>で消すのが確実です（普段からその対応ブラウザでアプリを開いておくのがおすすめ）。どうしても Edge のまま消す場合は「設定→プライバシー、検索、サービス→閲覧データをクリア→Cookieとサイトデータ」＝<strong>他サイトもログアウト</strong>。<br><strong>※ Ctrl+Shift+Delete や「すべてクリア」は他サイトまで消える</strong>ので、PCでは上の「1サイトだけ」の手順を使ってください。削除後は<strong>開き直して📥 読込で復元</strong>します。' }
   ];
+
+  // v3-148：「アプリが使えないときは」トラブルパネル＝開閉＋症状タップで該当Q&Aを検索表示。
+  function setupQaTrouble() {
+    var box = $('qa-trouble'), head = $('qa-trouble-head'), chev = $('qa-trouble-chevron');
+    if (box && head) {
+      var collapsed = false;
+      try { collapsed = (localStorage.getItem('qaTroubleCollapsed') === '1'); } catch (e) {}
+      function apply() {
+        box.classList.toggle('collapsed', collapsed);
+        if (chev) chev.textContent = collapsed ? '▼' : '▲';
+        head.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      }
+      apply();
+      head.addEventListener('click', function(){
+        collapsed = !collapsed;
+        try { localStorage.setItem('qaTroubleCollapsed', collapsed ? '1' : '0'); } catch (e) {}
+        apply();
+      });
+    }
+    var search = $('qa-search');
+    Array.prototype.forEach.call(document.querySelectorAll('.qa-trouble-sym'), function(b){
+      b.addEventListener('click', function(){
+        if (!search) return;
+        search.value = b.dataset.q || '';
+        try { search.dispatchEvent(new Event('input', { bubbles: true })); } catch (e) {
+          var ev = document.createEvent('Event'); ev.initEvent('input', true, true); search.dispatchEvent(ev);
+        }
+        try { search.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch (e) {}
+      });
+    });
+  }
 
   // v3-144：Q&A先頭「はじめての方へ」の開閉（既定=開く。閉じた状態は localStorage に記憶）。
   function setupQaIntro() {
@@ -13957,6 +14021,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setupDescCollapsibles();   // 説明文の折りたたみ（UX：動線短縮）
     setupQA();                 // Q&A（困ったとき）の初期化
     setupQaIntro();            // v3-144：Q&A先頭「はじめての方へ」の開閉
+    setupQaTrouble();          // v3-148：Q&A最上部「アプリが使えないときは」症状ルーター
     setupLinkStatus();         // (β) 紐づけ状況の見える化（読み取り専用）
     setupBulkLink();           // (v3-141) 一括紐づけ（番号一致・一意のみ・プレビュー付）
     setupTHelper();            // T評価の参考補助（候補提案・自動入力なし）
