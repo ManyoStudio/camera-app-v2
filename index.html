@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.141</title>
+<title>現場写真撮影アプリ v3.143</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1923,6 +1923,30 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
     cursor: pointer;
   }
+  /* v3-142：照合モード切替（完全一致／ゆるく一致）のセグメント＋ヒント。表示・切替のみ。 */
+  .bulklink-mode {
+    display: flex; gap: 8px; margin: 0 0 8px; background: #eef1f4;
+    border-radius: 12px; padding: 4px;
+  }
+  .bulklink-mode-btn {
+    flex: 1; padding: 10px 8px; border: none; border-radius: 9px;
+    background: transparent; color: #4a4a4f; font-size: 14px; font-weight: 800; cursor: pointer;
+  }
+  .bulklink-mode-btn.selected { background: #007aff; color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.18); }
+  .bulklink-modehint { font-size: 12px; color: #6e6e73; line-height: 1.6; margin: 0 0 12px; text-align: left; }
+  /* v3-142：一括紐づけボタンの強調（候補があるときだけ脈打つ）。 */
+  @keyframes bulklinkPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,122,255,0.0); }
+    50%      { box-shadow: 0 0 0 6px rgba(0,122,255,0.28); }
+  }
+  #bulk-link-btn.bulklink-attn {
+    animation: bulklinkPulse 1.25s ease-in-out infinite;
+    background: #e8f1ff; color: #0d47a1; font-weight: 800;
+    border: 1px solid #9cc4ff;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    #bulk-link-btn.bulklink-attn { animation: none; box-shadow: 0 0 0 3px rgba(0,122,255,0.30); }
+  }
 
   /* v3-139：整列トグル（未登録を上に・番号順）。表示の並べ替えのみ。 */
   .sort-undone-row {
@@ -2077,12 +2101,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .qa-a { padding:0 14px 14px 14px; font-size:13px; color:#3a3a3c; line-height:1.7; display:none; }
   .qa-item.open .qa-a { display:block; }
   .qa-cat-label { font-size:11px; font-weight:700; color:#8a94a6; margin:14px 2px 4px; }
+  /* v3-143：Q&Aのカテゴリ折りたたみ（件数つき）。乱立防止＝既定は閉じ、必要な所だけ開く。検索時は自動展開。 */
+  .qa-cat-btn .qa-cat-n { opacity:0.65; font-weight:700; margin-left:3px; }
+  .qa-group-head { display:flex; align-items:center; gap:8px; cursor:pointer; padding:12px 13px; margin:10px 0 0; background:#eef2f7; border:1px solid #e0e6ee; border-radius:11px; font-size:14px; font-weight:800; color:#33415c; -webkit-user-select:none; user-select:none; }
+  .qa-group-head:active { background:#e3e9f2; }
+  .qa-group-head .qa-group-name { flex:1; min-width:0; }
+  .qa-group-head .qa-group-count { color:#8a94a6; font-weight:700; font-size:13px; }
+  .qa-group-head .qa-group-chevron { color:#8a8a8e; font-size:12px; flex-shrink:0; }
+  .qa-group-body { margin:2px 0 4px; }
 </style>
 </head>
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.141 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
+  <span>📷 現場写真撮影アプリ v3.143 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2896,7 +2928,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="card">
       <p class="card-title">❓ Q&A（困ったとき）</p>
       <p style="font-size:12px; color:#6e6e73; margin:0 0 10px; line-height:1.6;">
-        インターネットがなくても使えます。下のボタンで種類をえらぶか、上のマスにキーワード（例：保存、救出、ネット）を入れて探せます。質問をタップすると答えが開きます。
+        インターネットがなくても使えます。下のボタンで種類をえらぶか、上のマスにキーワード（例：保存、救出、ネット）を入れて探せます。<strong>カテゴリ名（📂）をタップで開閉</strong>でき、<strong>質問をタップすると答えが開きます</strong>。キーワードで探すと、関係する答えが自動で開きます。
       </p>
       <input id="qa-search" type="text" placeholder="🔍 キーワードで探す（例：保存・救出・ネット）" style="width:100%; padding:11px 12px; font-size:14px; border:1px solid #d1d1d6; border-radius:10px; margin-bottom:10px;" />
       <div id="qa-cats" style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px;"></div>
@@ -3430,6 +3462,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="bulklink-content">
     <div class="bulklink-icon">🔗</div>
     <p class="bulklink-title">番号一致の写真を一括で紐づける</p>
+    <div class="bulklink-mode" id="bulkLinkMode" role="group" aria-label="照合のしかた">
+      <button type="button" class="bulklink-mode-btn" data-mode="exact">完全一致のみ</button>
+      <button type="button" class="bulklink-mode-btn" data-mode="loose">ゆるく一致</button>
+    </div>
+    <p class="bulklink-modehint" id="bulkLinkModeHint"></p>
     <p class="bulklink-summary" id="bulkLinkSummary"></p>
     <div class="bulklink-list" id="bulkLinkList"></div>
     <button id="bulkLinkConfirm" class="bulklink-confirm">🔗 この内容で紐づける</button>
@@ -3785,7 +3822,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.141）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.143）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -3827,7 +3864,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・地図', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
     { cat:'位置記録・地図', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
     { cat:'位置記録・地図', q:'ピンの詳細に「📷この位置で撮影」「🟢GUT評価」が出ない', a:'<strong>📷 この位置で撮影</strong>は<strong>ピン</strong>のとき出ます。<strong>🟢 GUT評価</strong>は<strong>写真を紐づけたピン</strong>のときだけ出ます（評価は写真にひもづくため）。メモ・矢印や写真のないピンでは出ません。先に写真を紐づけると<strong>🟢 GUT評価</strong>も使えます。' },
-    { cat:'位置記録・地図', q:'番号は分かっているのに写真が紐づいていないピンをまとめて直したい', a:'別の端末で位置記録だけ先に取り込むと、ピンに<strong>設備番号は表示されるのに写真が紐づいていない</strong>ことがあります。そのときは <strong>📋 撮影リスト</strong> の <strong>「🔗 マップへの紐づけ状況」</strong> を開き、<strong>「🔗 番号一致の写真を一括で紐づける（一意のみ）」</strong> を押してください。<strong>番号がぴったり一致し、写真もピンも1つに定まる分だけ</strong>を、確認用の一覧（プレビュー）を見てから<strong>まとめて紐づけ</strong>られます。同じ番号の写真やピンが複数ある「あいまいな分」は<strong>安全のため自動では紐づけません</strong>（個別の「🔗 写真を紐づける／変更する」でどうぞ）。' },
+    { cat:'位置記録・地図', q:'番号は分かっているのに写真が紐づいていないピンをまとめて直したい', a:'別の端末で位置記録だけ先に取り込むと、ピンに<strong>設備番号は表示されるのに写真が紐づいていない</strong>ことがあります。そのときは <strong>📋 撮影リスト</strong> の <strong>「🔗 マップへの紐づけ状況」</strong> を開き、<strong>「🔗 番号一致の写真を一括で紐づける（一意のみ）」</strong> を押してください（紐づけられる候補があるときは<strong>このボタンが点滅</strong>して知らせます）。確認用の一覧（プレビュー）を見てから<strong>まとめて紐づけ</strong>られます。照合のしかたは <strong>「完全一致のみ」</strong>（既定・いちばん安全）と <strong>「ゆるく一致」</strong>（0埋め違いなども拾う）から選べます。同じ番号の写真やピンが複数ある「あいまいな分」は、どちらのモードでも<strong>安全のため自動では紐づけません</strong>（個別の「🔗 写真を紐づける／変更する」でどうぞ）。' },
+    { cat:'位置記録・地図', q:'「0001」と「1」、「ピン1」など番号の書き方が少し違う写真も紐づけたい', a:'一括紐づけのモーダル上部で <strong>「ゆるく一致」</strong> に切り替えてください。<strong>先頭の0の有無（0001＝1）・全角／半角・番号の前後についた文字（例「ピン1」「No.1」）</strong>を無視して照合します。それでも<strong>写真とピンが1つに定まる分だけ</strong>を紐づけるので安全です（複数候補が出るあいまいな分は見送り＝手動でどうぞ）。<strong>いちばん安全なのは「完全一致のみ」</strong>なので、必要なときだけ「ゆるく一致」を使うのがおすすめです。選んだモードは次回も覚えています。ピン詳細の「🔗 …の写真をこのピンに紐づける」も同じモードで候補を探します。' },
     { cat:'位置記録・地図', q:'特定のピン1つだけ、番号一致の写真をすぐ紐づけたい', a:'写真のないピンの<strong>詳細</strong>を開くと、その番号に一致する写真が<strong>ちょうど1枚だけある</strong>ときに <strong>「🔗 番号◯◯の写真をこのピンに紐づける」</strong> ボタンが出ます。1タップでそのピンに紐づき、<strong>🟢 GUT評価</strong> も使えるようになります（候補が複数あるあいまいなときは出ません）。' },
 
     { cat:'位置記録・地図', q:'図面（平面図）の写真からマップを一括で作りたい', a:'<strong>📥 読込</strong>タブの「📍 位置記録だけを読み込む」カードにある <strong>「🖼 図面・写真からマップを作る（複数・ZIP可）」</strong> から、図面や写真をまとめて取り込むと、棟とマップを<strong>一括で作成</strong>できます（ZIPもOK）。作成後、各マップに写真を選んでピンを置けます。<strong>撮影記録CSVの番号や写真には影響しません</strong>（マップ整理用です）。' },
@@ -3882,48 +3920,123 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 10. その他 ──
     { cat:'その他', q:'「保存したつもり」で消えてしまうことはない？', a:'オレンジの枠を<strong>タップして実際に保存するまで</strong>、未保存の数字は0になりません。数字が0になっていれば、その時点の写真は外部に保存できています。' },
     { cat:'その他', q:'「✅ 保存しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・地図へのマーカー設置など、保存が完了したことの合図です。データが端末に保存された目印なので、安心して次の操作に進めます。' },
-    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください（タップした瞬間に、未保存の赤い数字が0に戻ります）。' }
+    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください（タップした瞬間に、未保存の赤い数字が0に戻ります）。' },
+
+    // ===== v3-143 追加Q&A（全12カテゴリを網羅拡充・実機FB反映） =====
+    // ── はじめ・設定（追加） ──
+    { cat:'はじめ・設定', q:'毎日どうやってアプリを開けばいいですか？', a:'<strong>いつも同じ場所から開く</strong>のがコツです。ブラウザの<strong>ブックマーク（お気に入り）に登録</strong>するか、配られた<strong>同じファイル／同じURL</strong>から開いてください。撮影データはその場所（ブラウザ）に残るので、毎回同じ入口から開けば続きから使えます。<strong>「Cookieとサイトデータを消す」操作はしない</strong>でください（データが消えます）。' },
+    { cat:'はじめ・設定', q:'文字が小さくて見づらい／大きくしたい', a:'画面は<strong>指で広げる（ピンチ）と拡大</strong>できます。常に大きくしたいときは、端末の<strong>設定 → 画面表示／文字の大きさ</strong>を上げてください。写真やマップは見るとき個別に拡大できます。' },
+    { cat:'はじめ・設定', q:'最初にやっておくとよい設定はありますか？', a:'はじめに3つだけ決めておくと迷いません。①<strong>撮る番号／撮らない番号</strong>（設定）②<strong>番号の読み取り（先頭／末尾）</strong>（操作レール）③<strong>バックアップのお知らせ枚数</strong>（設定）。あとは撮るたびに<strong>こまめに保存</strong>すれば安心です。' },
+    { cat:'はじめ・設定', q:'複数人で使うとき、設定はそろえるべき？', a:'番号の読み取り（先頭／末尾）や撮る番号のルールは、<strong>担当どうしでそろえておく</strong>と、あとで写真とピンを合流したときにズレません。データの合流自体は、各自が保存したZIPを<strong>📥 読込</strong>で取り込めばできます。' },
+    // ── 撮影（追加） ──
+    { cat:'撮影', q:'写真がぶれる／暗くて読めない', a:'<strong>両手で構えて一呼吸おいてから</strong>撮るとぶれにくくなります。暗い場所は端末の<strong>ライト</strong>を使うか、明るい角度から撮ってください。銘板（番号プレート）は<strong>正面から近づいて</strong>撮ると、あとで番号が読みやすくなります。撮り直しは一覧からできます。' },
+    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_1, _2）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_1・_2…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。番号を分けたいときは別番号で撮ってください。' },
+    { cat:'撮影', q:'撮影した場所（GPS・位置情報）は記録されますか？', a:'このアプリの「位置記録」は、<strong>図面（マップ）のどこにピンを置いたか</strong>を記録するもので、<strong>あなたの現在地（GPS）を追跡するものではありません</strong>。データは端末の中だけにあり、インターネットにも送られません（オフラインで動きます）。' },
+    { cat:'撮影', q:'手袋をしているとボタンが押しにくい', a:'撮影や保存の主要ボタンは<strong>大きめのタップ式</strong>にしてあります。反応が鈍いときは、手袋の指先が乾いているか確認し、<strong>ゆっくり一度だけタップ</strong>してください（連打は誤作動のもとです）。長押し操作は機種により効かないため、基本は<strong>タップ</strong>です。' },
+    // ── 評価・分類（追加） ──
+    { cat:'評価・分類', q:'G・U・Tはそれぞれ何の略ですか？', a:'<strong>G＝重大性（影響の大きさ）</strong>、<strong>U＝緊急性（どれだけ早く対処すべきか）</strong>、<strong>T＝傾向（これから悪化しそうか）</strong>の3つの観点です。分類を選ぶとGとUの目安が自動で入り、Tは状態を見て選びます（「📖 観察項目から決める」も使えます）。' },
+    { cat:'評価・分類', q:'入力した評価を後でまとめて見直したい／直したい', a:'<strong>📋 撮影リスト</strong>から写真を開くと、その写真の評価を<strong>開き直して修正</strong>できます。マップのピンからは詳細の<strong>🟢 GUT評価</strong>で見直せます（写真が紐づいたピンのみ）。直した内容は保存され、撮影記録CSVにも反映されます。' },
+    { cat:'評価・分類', q:'分類がどうしても見つからない設備はどうすれば？', a:'まず<strong>📖 評価参考</strong>タブで<strong>俗称（室外機・分電盤 など）で検索</strong>してみてください。それでも無いときは、近い大分類・中分類だけ選んで進め、<strong>名称や番号で区別</strong>しておけば後から整理できます。分類は後から選び直せます。' },
+    { cat:'評価・分類', q:'同じ設備をもう一度評価したら上書きされますか？', a:'同じ写真の評価を開き直して保存すると、<strong>その写真の評価は新しい内容に更新</strong>されます（最後に保存したものが残ります）。別の面を別評価として残したいときは、<strong>別番号／別の写真</strong>として撮ってから評価してください。' },
+    // ── 参考・用語さがし（追加） ──
+    { cat:'参考・用語さがし', q:'俗称で調べても出てこない言葉があります', a:'言い回しを変えて試してください（例「エアコン」→「空調」「室外機」）。それでも出ないときは、<strong>大分類のチップ</strong>から関連する観察項目をたどると見つかることがあります。検索は<strong>部分一致</strong>なので、短い言葉で探すのもコツです。' },
+    { cat:'参考・用語さがし', q:'観察項目の言葉（専門用語）の意味がわかりません', a:'各観察項目には、検索したときに<strong>「手がかり」（目で見て分かるポイント）</strong>が表示されるものがあります。まずはそれを目安にしてください。判断に迷う場合は無理に細かく決めず、<strong>気づいた状態をメモ</strong>に残しておくと、あとで相談しやすくなります。' },
+    // ── 位置記録・地図（追加） ──
+    { cat:'位置記録・地図', q:'マップに使う図面（平面図）の写真はどう用意すればいい？', a:'紙の図面を<strong>正面から明るく撮る</strong>か、PDF・画像を用意します。<strong>📥 読込</strong>タブの「🖼 図面・写真からマップを作る」でまとめて取り込めます。文字や記号が読める程度の解像度があれば十分です（大きすぎる画像は動作が重くなることがあります）。' },
+    { cat:'位置記録・地図', q:'ピンの色は何の意味ですか？使い分けたいです', a:'色に決まった意味はなく、<strong>自由に使い分け</strong>られます（例：済＝緑、要確認＝赤 など）。ピンの詳細の<strong>🎨 色を変える</strong>で変更でき、色でしぼり込みもできます。チームで<strong>色のルールをそろえておく</strong>と見やすくなります。' },
+    { cat:'位置記録・地図', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 このマーカーを削除</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
+    { cat:'位置記録・地図', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>「写真も含む全保存」</strong>をしておくと安心です。' },
+    // ── 保存（バックアップ）（追加） ──
+    { cat:'保存（バックアップ）', q:'保存に時間がかかる／止まったように見えます', a:'写真が多いと<strong>ZIPを作るのに時間</strong>がかかります（数百枚で数十秒かかることも）。画面はそのまま<strong>待って</strong>ください。どうしても重いときは、<strong>区切りでまとめて</strong>小分け保存に切り替えると軽くなります。保存が終わると共有・ダウンロードの案内が出ます。' },
+    { cat:'保存（バックアップ）', q:'どのくらいの頻度で保存すればいい？目安は？', a:'目安は<strong>30〜50枚ごと</strong>、または<strong>休憩・移動・帰社の前</strong>です。未保存の<strong>赤い数字</strong>がたまってきたら保存の合図。こまめに保存しておくほど、万一のときに失う範囲が小さくなります。' },
+    { cat:'保存（バックアップ）', q:'保存したZIPの名前の見分け方を教えてください', a:'ファイル名には<strong>日付・時刻</strong>が入るので、<strong>新しいものほど後の時刻</strong>です。種類（全保存／区切り）も名前で見分けられます。迷ったら<strong>いちばん新しい「写真も含む全保存」</strong>を残しておけば確実です。' },
+    { cat:'保存（バックアップ）', q:'保存したZIPは開かずにそのまま保管していい？', a:'はい。<strong>開かず・名前を変えず</strong>にそのまま保管してください（中身を取り出して並べ替えると、戻すとき混乱します）。戻すときは<strong>📥 読込</strong>からZIPごと取り込みます。中身を確認したいだけならPCでコピーを取ってから開いてください。' },
+    // ── データ保全・PCクラッシュ対策（追加） ──
+    { cat:'データ保全・PCクラッシュ対策', q:'いちばん安全なデータの守り方を一言で', a:'<strong>「写真も含む全保存ZIPを、こまめに作って、消えない場所（ファイルアプリやPC）に置く」</strong>——これが基本です。端末の中だけに置いておくのは万一に弱いので、<strong>外に1本コピー</strong>がある状態を保ってください。' },
+    { cat:'データ保全・PCクラッシュ対策', q:'端末を機種変更する前にやることは？', a:'必ず<strong>「写真も含む全保存」ZIP</strong>を作り、<strong>消えない場所（クラウド・PCなど）に保存</strong>してから機種変更してください。新しい端末ではアプリを開き、<strong>📥 読込</strong>でそのZIPを取り込めば、写真もマップも評価も戻ります。' },
+    // ── 読み込み・復元（追加） ──
+    { cat:'読み込み・復元', q:'読み込んだのに写真がピンに繋がっていない', a:'別端末で<strong>位置記録だけ先に取り込む</strong>と起きやすい状態です。<strong>📋 撮影リスト</strong>の<strong>「🔗 マップへの紐づけ状況」</strong>を開き、点滅している<strong>「🔗 番号一致の写真を一括で紐づける」</strong>を押してください。表記ゆれ（0001と1 など）は<strong>「ゆるく一致」</strong>に切り替えると拾えます。' },
+    { cat:'読み込み・復元', q:'複数のZIPを一度に読み込めますか？順番は？', a:'はい、<strong>複数のZIPをまとめて</strong>取り込めます。順番は気にしなくて大丈夫です（同じ写真は<strong>重複せず1枚にまとまります</strong>）。棟ごと・担当ごとに分かれたZIPも、続けて読み込めば1つに合流します。' },
+    { cat:'読み込み・復元', q:'読み込むと古いデータに上書きされそうで心配です', a:'読み込みは基本<strong>「足し合わせ（マージ）」</strong>で、同じものは重複しないように合流します。心配なときは、念のため<strong>取り込み前に今のデータを「全保存」</strong>しておけば、いつでも元に戻せます。' },
+    // ── 一覧・見直し（追加） ──
+    { cat:'一覧・見直し', q:'撮った枚数と紐づけ件数が合わないのはなぜ？', a:'枚数と件数は<strong>数え方が違う</strong>ため、ふつうに起こります。①1つの設備を複数枚撮ると<strong>枝番でまとまる</strong>ので「枚数＞設備数」になります。②紐づけは<strong>設備番号（グループ）単位</strong>で数えます。③まだマップのピンに繋いでいない写真は<strong>未紐づけ</strong>です。気になるときは<strong>紐づけ状況</strong>で「未」をしぼって確認してください。' },
+    { cat:'一覧・見直し', q:'特定の番号の写真をすばやく探したい', a:'<strong>📋 撮影リスト</strong>や写真を選ぶ画面の<strong>検索（🔍）に番号の一部</strong>を入れるとしぼり込めます（例「755」で「07550」もヒット）。マップ側でも番号でピンをしぼれます。' },
+    { cat:'一覧・見直し', q:'一覧から要らない写真を消したい', a:'一覧で対象の写真を開き、<strong>削除</strong>を選びます。消す前に、その写真が<strong>マップのピンに紐づいていないか</strong>を確認してください（紐づけ済みを消すとピンの写真も外れます）。<strong>消す前に必ず保存</strong>しておくと、間違えても戻せます。' },
+    // ── こまったとき（救出・復旧）（追加） ──
+    { cat:'こまったとき（救出・復旧）', q:'画面が真っ白になった／固まった', a:'まず<strong>あわてて閉じない</strong>でください。少し待つ→<strong>ページを再読み込み</strong>（更新）してみます。それでも直らないときは、同じ場所からもう一度開き直します。データはブラウザに残っているので、<strong>サイトデータを消さない</strong>限り、開き直せば見えます。直らないときは救出ページ（diag.html）を使います。' },
+    { cat:'こまったとき（救出・復旧）', q:'新しい版（アップデート）への入れ替え方は？', a:'新しいHTMLを<strong>同じ場所（同じURL／同じ入口）で開けば</strong>、これまでの撮影データはそのまま残ります（データはブラウザ側に保管されているため）。念のため<strong>入れ替え前に「写真も含む全保存」</strong>をしておくと安心です。上のバーの<strong>バージョン表示</strong>で新しい版になったか確認できます。' },
+    // ── ネット・テザリング（追加） ──
+    { cat:'ネット・テザリング', q:'通信量（ギガ）は使いますか？', a:'<strong>ほとんど使いません。</strong>最初にアプリを開くときだけ通信することがありますが、撮影・保存・マップ・評価は<strong>すべて端末の中だけ（オフライン）</strong>で動きます。写真がインターネットに送られることもありません。' },
+    { cat:'ネット・テザリング', q:'機内モードでも使えますか？', a:'はい、<strong>機内モードでも使えます</strong>（オフライン動作）。電波の弱い現場でも撮影・保存・マップ操作ができます。むしろ保存中は通信が不安定だと不具合のもとになるため、<strong>通信を切って作業</strong>するのも一つの方法です。' },
+    // ── その他（追加） ──
+    { cat:'その他', q:'使い方を他の人に教えたいです', a:'この<strong>❓ Q&A</strong>を見せるのがいちばん早道です（オフラインで開けます）。最初に教えるべきは3つ＝<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong>。マップや評価は慣れてから少しずつで大丈夫です。' },
+    { cat:'その他', q:'不具合や「こうしてほしい」はどこへ伝えればいい？', a:'お使いの<strong>配布元・管理担当へ伝えてください</strong>。そのとき<strong>「どの画面で・何をしたら・どうなったか」「上のバーのバージョン（例 v3.143）」</strong>を一緒に伝えると、原因が分かりやすく、改善が早くなります。' }
   ];
 
   function setupQA() {
     var listEl = $('qa-list'), catsEl = $('qa-cats'), searchEl = $('qa-search'), emptyEl = $('qa-empty');
     if (!listEl || !catsEl) return;
-    var cats = ['すべて'];
-    QA_DATA.forEach(function(it){ if (cats.indexOf(it.cat) < 0) cats.push(it.cat); });
-    var activeCat = 'すべて';
     function escq(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    // カテゴリごとにまとめる（初出順を保持）。配列内の位置に依存しないので、新規Q&Aは末尾に足してもそのカテゴリに入る。
+    var order = [], byCat = {};
+    QA_DATA.forEach(function(it){ if (!byCat[it.cat]) { byCat[it.cat] = []; order.push(it.cat); } byCat[it.cat].push(it); });
+    var activeCat = 'すべて';
+    var openCats = {};   // 「すべて」表示でのカテゴリ開閉（既定＝閉じる＝まず俯瞰、必要な所だけ開く）
+    function makeItem(it){
+      var wrap = document.createElement('div'); wrap.className = 'qa-item';
+      var qd = document.createElement('div'); qd.className = 'qa-q';
+      qd.innerHTML = '<span class="qa-mark">Q.</span><span>' + escq(it.q) + '</span><span class="qa-chevron">▼</span>';
+      var ad = document.createElement('div'); ad.className = 'qa-a';
+      ad.innerHTML = it.a;
+      qd.addEventListener('click', function(){
+        var open = wrap.classList.toggle('open');
+        var ch = qd.querySelector('.qa-chevron'); if (ch) ch.textContent = open ? '▲' : '▼';
+      });
+      wrap.appendChild(qd); wrap.appendChild(ad);
+      return wrap;
+    }
+    function matches(it, q){ if (!q) return true; return (it.q + ' ' + it.a + ' ' + it.cat).toLowerCase().indexOf(q) >= 0; }
     function render(){
       var q = (searchEl && searchEl.value ? searchEl.value : '').trim().toLowerCase();
       listEl.innerHTML = '';
-      var shown = 0, lastCat = '';
-      QA_DATA.forEach(function(it){
-        if (activeCat !== 'すべて' && it.cat !== activeCat) return;
-        if (q) { var hay = (it.q + ' ' + it.a + ' ' + it.cat).toLowerCase(); if (hay.indexOf(q) < 0) return; }
-        if (activeCat === 'すべて' && it.cat !== lastCat) {
-          var lab = document.createElement('p'); lab.className = 'qa-cat-label'; lab.textContent = it.cat;
-          listEl.appendChild(lab); lastCat = it.cat;
-        }
-        var wrap = document.createElement('div'); wrap.className = 'qa-item';
-        var qd = document.createElement('div'); qd.className = 'qa-q';
-        qd.innerHTML = '<span class="qa-mark">Q.</span><span>' + escq(it.q) + '</span><span class="qa-chevron">▼</span>';
-        var ad = document.createElement('div'); ad.className = 'qa-a';
-        ad.innerHTML = it.a;
-        qd.addEventListener('click', function(){
-          var open = wrap.classList.toggle('open');
-          var ch = qd.querySelector('.qa-chevron'); if (ch) ch.textContent = open ? '▲' : '▼';
+      var shown = 0;
+      if (activeCat !== 'すべて') {
+        // 単一カテゴリ：その中身をそのまま一覧（Qは折りたたみ）。
+        (byCat[activeCat] || []).forEach(function(it){ if (matches(it, q)) { listEl.appendChild(makeItem(it)); shown++; } });
+      } else {
+        // すべて：カテゴリ折りたたみ（件数つき）。検索中は一致するグループだけを自動で開いて表示。
+        order.forEach(function(cat){
+          var items = byCat[cat].filter(function(it){ return matches(it, q); });
+          if (q && items.length === 0) return;   // 検索中：一致のないグループは隠す
+          var isOpen = q ? true : !!openCats[cat];
+          var head = document.createElement('div'); head.className = 'qa-group-head';
+          head.innerHTML = '<span class="qa-group-name">📂 ' + escq(cat) + '</span><span class="qa-group-count">(' + items.length + ')</span><span class="qa-group-chevron">' + (isOpen ? '▲' : '▼') + '</span>';
+          var body = document.createElement('div'); body.className = 'qa-group-body';
+          body.style.display = isOpen ? 'block' : 'none';
+          items.forEach(function(it){ body.appendChild(makeItem(it)); });
+          head.addEventListener('click', function(){
+            var nowOpen = (body.style.display === 'none');
+            body.style.display = nowOpen ? 'block' : 'none';
+            openCats[cat] = nowOpen;
+            var ch = head.querySelector('.qa-group-chevron'); if (ch) ch.textContent = nowOpen ? '▲' : '▼';
+          });
+          listEl.appendChild(head); listEl.appendChild(body);
+          shown += items.length;
         });
-        wrap.appendChild(qd); wrap.appendChild(ad); listEl.appendChild(wrap); shown++;
-      });
+      }
       if (emptyEl) emptyEl.style.display = (shown === 0) ? 'block' : 'none';
     }
+    // カテゴリチップ（件数つき）。「すべて」＋各カテゴリ。
     catsEl.innerHTML = '';
-    cats.forEach(function(c){
+    var chipDefs = [{ c: 'すべて', n: QA_DATA.length }];
+    order.forEach(function(c){ chipDefs.push({ c: c, n: byCat[c].length }); });
+    chipDefs.forEach(function(d){
       var b = document.createElement('button');
       b.type = 'button';
-      b.className = 'qa-cat-btn' + (c === activeCat ? ' active' : '');
-      b.textContent = c;
+      b.className = 'qa-cat-btn' + (d.c === activeCat ? ' active' : '');
+      b.innerHTML = escq(d.c) + '<span class="qa-cat-n">(' + d.n + ')</span>';
       b.addEventListener('click', function(){
-        activeCat = c;
+        activeCat = d.c;
         Array.prototype.forEach.call(catsEl.children, function(x){ x.classList.remove('active'); });
         b.classList.add('active');
         render();
@@ -6263,31 +6376,63 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     } catch(e){}
     return set;
   }
-  // ===== (v3-141) 一括紐づけ：番号一致・一意のみ・プレビュー付（追加・読み取り中心／書込みは pin.photoId のみ＝前方配置・逆算ループと同一作法） =====
-  // ある番号(num)に表示番号が厳密一致する写真が photos 内にちょうど1枚なら、その写真を返す（無い/複数はnull）。読み取り専用。
-  function uniquePhotoForNum(num) {
-    if (num == null) return null;
-    var k = String(num).trim();
+  // ===== (v3-141→v3-142) 一括紐づけ：番号一致・一意のみ・プレビュー付。v3-142で「完全一致／ゆるく一致」を選択可に拡張 =====
+  //   書込みは pin.photoId のみ＝前方配置・逆算ループと同一作法。両側一意（写真・ピンとも1つに定まる）という安全則は両モード共通で維持。
+  // 照合キー：mode='exact'=従来どおり厳密文字列（NFKCなし）。mode='loose'=全角→半角(NFKC)・前後空白除去のうえ、
+  //   数字を含めば「最初の数字列の先頭ゼロを外した値」を、数字が無ければ小文字化＋区切り/空白除去のテキストをキーにする。
+  //   例）'0001'→n:1／'ピン1'→n:1／'００１'→n:1／'A-1'→n:1／'ポンプ 室'→t:ポンプ室。先頭ゼロ違い・全角半角・前後の付加文字を吸収。
+  function bulkLinkKey(s, mode) {
+    if (s == null) return '';
+    if (mode !== 'loose') { return String(s).trim(); }            // exact：v3-141 互換
+    var t = String(s);
+    try { t = t.normalize('NFKC'); } catch (e) {}
+    t = t.trim();
+    if (t === '') return '';
+    var m = t.match(/(\d+)/);                                      // 最初の数字列（photoDisplayNum=head と同じ向き）
+    if (m) { return 'n:' + m[1].replace(/^0+(\d)/, '$1'); }        // 先頭ゼロを外す（'0'/'00'→'0'）
+    return 't:' + t.toLowerCase().replace(/[\s\u3000_\-―ー・./／,，、]+/g, '');
+  }
+  // 写真側の照合キー：exact=表示番号(head)そのまま（v3-141互換）。loose=数字があれば数字キー、無ければファイル名のテキストキー。
+  function photoBulkKey(p, mode) {
+    if (mode !== 'loose') return photoDisplayNum(p);
+    var d = photoDisplayNum(p);
+    if (d) return bulkLinkKey(d, 'loose');
+    var base = String((p && p.filename) || '').replace(/\.[^.]+$/, '');
+    return bulkLinkKey(base, 'loose');
+  }
+  // 現在の照合モード（localStorage 記憶・既定=exact＝安全寄り）。
+  function getBulkLinkMode() {
+    try { return (localStorage.getItem('bulkLinkMatchMode') === 'loose') ? 'loose' : 'exact'; } catch (e) { return 'exact'; }
+  }
+  function setBulkLinkMode(m) {
+    try { localStorage.setItem('bulkLinkMatchMode', (m === 'loose') ? 'loose' : 'exact'); } catch (e) {}
+  }
+  // ある番号/ラベル(num)に一致する写真が photos 内にちょうど1枚なら、その写真を返す（無い/複数はnull）。読み取り専用。
+  function uniquePhotoForNum(num, mode) {
+    var k = bulkLinkKey(num, mode);
     if (k === '') return null;
-    var cands = photos.filter(function(p){ return photoDisplayNum(p) === k; });
+    var cands = photos.filter(function(p){ return photoBulkKey(p, mode) === k; });
     return (cands.length === 1) ? cands[0] : null;
   }
   // 全マップ横断で「写真がまだ無い・番号(pin.label)がある」ピンを集め、番号が写真・ピンとも1つに定まる組だけを提案する。
   //   写真側が複数該当（multiPhoto）／同番号の未紐づけピンが複数（multiPin）はあいまいとして見送り（誤紐づけ防止＝手動に委ねる）。
   //   ※ photoDisplayNum は読み取り専用で使用（無改変）。pin.label は v3-124 で設備番号が補完される既存フィールド。
-  function bulkLinkBuildPlan() {
+  function bulkLinkBuildPlan(mode) {
+    mode = (mode === 'loose') ? 'loose' : 'exact';
     var byNum = {};
-    photos.forEach(function(p){ var k = photoDisplayNum(p); if (k) { (byNum[k] = byNum[k] || []).push(p); } });
+    photos.forEach(function(p){ var k = photoBulkKey(p, mode); if (k) { (byNum[k] = byNum[k] || []).push(p); } });
     var pinsByNum = {};
     var candidates = [];
     function consider(pin, bname) {
       if (!pin) return;
       if ((pin.type || 'pin') !== 'pin') return;   // メモ・矢印は対象外
       if (pin.photoId != null) return;             // 既に写真があるピンは触らない
-      var lbl = (pin.label != null) ? String(pin.label).trim() : '';
-      if (lbl === '') return;                       // 番号なし＝対象外
-      candidates.push({ pin: pin, building: bname || '', num: lbl });
-      (pinsByNum[lbl] = pinsByNum[lbl] || []).push(pin);
+      var raw = (pin.label != null) ? String(pin.label).trim() : '';
+      if (raw === '') return;                       // 番号なし＝対象外
+      var key = bulkLinkKey(pin.label, mode);
+      if (key === '') return;
+      candidates.push({ pin: pin, building: bname || '', label: raw, key: key });
+      (pinsByNum[key] = pinsByNum[key] || []).push(pin);
     }
     ((mapData && mapData.buildings) || []).forEach(function(b){
       (b.sheets || []).forEach(function(sh){ (sh.pins || []).forEach(function(pn){ consider(pn, b.name); }); });
@@ -6295,14 +6440,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     var links = [], multiPhoto = 0, multiPin = 0, noMatch = 0;
     candidates.forEach(function(c){
-      var phs = byNum[c.num];
+      var phs = byNum[c.key];
       if (!phs || phs.length === 0) { noMatch++; return; }
       if (phs.length > 1) { multiPhoto++; return; }
-      if (pinsByNum[c.num].length > 1) { multiPin++; return; }
-      links.push({ pin: c.pin, building: c.building, num: c.num, photo: phs[0] });
+      if (pinsByNum[c.key].length > 1) { multiPin++; return; }
+      links.push({ pin: c.pin, building: c.building, num: c.label, key: c.key, photo: phs[0] });
     });
-    links.sort(function(a, b){ var na = parseInt(a.num || '0', 10), nb = parseInt(b.num || '0', 10); return (na - nb) || String(a.num).localeCompare(String(b.num)); });
-    return { links: links, multiPhoto: multiPhoto, multiPin: multiPin, noMatch: noMatch, candidateCount: candidates.length };
+    function keyNum(k){ var m = /^n:(\d+)$/.exec(k); return m ? parseInt(m[1], 10) : Number.POSITIVE_INFINITY; }
+    links.sort(function(a, b){ var na = keyNum(a.key), nb = keyNum(b.key); if (na !== nb) return na - nb; return String(a.num).localeCompare(String(b.num)); });
+    return { links: links, multiPhoto: multiPhoto, multiPin: multiPin, noMatch: noMatch, candidateCount: candidates.length, mode: mode };
   }
   // 提案を適用：各ピンの pin.photoId に書き込み、まとめて1回 saveMapData（前方配置・逆算ループと同一作法）。
   async function bulkLinkApply(plan) {
@@ -6313,25 +6459,32 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     try { await saveMapData(mapData); } catch (e) {}
     try { refreshLinkStatusIfOpen(); } catch (e) {}
     try { renderPins(); } catch (e) {}
+    try { updateBulkLinkAttn(); } catch (e) {}
     return n;
   }
   var bulkLinkPlanCache = null;
-  function openBulkLinkModal() {
-    var plan = bulkLinkBuildPlan();
+  // モードに応じてプレビューを描画（モーダル内のモード切替で呼び直す）。
+  function renderBulkLinkPreview(mode) {
+    var plan = bulkLinkBuildPlan(mode);
     bulkLinkPlanCache = plan;
-    var modal = $('bulkLinkModal'); if (!modal) return;
     var sumEl = $('bulkLinkSummary'), listEl = $('bulkLinkList'), confirmBtn = $('bulkLinkConfirm');
+    var hintEl = $('bulkLinkModeHint');
+    document.querySelectorAll('.bulklink-mode-btn').forEach(function(b){ b.classList.toggle('selected', b.dataset.mode === mode); });
+    if (hintEl) hintEl.innerHTML = (mode === 'loose')
+      ? 'ゆるく一致：<strong>0埋めの違い（0001＝1）・全角／半角・番号前後の文字</strong>を無視して照合します。それでも<strong>写真・ピンが1つに定まる分だけ</strong>を紐づけます。'
+      : '完全一致：番号が<strong>ぴったり同じ</strong>ものだけを照合します（いちばん安全）。0埋め違いなどを拾いたいときは「ゆるく一致」へ。';
     var skip = plan.multiPhoto + plan.multiPin;
     if (!plan.links.length) {
       if (sumEl) sumEl.innerHTML = '一括で紐づけできる候補は見つかりませんでした。';
-      if (listEl) listEl.innerHTML = '<p class="empty" style="padding:10px;text-align:center;">番号がぴったり一致し、写真・ピンとも1つに定まる「写真のない番号付きピン」がありません。' +
-        (skip ? '<br>（あいまいなため見送り：' + skip + ' 件。個別の「🔗 写真を紐づける／変更する」でどうぞ）' : '') + '</p>';
+      if (listEl) listEl.innerHTML = '<p class="empty" style="padding:10px;text-align:center;">写真・ピンとも1つに定まる「写真のない番号付きピン」がありません。' +
+        (skip ? '<br>（あいまいなため見送り：' + skip + ' 件。個別の「🔗 写真を紐づける／変更する」でどうぞ）' : '') +
+        ((mode !== 'loose') ? '<br><span style="color:#0d47a1;">「ゆるく一致」に切り替えると、0埋め違いなども拾えます。</span>' : '') + '</p>';
       if (confirmBtn) confirmBtn.style.display = 'none';
     } else {
-      if (sumEl) sumEl.innerHTML = '番号がぴったり一致し、写真・ピンとも1つに定まる <strong>' + plan.links.length + '</strong> 件を紐づけます。' +
+      if (sumEl) sumEl.innerHTML = '写真・ピンとも1つに定まる <strong>' + plan.links.length + '</strong> 件を紐づけます。' +
         (skip ? '<br><span style="color:#c0392b;">あいまいなため見送り：' + skip + ' 件（個別に対応してください）</span>' : '');
       if (listEl) {
-        var h = '<table><thead><tr><th>番号</th><th>棟</th><th>紐づく写真</th></tr></thead><tbody>';
+        var h = '<table><thead><tr><th>ピンの番号</th><th>棟</th><th>紐づく写真</th></tr></thead><tbody>';
         plan.links.forEach(function(l){
           h += '<tr><td class="num">' + trkEsc(l.num) + '</td><td>' + trkEsc(l.building || '—') + '</td><td class="fn">' + trkEsc(l.photo.filename || '') + '</td></tr>';
         });
@@ -6340,12 +6493,29 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       if (confirmBtn) confirmBtn.style.display = 'block';
     }
+  }
+  function openBulkLinkModal() {
+    var modal = $('bulkLinkModal'); if (!modal) return;
+    renderBulkLinkPreview(getBulkLinkMode());
     modal.classList.add('show');
+  }
+  // 一括紐づけボタンの強調（点滅）：紐づけ可能な候補が（完全一致・ゆるく一致のどちらかで）あるときだけ脈打たせる。
+  function updateBulkLinkAttn() {
+    var btn = $('bulk-link-btn'); if (!btn) return;
+    var has = false;
+    try { has = (bulkLinkBuildPlan('exact').links.length > 0) || (bulkLinkBuildPlan('loose').links.length > 0); } catch (e) {}
+    btn.classList.toggle('bulklink-attn', !!has);
   }
   function setupBulkLink() {
     var btn = $('bulk-link-btn');
     if (btn) btn.addEventListener('click', openBulkLinkModal);
+    // 紐づけ状況を表示したときに、候補があれば一括ボタンを点滅させて気づきやすくする。
+    var showBtn = $('link-status-show');
+    if (showBtn) showBtn.addEventListener('click', function(){ setTimeout(function(){ try { updateBulkLinkAttn(); } catch (e) {} }, 0); });
     var modal = $('bulkLinkModal'); if (!modal) return;
+    document.querySelectorAll('.bulklink-mode-btn').forEach(function(b){
+      b.addEventListener('click', function(){ var m = (b.dataset.mode === 'loose') ? 'loose' : 'exact'; setBulkLinkMode(m); renderBulkLinkPreview(m); });
+    });
     var cancel = $('bulkLinkCancel'), confirmBtn = $('bulkLinkConfirm');
     if (cancel) cancel.addEventListener('click', function(){ modal.classList.remove('show'); });
     if (confirmBtn) confirmBtn.addEventListener('click', async function(){
@@ -12432,7 +12602,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         // (v3-141 抱き合わせ) 番号(pin.label)が写真1枚に一意一致するなら、その場で1タップ紐づけを提案。
         var _alBtn = $('pin-detail-autolink');
         var _alLbl = (pin.label != null) ? String(pin.label).trim() : '';
-        var _alCand = uniquePhotoForNum(_alLbl);
+        var _alCand = uniquePhotoForNum(_alLbl, getBulkLinkMode());
         if (_alBtn && _alCand) {
           pinDetailAutolinkPhotoId = _alCand.id;
           _alBtn.textContent = '🔗 番号 ' + _alLbl + ' の写真をこのピンに紐づける';
