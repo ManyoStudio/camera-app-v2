@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.150</title>
+<title>現場写真撮影アプリ v3.151</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2157,7 +2157,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.150 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
+  <span>📷 現場写真撮影アプリ v3.151 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2556,6 +2556,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <p class="card-title">📋 撮影リスト</p>
       <div class="stat-bar">
         <span>合計：<strong id="totalCount">0</strong> 枚</span>
+        <span>設備：<strong id="totalEquipCount">0</strong> 件</span>
         <span>容量：<strong id="totalSize">0 MB</strong></span>
       </div>
       <p id="storageEstimate" class="storage-estimate"></p>
@@ -3947,7 +3948,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.150）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.151）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -4273,8 +4274,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function renderLinkStatus(undoneOnly) {
     var data = buildLinkStatus();
     var sum = $('link-status-summary');
+    // v3-151：件数の“単位”を明示（紐づけ件数＝設備グループ数）。写真合計枚数も併記し「合計枚数≠件数」の誤解を防ぐ（表示のみ）。
+    var photoTotal = data.rows.reduce(function(s, r){ return s + (r.count || 0); }, 0);
     if (sum) sum.innerHTML = '済 <strong>' + data.done + '</strong> ／ 未 <strong>' + data.undone +
-      '</strong> ／ 計 <strong>' + data.total + '</strong> 件（紐づけ率 <strong>' + data.rate + '%</strong>）';
+      '</strong> ／ 計 <strong>' + data.total + '</strong> 件（紐づけ率 <strong>' + data.rate + '%</strong>）' +
+      '<br><span style="font-size:12px;color:#6e6e73;line-height:1.6;">件数は「設備（番号）」ごとの集計です（1設備で複数アングルを撮っても1件）。写真は合計 <strong>' + photoTotal + '</strong> 枚。</span>';
     var listEl = $('link-status-list');
     if (listEl) {
       var shown = data.rows.filter(function(r){ return undoneOnly ? !r.linked : true; });
@@ -5665,6 +5669,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     badgeCount.className = count > 0 ? 'badge-count' : 'badge-count zero';
     totalCount.textContent = count;
     exportCount.textContent = count;
+    // v3-151：設備件数（＝番号グループ数）を併記。撮影リストの「合計枚数」と紐づけ一覧の「件数」が
+    //   別単位（枚 vs 設備）だと一目で分かるようにする（表示のみ・写真配列の集計だけ＝mapData非依存・データ不変）。
+    var equipEl = $('totalEquipCount');
+    if (equipEl) {
+      var eg = {};
+      photos.forEach(function(p){ eg[equipmentKeyOf(p)] = 1; });
+      equipEl.textContent = Object.keys(eg).length;
+    }
     var totalBytes = photos.reduce(function(sum, p) { return sum + p.size; }, 0);
     totalSize.textContent = formatSize(totalBytes);
     
