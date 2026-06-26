@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.149</title>
+<title>現場写真撮影アプリ v3.150</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1843,6 +1843,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
     cursor: pointer; margin: 6px 0 0;
   }
+  /* v3-150：共有が使える端末でも「ダウンロードで保存」へ進める副ルート（弱め・主動線は共有のまま） */
+  .saveguide-dlalt {
+    width: 100%; background: #f5f5f7; color: #3a3a3c; border: 1px solid #d0d0d5;
+    border-radius: 12px; padding: 12px; font-size: 14px; font-weight: 700;
+    cursor: pointer; margin: 8px 0 0;
+  }
+  .saveguide-dlalt:active { background: #e8e8ed; }
   .saveguide-later {
     width: 100%; background: transparent; color: #8e8e93; border: none;
     border-radius: 10px; padding: 12px; font-size: 13px; font-weight: 600;
@@ -2080,6 +2087,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .offline-bar.show { display:block; }
   .offline-bar .dot { display:inline-block; width:9px; height:9px; border-radius:50%; background:#fff; margin-right:6px; vertical-align:middle; animation: offlineBlink 1.2s ease-in-out infinite; }
   @keyframes offlineBlink { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+  /* v3-150：画面上部に固定の「未保存」バナー。未保存>0のときだけ出てスクロールしても常に見える。タップで保存タブへ。 */
+  .unsaved-bar { position: sticky; top: 0; z-index: 11; display:none; background:#c0392b; box-shadow:0 2px 6px rgba(0,0,0,0.25); }
+  .unsaved-bar.show { display:block; }
+  .unsaved-bar-btn { width:100%; background:transparent; color:#fff; border:none; padding:9px 12px; font-size:13px; font-weight:800; line-height:1.4; cursor:pointer; text-align:center; }
+  .unsaved-bar-btn strong { font-size:16px; }
+  .unsaved-bar-btn:active { background: rgba(0,0,0,0.18); }
   /* 説明文の折りたたみ（UX：動線短縮。説明文だけを個別に開閉。入力欄は対象外） */
   .desc-toggle { display:inline-flex; align-items:center; gap:6px; font-size:13px; font-weight:700; cursor:pointer; padding:7px 13px; margin:0 0 8px; border-radius:10px; line-height:1.3; border:1px solid transparent; -webkit-user-select:none; user-select:none; }
   .desc-toggle .desc-chevron { font-size:11px; }
@@ -2144,8 +2157,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.149 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-25）</span></span>
+  <span>📷 現場写真撮影アプリ v3.150 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
+</div>
+
+<!-- v3-150：画面上部に固定の「未保存」バナー（未保存>0のときだけ表示・スクロールしても常に見える・タップで保存タブへ） -->
+<div id="unsavedBar" class="unsaved-bar">
+  <button id="unsavedBarBtn" class="unsaved-bar-btn" type="button">⚠️ 未保存 <strong id="unsavedBarNum">0</strong> 枚 — タップして保存（バックアップ）</button>
 </div>
 
 <div id="continuous-banner" class="continuous-banner" style="display:none;">
@@ -3753,13 +3771,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!actions) return;
     var confirmed = false;
 
-    // 「まだ保存できていません」状態にリセット
+    // 「まだ保存できていません」状態にリセット（毎回、共有モードの既定文言に確定的に戻す）
     if (content) content.classList.remove('ok-top');
     iconEl.textContent = '📤';
     statusEl.textContent = 'まだ保存できていません';
     statusEl.className = 'saveguide-status danger';
-    subEl.style.display = '';
-    stepsEl.style.display = '';
+    if (subEl) {
+      subEl.textContent = 'ZIPファイルを作りました。下のボタンで「ファイル」アプリなど消えない場所に保存してください。保存するまで、右上の未保存の数字は消えません。';
+      subEl.style.display = '';
+    }
+    if (stepsEl) {
+      stepsEl.innerHTML =
+        '<div class="saveguide-step"><span class="sg-num">①</span><span>下の「📤 ファイルに保存（共有）」を押す</span></div>' +
+        '<div class="saveguide-step"><span class="sg-num">②</span><span>「&#8220;ファイル&#8221;に保存」を選んで保存する</span></div>';
+      stepsEl.style.display = '';
+    }
     laterBtn.style.display = '';
     actions.innerHTML = '';
 
@@ -3783,6 +3809,37 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (typeof onConfirmedSave === 'function') { try { onConfirmedSave(); } catch(e){} }
     }
 
+    // v3-150：ダウンロード経路の「前後確認」フロー（共有可・不可の両方から呼ぶ）。
+    // 事前案内（このあと確認が出ます）→①②③の番号手順→DLリンク→事後の明示確認「✅保存できた」。
+    // 未保存リセットは「✅保存できた」を押したときだけ（ダウンロードを押しただけでは確定しない＝“保存したつもり”を作らない）。
+    function renderDownloadFallback() {
+      if (subEl) subEl.textContent = 'ダウンロードで保存します。下の手順どおりに進め、保存できたら必ず最後の「✅ 保存できた」を押してください（押すまで右上の未保存の数字は消えません）。';
+      if (stepsEl) {
+        stepsEl.innerHTML =
+          '<div class="saveguide-step"><span class="sg-num">①</span><span>下の「⬇ ダウンロードして保存」を押す</span></div>' +
+          '<div class="saveguide-step"><span class="sg-num">②</span><span>「ダウンロードしますか？」と出たら、必ず「ダウンロード」を押す</span></div>' +
+          '<div class="saveguide-step"><span class="sg-num">③</span><span>保存できたら「✅ 保存できた（確認した）」を押す</span></div>';
+        stepsEl.style.display = '';
+      }
+      actions.innerHTML = '';
+      var info = document.createElement('p');
+      info.className = 'saveguide-dlinfo';
+      info.textContent = 'このあと「ダウンロードしますか？」と出たら、必ず「ダウンロード」を押してください。';
+      actions.appendChild(info);
+      var dl = document.createElement('a');
+      dl.href = URL.createObjectURL(blob);
+      dl.download = filename;
+      dl.className = 'saveguide-dl';
+      dl.textContent = '⬇ ダウンロードして保存：' + filename;
+      actions.appendChild(dl);
+      var ok = document.createElement('button');
+      ok.type = 'button';
+      ok.className = 'saveguide-confirm';
+      ok.textContent = '✅ ファイルに保存できた（確認した）';
+      ok.addEventListener('click', function(){ showSavedState(); });   // 明示確認のみで確定
+      actions.appendChild(ok);
+    }
+
     // 端末が files 共有に対応しているか
     var f = null, canShareFiles = false;
     try {
@@ -3803,24 +3860,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         } catch(e){}
       });
       actions.appendChild(go);
+      // v3-150：共有がうまくいかない／使いたくないとき用の副ルート。押すと前後確認つきの
+      // ダウンロードフローに切り替わる（主動線は共有のまま。誤確定は起きない）。
+      var dlAlt = document.createElement('button');
+      dlAlt.type = 'button';
+      dlAlt.className = 'saveguide-dlalt';
+      dlAlt.textContent = '⬇ 共有がうまくいかないときは、ダウンロードで保存';
+      dlAlt.addEventListener('click', function(){ renderDownloadFallback(); });
+      actions.appendChild(dlAlt);
     } else {
-      // 共有が使えない端末：ダウンロード経路を前後の明示確認で挟む（(2)の事前/事後案内）。
-      var info = document.createElement('p');
-      info.className = 'saveguide-dlinfo';
-      info.textContent = 'このあと「ダウンロードしますか？」と出たら、必ず「ダウンロード」を押してください。';
-      actions.appendChild(info);
-      var dl = document.createElement('a');
-      dl.href = URL.createObjectURL(blob);
-      dl.download = filename;
-      dl.className = 'saveguide-dl';
-      dl.textContent = '⬇ ダウンロードして保存：' + filename;
-      actions.appendChild(dl);
-      var ok = document.createElement('button');
-      ok.type = 'button';
-      ok.className = 'saveguide-confirm';
-      ok.textContent = '✅ ファイルに保存できた（確認した）';
-      ok.addEventListener('click', function(){ showSavedState(); });   // 明示確認のみで確定
-      actions.appendChild(ok);
+      // 共有が使えない端末：最初からダウンロードの前後確認フロー。
+      renderDownloadFallback();
     }
 
     // 唯一の退避：保存扱いにしない（未保存のまま閉じる）。背景タップ・×では閉じない。
@@ -3897,7 +3947,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.149）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.150）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -4273,6 +4323,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var blob = new Blob([linkStatusCsvText(data.rows)], { type: 'text/csv;charset=utf-8;' });
     var holder = $('link-status-save'); if (holder) holder.innerHTML = '';
     appendSaveLinkApp(holder, blob, 'linkstatus_' + localStamp() + '.csv', function(){ /* 読み取り専用＝未保存リセット不要 */ });
+  }
+  // v3-150：上部固定「未保存」バナーのタップ→保存タブへ移動し「すべて保存」カードへ誘導（goto-save-btn と同じ動線）。
+  function setupUnsavedBar() {
+    var btn = $('unsavedBarBtn');
+    if (!btn) return;
+    btn.addEventListener('click', function(){
+      var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click();
+      setTimeout(function(){ var c = document.getElementById('export-full-card'); if (c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
+    });
   }
   function setupLinkStatus() {
     var showBtn = $('link-status-show');
@@ -5507,6 +5566,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var incU = $('incUnsavedCount'); if (incU) incU.textContent = u;
     if (u > 0) pill.classList.add('show');
     else pill.classList.remove('show');
+    // v3-150：上部固定バナーも同じ未保存件数で出し入れ
+    var bar = $('unsavedBar'); var barNum = $('unsavedBarNum');
+    if (bar && barNum) {
+      barNum.textContent = u;
+      if (u > 0) bar.classList.add('show');
+      else bar.classList.remove('show');
+    }
   }
 
   // v3-136：未保存の写真があるのにタブを閉じる/再読み込み/離脱しようとしたら、ブラウザ標準の確認を出す（データ消失の保険）。
@@ -14023,6 +14089,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setupQaIntro();            // v3-144：Q&A先頭「はじめての方へ」の開閉
     setupQaTrouble();          // v3-148：Q&A最上部「アプリが使えないときは」症状ルーター
     setupLinkStatus();         // (β) 紐づけ状況の見える化（読み取り専用）
+    setupUnsavedBar();         // v3-150：上部固定「未保存」バナーのタップ→保存タブへ
     setupBulkLink();           // (v3-141) 一括紐づけ（番号一致・一意のみ・プレビュー付）
     setupTHelper();            // T評価の参考補助（候補提案・自動入力なし）
     setupTHelperSheet();       // v3-116：T評価 参考補助シート（押すだけ確定・スキーマ非変更）
