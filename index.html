@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.154</title>
+<title>現場写真撮影アプリ v3.155</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -699,6 +699,47 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .layer-done-btn {
     width: 100%; background: #34c759; color: #fff; border: none; border-radius: 10px;
     padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  /* v3-155：位置合わせオーバーレイ＆バー */
+  #layer-align-overlay {
+    position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+    object-fit: fill; z-index: 45; touch-action: none; user-select: none; -webkit-user-select: none;
+    outline: 2px dashed rgba(88,86,214,0.9); outline-offset: -2px;
+  }
+  .layer-align-bar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
+    background: #fff; border-top: 1px solid #d9d7ef; box-shadow: 0 -4px 14px rgba(0,0,0,0.12);
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); max-height: 60vh; overflow-y: auto;
+  }
+  .layer-align-title { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #3a2fb0; }
+  .layer-align-hint { margin: 0 0 10px; font-size: 12px; line-height: 1.6; color: #6e6e73; }
+  .layer-align-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .layer-align-row > span:first-child { font-size: 12px; color: #6e6e73; width: 40px; flex-shrink: 0; }
+  .layer-align-row input[type=range] { flex: 1; }
+  .layer-align-val { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; }
+  .layer-align-nudge { display: flex; align-items: center; gap: 6px; margin: 4px 0 12px; flex-wrap: wrap; }
+  .layer-align-nudge > span { font-size: 12px; color: #6e6e73; margin-right: 2px; }
+  .layer-nudge-btn {
+    background: #f0f0f5; border: 1px solid #d0d0d5; border-radius: 8px; padding: 8px 12px;
+    font-size: 14px; cursor: pointer;
+  }
+  .layer-nudge-btn:active { background: #e2e2ea; }
+  .layer-align-reset {
+    background: #fff; border: 1px solid #c7c7cc; color: #6e6e73; border-radius: 8px;
+    padding: 8px 12px; font-size: 13px; cursor: pointer; margin-left: auto;
+  }
+  .layer-align-foot { display: flex; gap: 10px; }
+  .layer-align-cancel {
+    flex: 1; background: #f0f0f5; color: #3a3a3c; border: 1px solid #d0d0d5; border-radius: 10px;
+    padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+  .layer-align-done {
+    flex: 2; background: #34c759; color: #fff; border: none; border-radius: 10px;
+    padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
+  }
+  .layer-align-btn {
+    background: #fff; color: #5856d6; border: 1px solid #c9c7f0; border-radius: 8px;
+    padding: 6px 8px; font-size: 13px; cursor: pointer; line-height: 1; flex-shrink: 0;
   }
   .map-empty {
     font-size: 13px;
@@ -2221,7 +2262,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.154 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
+  <span>📷 現場写真撮影アプリ v3.155 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3226,6 +3267,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="pin-editor-stage" id="pin-editor-stage">
     <div class="pin-editor-imgwrap" id="pin-editor-imgwrap">
       <img id="pin-editor-img" alt="マップ" />
+      <img id="layer-align-overlay" alt="" style="display:none;" />
       <canvas id="draw-canvas" class="draw-canvas" style="display:none;"></canvas>
       <svg id="vector-svg" class="vector-svg" style="display:none;" preserveAspectRatio="none"></svg>
     </div>
@@ -3357,6 +3399,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
   </div>
   <input type="file" id="layer-add-input" accept="image/*" style="display:none;" />
+
+  <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
+  <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
+    <p class="layer-align-title">◇ 位置合わせ：<span id="layer-align-name">レイヤー</span></p>
+    <p class="layer-align-hint">画像を<strong>指でドラッグ</strong>して移動、<strong>大きさ</strong>スライダで拡大縮小。下敷き（他のレイヤー）に外形が重なるように合わせてください。<strong>透け具合</strong>で見比べられます。</p>
+    <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><span class="layer-align-val" id="layer-align-scale-val">100%</span></div>
+    <div class="layer-align-row"><span>透け</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><span class="layer-align-val" id="layer-align-op-val">100%</span></div>
+    <div class="layer-align-nudge">
+      <span>微調整</span>
+      <button class="layer-nudge-btn" data-nudge="left" title="左へ">◀</button>
+      <button class="layer-nudge-btn" data-nudge="up" title="上へ">▲</button>
+      <button class="layer-nudge-btn" data-nudge="down" title="下へ">▼</button>
+      <button class="layer-nudge-btn" data-nudge="right" title="右へ">▶</button>
+      <button class="layer-align-reset" id="layer-align-reset">リセット</button>
+    </div>
+    <div class="layer-align-foot">
+      <button class="layer-align-cancel" id="layer-align-cancel">✕ キャンセル</button>
+      <button class="layer-align-done" id="layer-align-done">✅ この位置で確定</button>
+    </div>
+  </div>
 
   <div class="vector-toolbar" id="vector-toolbar" style="display:none;">
     <div class="vector-row" id="vector-tool-row">
@@ -4029,7 +4091,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.154）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.155）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10858,7 +10920,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return loadImageAsync(url).then(function(im){ _layerImgCache[url] = im; return im; });
   }
   // 表示レイヤーを下→上に合成。フレーム寸法は「最背面レイヤー(layers[0])」の自然寸法に固定（ピンの％がずれないように）。
-  async function flattenLayers(sheet) {
+  // v3-155：各レイヤーの変形（tx,ty＝フレーム幅高に対する割合／scale＝倍率）を適用。既定 tx=0,ty=0,scale=1＝フレーム全面（Stage1と同一）。
+  //   skipId を渡すとそのレイヤーを除外（位置合わせ中の下敷き用）。
+  async function flattenLayers(sheet, skipId) {
     ensureSheetLayers(sheet);
     var frameSrc = sheet.layers[0] && sheet.layers[0].dataUrl;
     var W = 1000, H = 750;
@@ -10866,12 +10930,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var off = document.createElement('canvas'); off.width = W; off.height = H;
     var ctx = off.getContext('2d');
     ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);   // 全非表示でも白紙フレームで安全
-    var vis = sheet.layers.filter(function(L){ return L.visible !== false && L.dataUrl; });
+    var vis = sheet.layers.filter(function(L){ return L.visible !== false && L.dataUrl && L.id !== skipId; });
     for (var i = 0; i < vis.length; i++) {
       try {
-        var im = await decodeLayerImg(vis[i].dataUrl);
-        ctx.globalAlpha = (typeof vis[i].opacity === 'number') ? Math.max(0, Math.min(1, vis[i].opacity)) : 1;
-        ctx.drawImage(im, 0, 0, W, H);
+        var L = vis[i];
+        var im = await decodeLayerImg(L.dataUrl);
+        ctx.globalAlpha = (typeof L.opacity === 'number') ? Math.max(0, Math.min(1, L.opacity)) : 1;
+        var sc = (typeof L.scale === 'number' && L.scale > 0) ? L.scale : 1;
+        var tx = (typeof L.tx === 'number') ? L.tx : 0;
+        var ty = (typeof L.ty === 'number') ? L.ty : 0;
+        ctx.drawImage(im, tx * W, ty * H, W * sc, H * sc);
       } catch(e){}
     }
     ctx.globalAlpha = 1;
@@ -10926,7 +10994,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         + '<button class="layer-move-btn" data-act="down" data-li="' + vi + '"' + (vi === 0 ? ' disabled' : '') + ' title="背面へ">▼</button>'
         + '<button class="layer-del-btn" data-act="del" data-li="' + vi + '" title="削除">🗑</button>'
         + '</div>'
-        + '<div class="layer-op-row"><span>透明</span><input type="range" min="0" max="100" value="' + op + '" data-act="op" data-li="' + vi + '"><span>濃</span><span class="layer-op-val">' + op + '%</span></div>'
+        + '<div class="layer-op-row"><span>透明</span><input type="range" min="0" max="100" value="' + op + '" data-act="op" data-li="' + vi + '"><span>濃</span><span class="layer-op-val">' + op + '%</span>'
+        + '<button class="layer-align-btn" data-act="align" data-li="' + vi + '"' + (vi === 0 ? ' disabled title="最背面は下敷きなので位置合わせ不要"' : ' title="移動・拡大縮小で下敷きに合わせる"') + '>◇ 位置合わせ</button>'
+        + '</div>'
         + '</div>';
     }
     listEl.innerHTML = html;
@@ -10940,6 +11010,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           refreshLayerComposite(s, false);
         });
         el.addEventListener('change', function(){ var s = resolveSheet(editSheetRef); if (s) refreshLayerComposite(s, true); });
+      } else if (act === 'align') {
+        el.addEventListener('click', function(){ if (!el.disabled) enterAlignMode(li); });
       } else {
         el.addEventListener('click', function(){ layerAction(act, li); });
       }
@@ -11003,6 +11075,138 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (pinEditorImg && pinEditorImg.src !== sheet.dataUrl) { pinEditorImg.onload = function(){ pinEditorImg.onload = null; renderPins(); }; pinEditorImg.src = sheet.dataUrl; }
       else { renderPins(); }
     }
+  }
+
+  // ===== v3-155：レイヤー位置合わせ（選択レイヤーの移動・拡大縮小）＝ステージ2 =====
+  var alignLayerId = null;   // 位置合わせ中のレイヤーid
+  var alignPrev = null;      // キャンセル用スナップショット
+  function _alignLayer() {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet || !Array.isArray(sheet.layers)) return null;
+    for (var i = 0; i < sheet.layers.length; i++) { if (sheet.layers[i].id === alignLayerId) return sheet.layers[i]; }
+    return null;
+  }
+  function updateAlignOverlay() {
+    var ov = $('layer-align-overlay'); var L = _alignLayer();
+    if (!ov || !L) return;
+    var sc = (typeof L.scale === 'number' && L.scale > 0) ? L.scale : 1;
+    var tx = (typeof L.tx === 'number') ? L.tx : 0;
+    var ty = (typeof L.ty === 'number') ? L.ty : 0;
+    ov.style.left = (tx * 100) + '%';
+    ov.style.top = (ty * 100) + '%';
+    ov.style.width = (sc * 100) + '%';
+    ov.style.height = (sc * 100) + '%';
+    ov.style.opacity = (typeof L.opacity === 'number') ? L.opacity : 1;
+  }
+  function _hideEditorMarkers() {
+    if (!pinEditorImgwrap) return;
+    Array.from(pinEditorImgwrap.querySelectorAll('.pin-marker, .memo-icon, .arrow-svg, .arrow-handle, .pin-caption')).forEach(function(el){ el.style.display = 'none'; });
+  }
+  function _showEditorMarkers() {
+    if (!pinEditorImgwrap) return;
+    Array.from(pinEditorImgwrap.querySelectorAll('.pin-marker, .memo-icon, .arrow-svg, .arrow-handle, .pin-caption')).forEach(function(el){ el.style.display = ''; });
+  }
+  async function enterAlignMode(li) {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet) return;
+    ensureSheetLayers(sheet);
+    var L = sheet.layers[li];
+    if (!L || li === 0) return;   // 最背面は下敷きなので位置合わせ対象外
+    if (typeof L.scale !== 'number') L.scale = 1;
+    if (typeof L.tx !== 'number') L.tx = 0;
+    if (typeof L.ty !== 'number') L.ty = 0;
+    alignLayerId = L.id;
+    alignPrev = { scale: L.scale, tx: L.tx, ty: L.ty, opacity: L.opacity };
+    var base = await flattenLayers(sheet, L.id);   // 下敷き＝選択以外
+    if (pinEditorImg) { pinEditorImg.onload = null; pinEditorImg.src = base; }
+    var ov = $('layer-align-overlay');
+    if (ov) { ov.src = L.dataUrl; ov.style.display = 'block'; }
+    updateAlignOverlay();
+    _hideEditorMarkers();
+    var lt = $('layer-toolbar'); if (lt) lt.style.display = 'none';
+    var ab = $('layer-align-bar'); if (ab) ab.style.display = 'block';
+    var nm = $('layer-align-name'); if (nm) nm.textContent = L.name || 'レイヤー';
+    var ss = $('layer-align-scale'); if (ss) ss.value = Math.round(L.scale * 100);
+    var sv = $('layer-align-scale-val'); if (sv) sv.textContent = Math.round(L.scale * 100) + '%';
+    var ocur = (typeof L.opacity === 'number') ? L.opacity : 1;
+    var os = $('layer-align-op'); if (os) os.value = Math.round(ocur * 100);
+    var ovv = $('layer-align-op-val'); if (ovv) ovv.textContent = Math.round(ocur * 100) + '%';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '◇ 画像を指でドラッグ＝移動／「大きさ」で拡大縮小。下敷きに外形を合わせて「確定」';
+    if (pinEditorStage) pinEditorStage.style.touchAction = 'none';
+    setupAlignDrag();
+  }
+  async function commitAlign() {
+    var sheet = resolveSheet(editSheetRef);
+    alignLayerId = null; alignPrev = null;
+    var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
+    var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
+    var lt = $('layer-toolbar'); if (lt) lt.style.display = 'block';
+    if (pinEditorStage) pinEditorStage.style.touchAction = '';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
+    if (sheet) { await refreshLayerComposite(sheet, true); }   // 変形込みで平坦化・保存・表示更新
+    _showEditorMarkers();
+    renderLayerPanel();
+  }
+  function cancelAlign() {
+    var L = _alignLayer();
+    if (L && alignPrev) { L.scale = alignPrev.scale; L.tx = alignPrev.tx; L.ty = alignPrev.ty; L.opacity = alignPrev.opacity; }
+    var sheet = resolveSheet(editSheetRef);
+    alignLayerId = null; alignPrev = null;
+    var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
+    var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
+    var lt = $('layer-toolbar'); if (lt) lt.style.display = 'block';
+    if (pinEditorStage) pinEditorStage.style.touchAction = '';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
+    _showEditorMarkers();
+    if (sheet) { var s2 = sheet; applyLayers(s2).then(function(){ if (pinEditorImg) pinEditorImg.src = s2.dataUrl; }); }
+    renderLayerPanel();
+  }
+  function forceExitAlign() {
+    alignLayerId = null; alignPrev = null;
+    var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
+    var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
+    if (pinEditorStage) pinEditorStage.style.touchAction = '';
+  }
+  var _alignDragWired = false;
+  function setupAlignDrag() {
+    var ov = $('layer-align-overlay');
+    if (!ov || _alignDragWired) return;
+    _alignDragWired = true;
+    var dragging = false, startRect = null, startTx = 0, startTy = 0, sx0 = 0, sy0 = 0, rafId = null, pend = null;
+    function flush() {
+      rafId = null; if (!pend) return;
+      var L = _alignLayer(); if (!L) return;
+      L.tx = pend.tx; L.ty = pend.ty; updateAlignOverlay();
+    }
+    ov.addEventListener('pointerdown', function(ev){
+      if (alignLayerId == null) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var L = _alignLayer(); if (!L) return;
+      dragging = true;
+      startRect = pinEditorImg ? pinEditorImg.getBoundingClientRect() : { left:0, top:0, width:1, height:1 };
+      startTx = (typeof L.tx === 'number') ? L.tx : 0;
+      startTy = (typeof L.ty === 'number') ? L.ty : 0;
+      sx0 = ev.clientX; sy0 = ev.clientY;
+      if (ov.setPointerCapture) { try { ov.setPointerCapture(ev.pointerId); } catch(e){} }
+    });
+    ov.addEventListener('pointermove', function(ev){
+      if (!dragging) return;
+      ev.preventDefault(); ev.stopPropagation();
+      var rect = startRect || (pinEditorImg ? pinEditorImg.getBoundingClientRect() : { width:1, height:1 });
+      var dx = (ev.clientX - sx0) / (rect.width || 1);
+      var dy = (ev.clientY - sy0) / (rect.height || 1);
+      pend = { tx: startTx + dx, ty: startTy + dy };
+      if (rafId === null) rafId = requestAnimationFrame(flush);
+    });
+    function endDrag(ev){
+      if (!dragging) return;
+      ev.preventDefault(); ev.stopPropagation();
+      if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+      flush(); pend = null; dragging = false; startRect = null;
+      if (ov.releasePointerCapture) { try { ov.releasePointerCapture(ev.pointerId); } catch(e){} }
+    }
+    ov.addEventListener('pointerup', endDrag);
+    ov.addEventListener('pointercancel', endDrag);
   }
 
   function enterVectorMode() {
@@ -11422,6 +11626,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function closePinEditor() {
     if (drawMode) { drawMode = false; var tb = $('draw-toolbar'); if (tb) tb.style.display = 'none'; var tl = document.querySelector('.pin-editor-tools'); if (tl) tl.style.display = ''; if (drawCanvasEl) drawCanvasEl.style.display = 'none'; }
     if (layerMode) { try { exitLayerMode(); } catch(e) { layerMode = false; var lt = $('layer-toolbar'); if (lt) lt.style.display = 'none'; var lts = document.querySelector('.pin-editor-tools'); if (lts) lts.style.display = ''; } }
+    try { forceExitAlign(); } catch(e) {}
     pinEditor.style.display = 'none';
     editSheetRef = null;
     pendingAutoPhotoId = null;
@@ -13560,6 +13765,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     layerAddBtn.addEventListener('click', function(){ layerAddInput.value = ''; layerAddInput.click(); });
     layerAddInput.addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; if (f) addLayerFromFile(f); });
   }
+  // v3-155：位置合わせバー
+  var laScale = $('layer-align-scale');
+  if (laScale) laScale.addEventListener('input', function(){ var L = _alignLayer(); if (!L) return; L.scale = Math.max(0.2, Math.min(3, (parseInt(laScale.value, 10) || 100) / 100)); var v = $('layer-align-scale-val'); if (v) v.textContent = Math.round(L.scale * 100) + '%'; updateAlignOverlay(); });
+  var laOp = $('layer-align-op');
+  if (laOp) laOp.addEventListener('input', function(){ var L = _alignLayer(); if (!L) return; L.opacity = Math.max(0, Math.min(100, parseInt(laOp.value, 10) || 0)) / 100; var v = $('layer-align-op-val'); if (v) v.textContent = Math.round(L.opacity * 100) + '%'; updateAlignOverlay(); });
+  Array.prototype.forEach.call(document.querySelectorAll('.layer-nudge-btn'), function(b){
+    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var step = 0.01; var d = b.dataset.nudge; if (d === 'left') L.tx = (L.tx || 0) - step; else if (d === 'right') L.tx = (L.tx || 0) + step; else if (d === 'up') L.ty = (L.ty || 0) - step; else if (d === 'down') L.ty = (L.ty || 0) + step; updateAlignOverlay(); });
+  });
+  var laReset = $('layer-align-reset');
+  if (laReset) laReset.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; L.scale = 1; L.tx = 0; L.ty = 0; var ss = $('layer-align-scale'); if (ss) ss.value = 100; var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%'; updateAlignOverlay(); });
+  var laDone = $('layer-align-done'); if (laDone) laDone.addEventListener('click', function(){ commitAlign(); });
+  var laCancel = $('layer-align-cancel'); if (laCancel) laCancel.addEventListener('click', function(){ cancelAlign(); });
 
   // ===== 位置記録タブ：撮影位置を図面に記録（マッピング選択UI）=====
   var pinSectionToggle = $('pin-section-toggle');
