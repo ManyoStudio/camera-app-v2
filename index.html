@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.153</title>
+<title>現場写真撮影アプリ v3.154</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -659,6 +659,46 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     width: 100%; background: transparent; color: #8e8e93; border: 1px dashed #c7c7cc;
     border-radius: 10px; padding: 9px; font-size: 13px; font-weight: 600;
     cursor: pointer; margin: 0 0 12px;
+  }
+  /* v3-154：レイヤーツールバー */
+  .layer-toolbar {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+    background: #fff; border-top: 1px solid #d9d7ef; box-shadow: 0 -4px 14px rgba(0,0,0,0.12);
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); max-height: 62vh; overflow-y: auto;
+  }
+  .layer-tb-title { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #3a2fb0; }
+  .layer-tb-hint { margin: 0 0 10px; font-size: 12px; line-height: 1.6; color: #6e6e73; }
+  .layer-add-btn {
+    width: 100%; background: #5856d6; color: #fff; border: none; border-radius: 10px;
+    padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin: 0 0 10px;
+  }
+  .layer-add-btn:active { background: #4b49c0; }
+  .layer-list { display: flex; flex-direction: column; gap: 8px; }
+  .layer-row {
+    border: 1px solid #e2e0f2; border-radius: 10px; padding: 9px 10px; background: #fafaff;
+  }
+  .layer-row.top-hint { }
+  .layer-row-head { display: flex; align-items: center; gap: 8px; }
+  .layer-vis-btn {
+    background: #fff; border: 1px solid #d0d0d5; border-radius: 8px; padding: 6px 9px;
+    font-size: 15px; cursor: pointer; line-height: 1; flex-shrink: 0;
+  }
+  .layer-vis-btn.off { opacity: 0.4; }
+  .layer-name { flex: 1; font-size: 13px; font-weight: 700; color: #333; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .layer-move-btn, .layer-del-btn {
+    background: #fff; border: 1px solid #d0d0d5; border-radius: 8px; padding: 6px 8px;
+    font-size: 13px; cursor: pointer; line-height: 1; flex-shrink: 0;
+  }
+  .layer-del-btn { color: #ff3b30; border-color: #ffccc7; }
+  .layer-move-btn:disabled { opacity: 0.3; cursor: default; }
+  .layer-op-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+  .layer-op-row span { font-size: 11px; color: #6e6e73; flex-shrink: 0; }
+  .layer-op-row input[type=range] { flex: 1; }
+  .layer-op-val { width: 42px; text-align: right; font-variant-numeric: tabular-nums; }
+  .layer-tb-foot { margin-top: 12px; }
+  .layer-done-btn {
+    width: 100%; background: #34c759; color: #fff; border: none; border-radius: 10px;
+    padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
   }
   .map-empty {
     font-size: 13px;
@@ -2181,7 +2221,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.153 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
+  <span>📷 現場写真撮影アプリ v3.154 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-06-26）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3264,6 +3304,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="pin-editor-tools">
     <button id="draw-mode-btn" class="draw-mode-btn">✏️ マップに手描きする</button>
     <button id="vector-mode-btn" class="draw-mode-btn" style="background:#0a7d4b;">📐 直線で作図（CAD用）</button>
+    <button id="layer-mode-btn" class="draw-mode-btn" style="background:#5856d6;">🗂 レイヤー（下地の重ね合わせ）</button>
     <button id="place-from-photo-btn" class="place-from-photo-btn">📷 写真を選んでピンを置く</button>
     <div class="marker-type-row" id="marker-type-row">
       <button class="marker-type-btn selected" data-type="pin">📍 ピン</button>
@@ -3304,6 +3345,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button type="button" class="pin-sheet-cancel" id="pin-photo-picker-cancel">キャンセル</button>
     </div>
   </div>
+
+  <!-- v3-154：レイヤー（下地の重ね合わせ）ツールバー -->
+  <div class="layer-toolbar" id="layer-toolbar" style="display:none;">
+    <p class="layer-tb-title">🗂 レイヤー（下地の重ね合わせ）</p>
+    <p class="layer-tb-hint">複数の図面（客先配置図・平面図など）を重ねられます。<strong>不透明度</strong>で透かして見比べ、<strong>👁</strong>で表示/非表示、いらない下地は<strong>🗑</strong>で削除。<strong>ピンは常に残ります</strong>。上にあるものが手前です。</p>
+    <button id="layer-add-btn" class="layer-add-btn">＋ レイヤーを追加（画像を重ねる）</button>
+    <div id="layer-list" class="layer-list"></div>
+    <div class="layer-tb-foot">
+      <button id="layer-done-btn" class="layer-done-btn">✅ 閉じる</button>
+    </div>
+  </div>
+  <input type="file" id="layer-add-input" accept="image/*" style="display:none;" />
 
   <div class="vector-toolbar" id="vector-toolbar" style="display:none;">
     <div class="vector-row" id="vector-tool-row">
@@ -3976,7 +4029,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.153）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.154）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -9922,7 +9975,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       bgDataUrl: sheet.bgDataUrl,
       dataUrl: sheet.dataUrl,
       drawDataUrl: (sheet.drawDataUrl != null ? sheet.drawDataUrl : null),
-      vectorLines: Array.isArray(sheet.vectorLines) ? JSON.parse(JSON.stringify(sheet.vectorLines)) : null
+      vectorLines: Array.isArray(sheet.vectorLines) ? JSON.parse(JSON.stringify(sheet.vectorLines)) : null,
+      layers: Array.isArray(sheet.layers) ? JSON.parse(JSON.stringify(sheet.layers)) : null   // v3-154整合
     };
 
     // 作図線(vectorLines=画像自然座標)を新下地の寸法へ比率スケール（ピンは％なので不要）
@@ -9953,6 +10007,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     } else {
       sheet.dataUrl = newUrl;
     }
+    // v3-154整合：レイヤーがあるシートは、差し替え後の下地を単一レイヤーに集約（layersとbgDataUrlの不整合を防ぐ）
+    if (Array.isArray(sheet.layers)) {
+      sheet.layers = [{ id: genId(), name: '背景（元の図面）', dataUrl: newUrl, opacity: 1, visible: true }];
+    }
 
     try { await saveMapData(mapData); } catch (e) {}
     if (mapSheetImg) mapSheetImg.src = sheet.dataUrl;
@@ -9970,6 +10028,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     sheet.dataUrl = prev.dataUrl;
     sheet.drawDataUrl = prev.drawDataUrl;
     if (prev.vectorLines != null) sheet.vectorLines = JSON.parse(JSON.stringify(prev.vectorLines));
+    if (prev.layers != null) sheet.layers = JSON.parse(JSON.stringify(prev.layers)); else if (Array.isArray(sheet.layers)) { delete sheet.layers; }   // v3-154整合
     delete prevBaseBySheet[currentSheetId];
     try { await saveMapData(mapData); } catch (e) {}
     if (mapSheetImg) mapSheetImg.src = sheet.dataUrl;
@@ -10780,6 +10839,172 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (tool === 'poly') updatePolyUI();
     renderVectorLines();
   }
+  // ===== v3-154：レイヤー（下地の重ね合わせ）＝ステージ1 =====
+  // 複数の背景画像を重ねて 不透明度／表示・非表示／並べ替え／削除。ピンは％座標なので常に最前面に残る。
+  // 互換アンカー：sheet.dataUrl は「表示レイヤーを平坦化した合成結果」を常に保持
+  //   → プレビュー・ビューア（VIEWER_TEMPLATE 無改変）・保存/復元・ZIP/CSV は一切変えずに動作。
+  // 後方互換：layers[] が無いシートは、パネルを開いた時に bgDataUrl から単一レイヤーを生成（見た目不変）。
+  var _layerImgCache = {};      // dataUrl -> 復号済みImage（合成を速く）
+  var _layerSaveTimer = null;
+  function ensureSheetLayers(sheet) {
+    if (!sheet) return;
+    if (!Array.isArray(sheet.layers) || sheet.layers.length === 0) {
+      sheet.layers = [{ id: genId(), name: '背景（元の図面）', dataUrl: (sheet.bgDataUrl || sheet.dataUrl || ''), opacity: 1, visible: true }];
+    }
+  }
+  function decodeLayerImg(url) {
+    if (!url) return Promise.reject(new Error('no url'));
+    if (_layerImgCache[url]) return Promise.resolve(_layerImgCache[url]);
+    return loadImageAsync(url).then(function(im){ _layerImgCache[url] = im; return im; });
+  }
+  // 表示レイヤーを下→上に合成。フレーム寸法は「最背面レイヤー(layers[0])」の自然寸法に固定（ピンの％がずれないように）。
+  async function flattenLayers(sheet) {
+    ensureSheetLayers(sheet);
+    var frameSrc = sheet.layers[0] && sheet.layers[0].dataUrl;
+    var W = 1000, H = 750;
+    if (frameSrc) { try { var fi = await decodeLayerImg(frameSrc); W = fi.naturalWidth || W; H = fi.naturalHeight || H; } catch(e){} }
+    var off = document.createElement('canvas'); off.width = W; off.height = H;
+    var ctx = off.getContext('2d');
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, W, H);   // 全非表示でも白紙フレームで安全
+    var vis = sheet.layers.filter(function(L){ return L.visible !== false && L.dataUrl; });
+    for (var i = 0; i < vis.length; i++) {
+      try {
+        var im = await decodeLayerImg(vis[i].dataUrl);
+        ctx.globalAlpha = (typeof vis[i].opacity === 'number') ? Math.max(0, Math.min(1, vis[i].opacity)) : 1;
+        ctx.drawImage(im, 0, 0, W, H);
+      } catch(e){}
+    }
+    ctx.globalAlpha = 1;
+    return off.toDataURL('image/png');
+  }
+  // レイヤー → bgDataUrl / dataUrl（手描きがあれば合成）を再構築
+  async function applyLayers(sheet) {
+    var bg = await flattenLayers(sheet);
+    sheet.bgDataUrl = bg;
+    if (sheet.drawDataUrl) {
+      try {
+        var b = await decodeLayerImg(bg);
+        var d = await loadImageAsync(sheet.drawDataUrl);
+        var off = document.createElement('canvas'); off.width = b.naturalWidth || 1000; off.height = b.naturalHeight || 750;
+        var ctx = off.getContext('2d'); ctx.drawImage(b, 0, 0); ctx.drawImage(d, 0, 0, off.width, off.height);
+        sheet.dataUrl = off.toDataURL('image/png');
+      } catch (e) { sheet.dataUrl = bg; }
+    } else {
+      sheet.dataUrl = bg;
+    }
+  }
+  function scheduleLayerSave() {
+    if (_layerSaveTimer) clearTimeout(_layerSaveTimer);
+    _layerSaveTimer = setTimeout(function(){ _layerSaveTimer = null; try { saveMapData(mapData); } catch(e){} }, 400);
+  }
+  async function refreshLayerComposite(sheet, saveNow) {
+    await applyLayers(sheet);
+    if (pinEditorImg) {
+      pinEditorImg.onload = function(){ pinEditorImg.onload = null; renderPins(); };
+      pinEditorImg.src = sheet.dataUrl;
+    }
+    if (saveNow) { try { await saveMapData(mapData); } catch(e){} }
+    else scheduleLayerSave();
+  }
+  function renderLayerPanel() {
+    var listEl = $('layer-list');
+    var sheet = resolveSheet(editSheetRef);
+    if (!listEl || !sheet) return;
+    ensureSheetLayers(sheet);
+    var n = sheet.layers.length;
+    var html = '';
+    for (var vi = n - 1; vi >= 0; vi--) {   // 上=手前 で表示（配列末尾＝最前面を上に）
+      var L = sheet.layers[vi];
+      var op = Math.round(((typeof L.opacity === 'number') ? L.opacity : 1) * 100);
+      var visOff = (L.visible === false);
+      var pos = (vi === n - 1 ? '（最前面）' : (vi === 0 ? '（最背面）' : ''));
+      html += '<div class="layer-row" data-li="' + vi + '">'
+        + '<div class="layer-row-head">'
+        + '<button class="layer-vis-btn' + (visOff ? ' off' : '') + '" data-act="vis" data-li="' + vi + '" title="表示/非表示">' + (visOff ? '🙈' : '👁') + '</button>'
+        + '<span class="layer-name">' + escapeHtml(L.name || ('レイヤー' + (vi + 1))) + pos + '</span>'
+        + '<button class="layer-move-btn" data-act="up" data-li="' + vi + '"' + (vi === n - 1 ? ' disabled' : '') + ' title="前面へ">▲</button>'
+        + '<button class="layer-move-btn" data-act="down" data-li="' + vi + '"' + (vi === 0 ? ' disabled' : '') + ' title="背面へ">▼</button>'
+        + '<button class="layer-del-btn" data-act="del" data-li="' + vi + '" title="削除">🗑</button>'
+        + '</div>'
+        + '<div class="layer-op-row"><span>透明</span><input type="range" min="0" max="100" value="' + op + '" data-act="op" data-li="' + vi + '"><span>濃</span><span class="layer-op-val">' + op + '%</span></div>'
+        + '</div>';
+    }
+    listEl.innerHTML = html;
+    listEl.querySelectorAll('[data-act]').forEach(function(el){
+      var act = el.dataset.act, li = parseInt(el.dataset.li, 10);
+      if (act === 'op') {
+        el.addEventListener('input', function(){
+          var s = resolveSheet(editSheetRef); if (!s || !s.layers[li]) return;
+          s.layers[li].opacity = Math.max(0, Math.min(100, parseInt(el.value, 10) || 0)) / 100;
+          var valEl = el.parentNode.querySelector('.layer-op-val'); if (valEl) valEl.textContent = Math.round(s.layers[li].opacity * 100) + '%';
+          refreshLayerComposite(s, false);
+        });
+        el.addEventListener('change', function(){ var s = resolveSheet(editSheetRef); if (s) refreshLayerComposite(s, true); });
+      } else {
+        el.addEventListener('click', function(){ layerAction(act, li); });
+      }
+    });
+  }
+  async function layerAction(act, li) {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet) return;
+    ensureSheetLayers(sheet);
+    var L = sheet.layers[li];
+    if (!L) return;
+    if (act === 'vis') {
+      L.visible = (L.visible === false);
+    } else if (act === 'up') {
+      if (li < sheet.layers.length - 1) { var t = sheet.layers[li]; sheet.layers[li] = sheet.layers[li + 1]; sheet.layers[li + 1] = t; }
+    } else if (act === 'down') {
+      if (li > 0) { var t2 = sheet.layers[li]; sheet.layers[li] = sheet.layers[li - 1]; sheet.layers[li - 1] = t2; }
+    } else if (act === 'del') {
+      if (sheet.layers.length <= 1) { alert('レイヤーは最低1枚必要です。差し替えたいときは、先に新しいレイヤーを追加してから削除してください。'); return; }
+      var pinNote = (sheet.pins && sheet.pins.length) ? '\n（ピン' + sheet.pins.length + '個はそのまま残ります）' : '';
+      if (!confirm('このレイヤー「' + (L.name || '') + '」を削除します。' + pinNote)) return;
+      sheet.layers.splice(li, 1);
+    }
+    await refreshLayerComposite(sheet, true);
+    renderLayerPanel();
+  }
+  async function addLayerFromFile(file) {
+    if (!file) return;
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet) return;
+    ensureSheetLayers(sheet);
+    var url;
+    try { url = await readFileAsDataURL(file); } catch (e) { alert('画像を読み取れませんでした。'); return; }
+    sheet.layers.push({ id: genId(), name: '追加レイヤー' + (sheet.layers.length + 1), dataUrl: url, opacity: 1, visible: true });   // 最前面へ
+    await refreshLayerComposite(sheet, true);
+    renderLayerPanel();
+    if (typeof showToast === 'function') showToast('レイヤーを追加しました（上に重ねました）');
+  }
+  var layerMode = false;
+  function enterLayerMode() {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet) return;
+    ensureSheetLayers(sheet);
+    layerMode = true;
+    var tools = document.querySelector('.pin-editor-tools'); if (tools) tools.style.display = 'none';
+    if (typeof setPinTopBarsVisible === 'function') setPinTopBarsVisible(false);
+    var tb = $('layer-toolbar'); if (tb) tb.style.display = 'block';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
+    renderLayerPanel();
+  }
+  function exitLayerMode() {
+    if (!layerMode) return;
+    layerMode = false;
+    var tb = $('layer-toolbar'); if (tb) tb.style.display = 'none';
+    var tools = document.querySelector('.pin-editor-tools'); if (tools) tools.style.display = '';
+    if (typeof setPinTopBarsVisible === 'function') setPinTopBarsVisible(true);
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = 'マップをタップするとピンを打てます';
+    var sheet = resolveSheet(editSheetRef);
+    if (sheet) {
+      try { saveMapData(mapData); } catch (e) {}
+      if (pinEditorImg && pinEditorImg.src !== sheet.dataUrl) { pinEditorImg.onload = function(){ pinEditorImg.onload = null; renderPins(); }; pinEditorImg.src = sheet.dataUrl; }
+      else { renderPins(); }
+    }
+  }
+
   function enterVectorMode() {
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return;
@@ -11196,6 +11421,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   function closePinEditor() {
     if (drawMode) { drawMode = false; var tb = $('draw-toolbar'); if (tb) tb.style.display = 'none'; var tl = document.querySelector('.pin-editor-tools'); if (tl) tl.style.display = ''; if (drawCanvasEl) drawCanvasEl.style.display = 'none'; }
+    if (layerMode) { try { exitLayerMode(); } catch(e) { layerMode = false; var lt = $('layer-toolbar'); if (lt) lt.style.display = 'none'; var lts = document.querySelector('.pin-editor-tools'); if (lts) lts.style.display = ''; } }
     pinEditor.style.display = 'none';
     editSheetRef = null;
     pendingAutoPhotoId = null;
@@ -13323,6 +13549,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     mapSwapBaseInput.addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; if (f) swapSheetBase(f); });
   }
   if (mapUndoBaseBtn) mapUndoBaseBtn.addEventListener('click', function(){ undoSwapBase(); });
+  // v3-154：レイヤーモード
+  var layerModeBtn = $('layer-mode-btn');
+  var layerAddBtn = $('layer-add-btn');
+  var layerAddInput = $('layer-add-input');
+  var layerDoneBtn = $('layer-done-btn');
+  if (layerModeBtn) layerModeBtn.addEventListener('click', enterLayerMode);
+  if (layerDoneBtn) layerDoneBtn.addEventListener('click', exitLayerMode);
+  if (layerAddBtn && layerAddInput) {
+    layerAddBtn.addEventListener('click', function(){ layerAddInput.value = ''; layerAddInput.click(); });
+    layerAddInput.addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; if (f) addLayerFromFile(f); });
+  }
 
   // ===== 位置記録タブ：撮影位置を図面に記録（マッピング選択UI）=====
   var pinSectionToggle = $('pin-section-toggle');
