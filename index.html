@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.170</title>
+<title>現場写真撮影アプリ v3.171</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2329,7 +2329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.170 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.171 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3481,7 +3481,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいのにハンドルが画面端で止まるときは、<strong>「⤢ 余白を作る」</strong>を押すと地図が少し縮んで四方に余白ができ、枠の外まで引けます（もう一度押すと元の大きさ）。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいのにハンドルが画面の端で止まって引けないときは、<strong>「🔍➖ 地図を小さく表示」</strong>を押すと地図全体が小さく表示され、枠の外まで引けます（もう一度押すと元の表示に戻ります）。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><input type="number" class="layer-align-num" id="layer-align-scale-val" min="5" max="1000" step="1" value="100" inputmode="numeric" aria-label="大きさ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><input type="number" class="layer-align-num" id="layer-align-op-val" min="0" max="100" step="1" value="100" inputmode="numeric" aria-label="濃さ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row layer-align-rot-row">
@@ -3500,7 +3500,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="layer-align-actions">
       <button class="layer-nudge-btn layer-align-undo" id="layer-align-undo" title="1つ戻す（Ctrl+Z）" disabled>↩ 戻す</button>
-      <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面端で止まるとき、地図を縮めて周りに余白を作り、枠の外まで引けるようにします（もう一度押すと元の大きさ）">⤢ 余白を作る</button>
+      <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面の端で止まって引けないときに押します。地図全体を小さく表示して、枠の外まで引けるようにします（もう一度押すと元の表示に戻ります）">🔍➖ 地図を小さく表示</button>
       <button class="layer-align-reset" id="layer-align-reset">リセット</button>
     </div>
     <div class="layer-align-foot">
@@ -4180,7 +4180,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.170）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.171）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11347,11 +11347,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     _alignRoomOn = on;
     _alignApplyZoomNoMarkers();
     _hideEditorMarkers();   // ズーム変更でマーカーが出ないよう隠したまま
-    var b = $('layer-align-room'); if (b) { b.classList.toggle('is-on', on); b.textContent = on ? '⤢ 余白オフ（元の大きさ）' : '⤢ 余白を作る'; }
+    var b = $('layer-align-room'); if (b) { b.classList.toggle('is-on', on); b.textContent = on ? '🔍➕ 表示を元に戻す' : '🔍➖ 地図を小さく表示'; }
   }
   function _resetAlignRoomBtn() {
     _alignRoomOn = false;
-    var b = $('layer-align-room'); if (b) { b.classList.remove('is-on'); b.textContent = '⤢ 余白を作る'; }
+    var b = $('layer-align-room'); if (b) { b.classList.remove('is-on'); b.textContent = '🔍➖ 地図を小さく表示'; }
   }
   async function commitAlign() {
     var sheet = resolveSheet(editSheetRef);
