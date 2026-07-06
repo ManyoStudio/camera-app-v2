@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.171</title>
+<title>現場写真撮影アプリ v3.174</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -745,7 +745,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     content: ''; position: absolute; left: 50%; top: 100%; width: 2px; height: 18px;
     margin-left: -1px; background: #007aff;
   }
-  /* v3-165：位置合わせ中は地図を上下も中央寄せ＝枠の四方に均等な余白（マウスが画面端に達する前にハンドルを枠外へ引ける） */
+  /* v3-165：位置合わせ中は図面を上下も中央寄せ＝枠の四方に均等な余白（マウスが画面端に達する前にハンドルを枠外へ引ける） */
   .pin-editor-stage.align-room { align-items: center; }
   .layer-align-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
@@ -2329,7 +2329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.171 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.174 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2706,7 +2706,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="card" id="link-status-card">
       <p class="card-title">🔗 マップへの紐づけ状況</p>
       <p class="desc-collapsible" data-desc="link-status" data-desc-label="紐づけ状況" style="font-size:12px;color:#6e6e73;margin:0 0 10px 0;line-height:1.6;">
-        撮った設備が地図（マップ）のピンに繋がっているか（<strong>済</strong>）／まだか（<strong>未</strong>）を一覧で確認できます。<strong>読み取り専用</strong>で、写真・地図・記録データは変わりません。社内共有用に<strong>CSV</strong>へ書き出せます。
+        撮った設備が図面（マップ）のピンに繋がっているか（<strong>済</strong>）／まだか（<strong>未</strong>）を一覧で確認できます。<strong>読み取り専用</strong>で、写真・図面・記録データは変わりません。社内共有用に<strong>CSV</strong>へ書き出せます。
       </p>
       <button id="link-status-show" class="secondary">🔗 紐づけ状況を表示</button>
       <div id="link-status-result" style="display:none;margin-top:10px;">
@@ -2734,7 +2734,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <p id="storageEstimate" class="storage-estimate"></p>
       <input type="text" id="list-search" class="ref-search" placeholder="🔍 番号・ファイル名で絞り込み（例: 0089／3001）" />
       <label class="sort-undone-row" id="list-sort-undone-row">
-        <input type="checkbox" id="list-sort-undone"> 🔼 地図に未登録のものを上に・番号順
+        <input type="checkbox" id="list-sort-undone"> 🔼 図面に未登録のものを上に・番号順
       </label>
       <div id="listSelectBar" class="list-select-bar">
         <button id="listSelectToggle" class="secondary list-select-toggle">☑ 選択して削除（一部撮り直し）</button>
@@ -3481,7 +3481,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいのにハンドルが画面の端で止まって引けないときは、<strong>「🔍➖ 地図を小さく表示」</strong>を押すと地図全体が小さく表示され、枠の外まで引けます（もう一度押すと元の表示に戻ります）。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える図面）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいのにハンドルが画面の端で止まって引けないときは、<strong>「🔍➖ 図面を小さく表示」</strong>を押すと図面全体が小さく表示され、枠の外まで引けます（もう一度押すと元の表示に戻ります）。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><input type="number" class="layer-align-num" id="layer-align-scale-val" min="5" max="1000" step="1" value="100" inputmode="numeric" aria-label="大きさ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><input type="number" class="layer-align-num" id="layer-align-op-val" min="0" max="100" step="1" value="100" inputmode="numeric" aria-label="濃さ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row layer-align-rot-row">
@@ -3500,7 +3500,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="layer-align-actions">
       <button class="layer-nudge-btn layer-align-undo" id="layer-align-undo" title="1つ戻す（Ctrl+Z）" disabled>↩ 戻す</button>
-      <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面の端で止まって引けないときに押します。地図全体を小さく表示して、枠の外まで引けるようにします（もう一度押すと元の表示に戻ります）">🔍➖ 地図を小さく表示</button>
+      <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面の端で止まって引けないときに押します。図面全体を小さく表示して、枠の外まで引けるようにします（もう一度押すと元の表示に戻ります）">🔍➖ 図面を小さく表示</button>
       <button class="layer-align-reset" id="layer-align-reset">リセット</button>
     </div>
     <div class="layer-align-foot">
@@ -3652,7 +3652,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <div id="place-select-modal" class="place-select-modal">
   <div class="place-select-content">
     <p class="place-select-title">ピン留めする写真を選ぶ</p>
-    <p class="place-select-sub">左の ○ をタップして選び、下のボタンで開始します。<strong>番号・ファイル名（または🔍）をタップすると、その写真を拡大して確認</strong>できます。選んだ順（下の並び順）に、地図をタップして置いていきます。</p>
+    <p class="place-select-sub">左の ○ をタップして選び、下のボタンで開始します。<strong>番号・ファイル名（または🔍）をタップすると、その写真を拡大して確認</strong>できます。選んだ順（下の並び順）に、図面をタップして置いていきます。</p>
     <div class="place-select-actions-top">
       <button id="place-select-all" class="place-select-mini">表示中をすべて選ぶ</button>
       <button id="place-select-none" class="place-select-mini">選択を解除</button>
@@ -4180,7 +4180,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.171）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.174）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -4210,27 +4210,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'参考・用語さがし', q:'設備の大分類を選んで関連する観察項目を浮かび上がらせたい', a:'検索窓の下の<strong>設備の大分類チップ</strong>（建物・電気設備など）をタップすると、関係する観察カテゴリーが開いて<strong>強調表示</strong>されます。<strong>複数えらべ</strong>、検索ことばと<strong>組み合わせて</strong>しぼれます（例：建物×「漏水」→防水・雨仕舞）。「✕ 大分類をクリア」で解除できます。' },
     { cat:'参考・用語さがし', q:'検索すると出る「手がかり」や「出典」は何ですか？', a:'<strong>手がかり</strong>は、その設備で<strong>一次チェックのとき目視で気づきたい点</strong>（腐食・漏れ・異音 など）です。<strong>出典</strong>はその根拠にした社内の劣化診断資料を示します。中分類のチップをタップすると、その語で検索し直してさらにしぼれます。' },
 
-    // ── 4. 位置記録・地図（📍位置記録） ──
-    { cat:'位置記録・地図', q:'ピンが多くて重なって見づらいときは？', a:'マップを開いた画面の <strong>🔍 ピンをしぼり込む</strong> を使います。<strong>番号やことばの検索</strong>のほか、<strong>🧷種類・📷写真・🎨色・🏷分類・🔖項目</strong>のチップをタップして、見たいピンだけ表示できます。<strong>ピンのデータは消えません</strong>（表示の切り替えだけ）。' },
-    { cat:'位置記録・地図', q:'分類や項目でピンをしぼるには？', a:'マップのしぼり込みにある <strong>分類チップ（青）</strong> は設備分類、<strong>項目の値チップ（緑）</strong> は棟・G/U/T や入力項目の値です。複数タップすると、同じ種類どうしは「いずれか」、種類をまたぐと「すべてに合う」ピンが表示されます。「クリア」で全部解除できます。' },
-    { cat:'位置記録・地図', q:'色・写真のあり/なし・種類でもピンをしぼれますか？', a:'はい。しぼり込みに <strong>🎨 色</strong>（ピンの色）、<strong>📷 写真</strong>（あり／なし）、<strong>🧷 種類</strong>（ピン／メモ／矢印）のチップがあります。<strong>写真「なし」でしぼると、あと何件撮ればよいか</strong>がひと目で分かります。' },
-    { cat:'位置記録・地図', q:'しぼり込みのボタンが出ない／空に見える', a:'チップは<strong>そのマップに「違い」があるときだけ</strong>自動で出ます（例：色が2色以上、写真があり・なし両方など）。全部おなじだと出ません。<strong>色を変えて置く・写真や分類をつける</strong>とボタンが増えます。出ていなくても、<strong>番号やことばで検索</strong>できます（例 3 ／ 1-5）。' },
-    { cat:'位置記録・地図', q:'しぼり込みのボタンが多くて長いときは？', a:'各グループ（🧷種類・📷写真・🎨色・🏷分類・🔖項目）は<strong>折りたたみ式</strong>です。<strong>6種類以上は最初から畳まれ</strong>、見出しに「<strong>選択数 / 総数</strong>」（例 2 / 15）が出るので、畳んだままでも何を選んでいるか分かります。見出しをタップで開閉できます。' },
-    { cat:'位置記録・地図', q:'図面に線を引いて作図したい（CAD用）', a:'マップ編集の <strong>📐 直線で作図</strong> から、🖊線・📐連続線・✋選択/移動・🧽消しゴム の4つの道具で線が引けます。端点は近くの線に吸着してつながります。<strong>📏 実測mm</strong>をメモでき、<strong>SVG・座標JSON で書き出し</strong>てCAD化の材料にできます。' },
-    { cat:'位置記録・地図', q:'PCで位置記録を見る・印刷したい', a:'💾 保存タブの位置記録の保存にある <strong>📄 閲覧用HTMLを書き出す</strong> で、インストール不要のHTMLを作れます。PC・タブレットのブラウザで開くと、マップ・ピン・メモ・矢印を閲覧・編集・印刷でき、<strong>ピンをタップすると設備分類も表示</strong>されます。' },
-    { cat:'位置記録・地図', q:'位置記録だけを別端末・PCで用意したい', a:'位置記録（棟・マップ・ピン）は写真がなくても保存できます。💾 保存タブで位置記録をZIP保存し、相手の端末の <strong>📥 読込</strong> タブで読み込めば、現場ですぐ使えます。あとで写真担当のデータと合流もできます。' },
-    { cat:'位置記録・地図', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
-    { cat:'位置記録・地図', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
-    { cat:'位置記録・地図', q:'ピンの詳細に「📷この位置で撮影」「🟢GUT評価」が出ない', a:'<strong>📷 この位置で撮影</strong>は<strong>ピン</strong>のとき出ます。<strong>🟢 GUT評価</strong>は<strong>写真を紐づけたピン</strong>のときだけ出ます（評価は写真にひもづくため）。メモ・矢印や写真のないピンでは出ません。先に写真を紐づけると<strong>🟢 GUT評価</strong>も使えます。' },
-    { cat:'位置記録・地図', q:'番号は分かっているのに写真が紐づいていないピンをまとめて直したい', a:'別の端末で位置記録だけ先に取り込むと、ピンに<strong>設備番号は表示されるのに写真が紐づいていない</strong>ことがあります。そのときは <strong>📋 撮影リスト</strong> の <strong>「🔗 マップへの紐づけ状況」</strong> を開き、<strong>「🔗 番号一致の写真を一括で紐づける（一意のみ）」</strong> を押してください（紐づけられる候補があるときは<strong>このボタンが点滅</strong>して知らせます）。確認用の一覧（プレビュー）を見てから<strong>まとめて紐づけ</strong>られます。照合のしかたは <strong>「完全一致のみ」</strong>（既定・いちばん安全）と <strong>「ゆるく一致」</strong>（0埋め違いなども拾う）から選べます。同じ番号の写真やピンが複数ある「あいまいな分」は、どちらのモードでも<strong>安全のため自動では紐づけません</strong>（個別の「🔗 写真を紐づける／変更する」でどうぞ）。' },
-    { cat:'位置記録・地図', q:'「0001」と「1」、「ピン1」など番号の書き方が少し違う写真も紐づけたい', a:'一括紐づけのモーダル上部で <strong>「ゆるく一致」</strong> に切り替えてください。<strong>先頭の0の有無（0001＝1）・全角／半角・番号の前後についた文字（例「ピン1」「No.1」）</strong>を無視して照合します。それでも<strong>写真とピンが1つに定まる分だけ</strong>を紐づけるので安全です（複数候補が出るあいまいな分は見送り＝手動でどうぞ）。<strong>いちばん安全なのは「完全一致のみ」</strong>なので、必要なときだけ「ゆるく一致」を使うのがおすすめです。選んだモードは次回も覚えています。ピン詳細の「🔗 …の写真をこのピンに紐づける」も同じモードで候補を探します。' },
-    { cat:'位置記録・地図', q:'特定のピン1つだけ、番号一致の写真をすぐ紐づけたい', a:'写真のないピンの<strong>詳細</strong>を開くと、その番号に一致する写真が<strong>ちょうど1枚だけある</strong>ときに <strong>「🔗 番号◯◯の写真をこのピンに紐づける」</strong> ボタンが出ます。1タップでそのピンに紐づき、<strong>🟢 GUT評価</strong> も使えるようになります（候補が複数あるあいまいなときは出ません）。' },
+    // ── 4. 位置記録・図面（📍位置記録） ──
+    { cat:'位置記録・図面', q:'ピンが多くて重なって見づらいときは？', a:'マップを開いた画面の <strong>🔍 ピンをしぼり込む</strong> を使います。<strong>番号やことばの検索</strong>のほか、<strong>🧷種類・📷写真・🎨色・🏷分類・🔖項目</strong>のチップをタップして、見たいピンだけ表示できます。<strong>ピンのデータは消えません</strong>（表示の切り替えだけ）。' },
+    { cat:'位置記録・図面', q:'分類や項目でピンをしぼるには？', a:'マップのしぼり込みにある <strong>分類チップ（青）</strong> は設備分類、<strong>項目の値チップ（緑）</strong> は棟・G/U/T や入力項目の値です。複数タップすると、同じ種類どうしは「いずれか」、種類をまたぐと「すべてに合う」ピンが表示されます。「クリア」で全部解除できます。' },
+    { cat:'位置記録・図面', q:'色・写真のあり/なし・種類でもピンをしぼれますか？', a:'はい。しぼり込みに <strong>🎨 色</strong>（ピンの色）、<strong>📷 写真</strong>（あり／なし）、<strong>🧷 種類</strong>（ピン／メモ／矢印）のチップがあります。<strong>写真「なし」でしぼると、あと何件撮ればよいか</strong>がひと目で分かります。' },
+    { cat:'位置記録・図面', q:'しぼり込みのボタンが出ない／空に見える', a:'チップは<strong>そのマップに「違い」があるときだけ</strong>自動で出ます（例：色が2色以上、写真があり・なし両方など）。全部おなじだと出ません。<strong>色を変えて置く・写真や分類をつける</strong>とボタンが増えます。出ていなくても、<strong>番号やことばで検索</strong>できます（例 3 ／ 1-5）。' },
+    { cat:'位置記録・図面', q:'しぼり込みのボタンが多くて長いときは？', a:'各グループ（🧷種類・📷写真・🎨色・🏷分類・🔖項目）は<strong>折りたたみ式</strong>です。<strong>6種類以上は最初から畳まれ</strong>、見出しに「<strong>選択数 / 総数</strong>」（例 2 / 15）が出るので、畳んだままでも何を選んでいるか分かります。見出しをタップで開閉できます。' },
+    { cat:'位置記録・図面', q:'図面に線を引いて作図したい（CAD用）', a:'マップ編集の <strong>📐 直線で作図</strong> から、🖊線・📐連続線・✋選択/移動・🧽消しゴム の4つの道具で線が引けます。端点は近くの線に吸着してつながります。<strong>📏 実測mm</strong>をメモでき、<strong>SVG・座標JSON で書き出し</strong>てCAD化の材料にできます。' },
+    { cat:'位置記録・図面', q:'PCで位置記録を見る・印刷したい', a:'💾 保存タブの位置記録の保存にある <strong>📄 閲覧用HTMLを書き出す</strong> で、インストール不要のHTMLを作れます。PC・タブレットのブラウザで開くと、マップ・ピン・メモ・矢印を閲覧・編集・印刷でき、<strong>ピンをタップすると設備分類も表示</strong>されます。' },
+    { cat:'位置記録・図面', q:'位置記録だけを別端末・PCで用意したい', a:'位置記録（棟・マップ・ピン）は写真がなくても保存できます。💾 保存タブで位置記録をZIP保存し、相手の端末の <strong>📥 読込</strong> タブで読み込めば、現場ですぐ使えます。あとで写真担当のデータと合流もできます。' },
+    { cat:'位置記録・図面', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
+    { cat:'位置記録・図面', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
+    { cat:'位置記録・図面', q:'ピンの詳細に「📷この位置で撮影」「🟢GUT評価」が出ない', a:'<strong>📷 この位置で撮影</strong>は<strong>ピン</strong>のとき出ます。<strong>🟢 GUT評価</strong>は<strong>写真を紐づけたピン</strong>のときだけ出ます（評価は写真にひもづくため）。メモ・矢印や写真のないピンでは出ません。先に写真を紐づけると<strong>🟢 GUT評価</strong>も使えます。' },
+    { cat:'位置記録・図面', q:'番号は分かっているのに写真が紐づいていないピンをまとめて直したい', a:'別の端末で位置記録だけ先に取り込むと、ピンに<strong>設備番号は表示されるのに写真が紐づいていない</strong>ことがあります。そのときは <strong>📋 撮影リスト</strong> の <strong>「🔗 マップへの紐づけ状況」</strong> を開き、<strong>「🔗 番号一致の写真を一括で紐づける（一意のみ）」</strong> を押してください（紐づけられる候補があるときは<strong>このボタンが点滅</strong>して知らせます）。確認用の一覧（プレビュー）を見てから<strong>まとめて紐づけ</strong>られます。照合のしかたは <strong>「完全一致のみ」</strong>（既定・いちばん安全）と <strong>「ゆるく一致」</strong>（0埋め違いなども拾う）から選べます。同じ番号の写真やピンが複数ある「あいまいな分」は、どちらのモードでも<strong>安全のため自動では紐づけません</strong>（個別の「🔗 写真を紐づける／変更する」でどうぞ）。' },
+    { cat:'位置記録・図面', q:'「0001」と「1」、「ピン1」など番号の書き方が少し違う写真も紐づけたい', a:'一括紐づけのモーダル上部で <strong>「ゆるく一致」</strong> に切り替えてください。<strong>先頭の0の有無（0001＝1）・全角／半角・番号の前後についた文字（例「ピン1」「No.1」）</strong>を無視して照合します。それでも<strong>写真とピンが1つに定まる分だけ</strong>を紐づけるので安全です（複数候補が出るあいまいな分は見送り＝手動でどうぞ）。<strong>いちばん安全なのは「完全一致のみ」</strong>なので、必要なときだけ「ゆるく一致」を使うのがおすすめです。選んだモードは次回も覚えています。ピン詳細の「🔗 …の写真をこのピンに紐づける」も同じモードで候補を探します。' },
+    { cat:'位置記録・図面', q:'特定のピン1つだけ、番号一致の写真をすぐ紐づけたい', a:'写真のないピンの<strong>詳細</strong>を開くと、その番号に一致する写真が<strong>ちょうど1枚だけある</strong>ときに <strong>「🔗 番号◯◯の写真をこのピンに紐づける」</strong> ボタンが出ます。1タップでそのピンに紐づき、<strong>🟢 GUT評価</strong> も使えるようになります（候補が複数あるあいまいなときは出ません）。' },
 
-    { cat:'位置記録・地図', q:'図面（平面図）の写真からマップを一括で作りたい', a:'<strong>📥 読込</strong>タブの「📍 位置記録だけを読み込む」カードにある <strong>「🖼 図面・写真からマップを作る（複数・ZIP可）」</strong> から、図面や写真をまとめて取り込むと、棟とマップを<strong>一括で作成</strong>できます（ZIPもOK）。作成後、各マップに写真を選んでピンを置けます。<strong>撮影記録CSVの番号や写真には影響しません</strong>（マップ整理用です）。' },
-    { cat:'位置記録・地図', q:'ピンを置く写真の並び順を変えたい', a:'写真を選んでピンを置く画面の上部に <strong>番号順／投入順／カテゴリー順／ファイル名順</strong> の並べ替えがあります（<strong>初期は番号順</strong>）。選んだ並び順は次回も覚えています。<strong>カテゴリー順</strong>では分類のラベルも一緒に表示されます。' },
-    { cat:'位置記録・地図', q:'ピンの番号を確定したい／名前（ラベル）を変えたい', a:'ピンの<strong>詳細</strong>を開くと <strong>「✏️ 名称を変更する」</strong> があります。番号や好きな文字を入れてピンの表示名を決められます（<strong>空欄にすると元の番号表示に戻ります</strong>）。写真ピンを初めて置くときは、<strong>番号を「先頭」と「末尾」どちらで読むか</strong>を一度だけ確認することがあります。' },
-    { cat:'位置記録・地図', q:'写真を選んでピンを置く画面が重い／番号の一部だけでしぼりたい', a:'<strong>「📷 写真を選んでピンを置く」</strong>画面は、<strong>画面に出ている写真だけを読み込む</strong>ようにして、たくさんの写真（数百枚）でも固まりにくくしています。上の検索窓は<strong>番号の一部でもしぼれます</strong>（例：「<strong>755</strong>」で「<strong>07550</strong>」がヒット）。入力欄の✕で消せます。' },
-    { cat:'位置記録・地図', q:'ピンや保存後のHTMLに出る番号は設備番号ですか？', a:'写真を紐づけたピンは、原則<strong>写真の設備番号</strong>で表示されます。<strong>保存後に書き出した閲覧用HTML（ビューア）</strong>でも、アプリと<strong>同じ角丸のフラッグ</strong>で表示され、桁の多い番号（例「07550」）もはみ出さずに収まります。手で名前を変えたピンはその名前が出ます。' },
+    { cat:'位置記録・図面', q:'図面（平面図）の写真からマップを一括で作りたい', a:'<strong>📥 読込</strong>タブの「📍 位置記録だけを読み込む」カードにある <strong>「🖼 図面・写真からマップを作る（複数・ZIP可）」</strong> から、図面や写真をまとめて取り込むと、棟とマップを<strong>一括で作成</strong>できます（ZIPもOK）。作成後、各マップに写真を選んでピンを置けます。<strong>撮影記録CSVの番号や写真には影響しません</strong>（マップ整理用です）。' },
+    { cat:'位置記録・図面', q:'ピンを置く写真の並び順を変えたい', a:'写真を選んでピンを置く画面の上部に <strong>番号順／投入順／カテゴリー順／ファイル名順</strong> の並べ替えがあります（<strong>初期は番号順</strong>）。選んだ並び順は次回も覚えています。<strong>カテゴリー順</strong>では分類のラベルも一緒に表示されます。' },
+    { cat:'位置記録・図面', q:'ピンの番号を確定したい／名前（ラベル）を変えたい', a:'ピンの<strong>詳細</strong>を開くと <strong>「✏️ 名称を変更する」</strong> があります。番号や好きな文字を入れてピンの表示名を決められます（<strong>空欄にすると元の番号表示に戻ります</strong>）。写真ピンを初めて置くときは、<strong>番号を「先頭」と「末尾」どちらで読むか</strong>を一度だけ確認することがあります。' },
+    { cat:'位置記録・図面', q:'写真を選んでピンを置く画面が重い／番号の一部だけでしぼりたい', a:'<strong>「📷 写真を選んでピンを置く」</strong>画面は、<strong>画面に出ている写真だけを読み込む</strong>ようにして、たくさんの写真（数百枚）でも固まりにくくしています。上の検索窓は<strong>番号の一部でもしぼれます</strong>（例：「<strong>755</strong>」で「<strong>07550</strong>」がヒット）。入力欄の✕で消せます。' },
+    { cat:'位置記録・図面', q:'ピンや保存後のHTMLに出る番号は設備番号ですか？', a:'写真を紐づけたピンは、原則<strong>写真の設備番号</strong>で表示されます。<strong>保存後に書き出した閲覧用HTML（ビューア）</strong>でも、アプリと<strong>同じ角丸のフラッグ</strong>で表示され、桁の多い番号（例「07550」）もはみ出さずに収まります。手で名前を変えたピンはその名前が出ます。' },
 
     // ── 5. 保存（バックアップ）（💾保存） ──
     { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>新しく撮った分だけバックアップ</strong>、または<strong>区切りでまとめてバックアップ</strong>を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。タップして保存すると、右上の未保存の数字が0に戻ります。' },
@@ -4277,7 +4277,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     // ── 10. その他 ──
     { cat:'その他', q:'「保存したつもり」で消えてしまうことはない？', a:'オレンジの枠を<strong>タップして実際に保存するまで</strong>、未保存の数字は0になりません。数字が0になっていれば、その時点の写真は外部に保存できています。' },
-    { cat:'その他', q:'「✅ 保存しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・地図へのマーカー設置など、保存が完了したことの合図です。データが端末に保存された目印なので、安心して次の操作に進めます。' },
+    { cat:'その他', q:'「✅ 保存しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・図面へのマーカー設置など、保存が完了したことの合図です。データが端末に保存された目印なので、安心して次の操作に進めます。' },
     { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください（タップした瞬間に、未保存の赤い数字が0に戻ります）。' },
 
     // ===== v3-143 追加Q&A（全12カテゴリを網羅拡充・実機FB反映） =====
@@ -4299,11 +4299,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 参考・用語さがし（追加） ──
     { cat:'参考・用語さがし', q:'俗称で調べても出てこない言葉があります', a:'言い回しを変えて試してください（例「エアコン」→「空調」「室外機」）。それでも出ないときは、<strong>大分類のチップ</strong>から関連する観察項目をたどると見つかることがあります。検索は<strong>部分一致</strong>なので、短い言葉で探すのもコツです。' },
     { cat:'参考・用語さがし', q:'観察項目の言葉（専門用語）の意味がわかりません', a:'各観察項目には、検索したときに<strong>「手がかり」（目で見て分かるポイント）</strong>が表示されるものがあります。まずはそれを目安にしてください。判断に迷う場合は無理に細かく決めず、<strong>気づいた状態をメモ</strong>に残しておくと、あとで相談しやすくなります。' },
-    // ── 位置記録・地図（追加） ──
-    { cat:'位置記録・地図', q:'マップに使う図面（平面図）の写真はどう用意すればいい？', a:'紙の図面を<strong>正面から明るく撮る</strong>か、PDF・画像を用意します。<strong>📥 読込</strong>タブの「🖼 図面・写真からマップを作る」でまとめて取り込めます。文字や記号が読める程度の解像度があれば十分です（大きすぎる画像は動作が重くなることがあります）。' },
-    { cat:'位置記録・地図', q:'ピンの色は何の意味ですか？使い分けたいです', a:'色に決まった意味はなく、<strong>自由に使い分け</strong>られます（例：済＝緑、要確認＝赤 など）。ピンの詳細の<strong>🎨 色を変える</strong>で変更でき、色でしぼり込みもできます。チームで<strong>色のルールをそろえておく</strong>と見やすくなります。' },
-    { cat:'位置記録・地図', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 このマーカーを削除</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
-    { cat:'位置記録・地図', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>「写真も含む全保存」</strong>をしておくと安心です。' },
+    // ── 位置記録・図面（追加） ──
+    { cat:'位置記録・図面', q:'マップに使う図面（平面図）の写真はどう用意すればいい？', a:'紙の図面を<strong>正面から明るく撮る</strong>か、PDF・画像を用意します。<strong>📥 読込</strong>タブの「🖼 図面・写真からマップを作る」でまとめて取り込めます。文字や記号が読める程度の解像度があれば十分です（大きすぎる画像は動作が重くなることがあります）。' },
+    { cat:'位置記録・図面', q:'ピンの色は何の意味ですか？使い分けたいです', a:'色に決まった意味はなく、<strong>自由に使い分け</strong>られます（例：済＝緑、要確認＝赤 など）。ピンの詳細の<strong>🎨 色を変える</strong>で変更でき、色でしぼり込みもできます。チームで<strong>色のルールをそろえておく</strong>と見やすくなります。' },
+    { cat:'位置記録・図面', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 このマーカーを削除</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
+    { cat:'位置記録・図面', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>「写真も含む全保存」</strong>をしておくと安心です。' },
+    { cat:'位置記録・図面', q:'写真がないピンに設備番号（ID）だけ付けたい', a:'マップ編集で <strong>「ピンを置く（写真なし）」</strong> を選ぶと、<strong>設備ID（番号）を入力</strong>してからピンを置けます（空欄のままなら通し番号が入ります）。あとで写真を撮って紐づけることもできます。' },
+    { cat:'位置記録・図面', q:'移動ツールを選ばずにピンを動かしたい', a:'ピンを<strong>長押し（約0.35秒）</strong>すると、移動ツールを選んでいなくてもそのまま<strong>ドラッグで移動</strong>できます。<strong>サッとタップ</strong>したときは詳細が開きます。' },
+    { cat:'図面を重ねる・位置合わせ', q:'図面を重ねて位置を合わせたい（レイヤーとは）', a:'ピン編集画面で<strong>下地の図面を複数重ねて</strong>表示できます（レイヤー）。<strong>濃さ（不透明度）・表示の切替・並べ替え・追加／削除</strong>ができ、<strong>ピンは常に残ります</strong>。使い方の例：客先の配置図でピンを打つ→その上に平面図を重ねて外形を合わせる→不要になった配置図の下地を🗑で消す、で仕上がります。' },
+    { cat:'図面を重ねる・位置合わせ', q:'重ねた図面の位置や大きさを合わせたい（位置合わせ）', a:'レイヤーの<strong>「📐 この画像を動かす・伸縮する」</strong>を押すと位置合わせに入ります。<strong>ドラッグで移動</strong>、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で上下左右どの方向にも伸縮できます（縦横を別々に＝長方形→正方形もOK）。<strong>青い枠＝保存される範囲</strong>で、枠からはみ出した部分は保存されません。' },
+    { cat:'図面を重ねる・位置合わせ', q:'図面の傾きや方位（北）がずれている（回転）', a:'位置合わせの<strong>「回転」</strong>で直せます。<strong>90°ボタン</strong>（左まわり／右まわり）、<strong>スライダ</strong>、<strong>数値入力</strong>のほか、<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>でも回せます。' },
+    { cat:'図面を重ねる・位置合わせ', q:'大きさ・濃さ・回転を数字で正確に決めたい', a:'位置合わせの各スライダの<strong>横にある数値欄</strong>に直接入力できます（例：大きさに<strong>40</strong>で40%、回転に<strong>90</strong>で90°）。スライダと数値は連動します。' },
+    { cat:'図面を重ねる・位置合わせ', q:'位置合わせの操作を間違えた／元に戻したい', a:'位置合わせ中は<strong>「↩ 戻す」ボタン</strong>か<strong>Ctrl+Z（Macは⌘+Z）</strong>で<strong>1手ずつ元に戻せます</strong>（移動・伸縮・大きさ・濃さ・回転・微調整・リセット）。「確定」する前ならいつでも戻せます。' },
+    { cat:'図面を重ねる・位置合わせ', q:'図面を大きくしたいのにハンドルが画面の端で止まる', a:'位置合わせの<strong>「🔍➖ 図面を小さく表示」</strong>を押すと図面全体が小さく表示され、<strong>枠の外までハンドルを引ける</strong>ようになります（もう一度押すと元の表示に戻ります）。全体を等倍のまま大きくしたいだけなら、<strong>「大きさ」に数値（例：250）</strong>を入れても届きます。' },
+    { cat:'図面を重ねる・位置合わせ', q:'重ねた図面は保存後も残りますか？（書き出し・再読込）', a:'はい。重ねた結果は図面画像に<strong>焼き込まれて保存</strong>され、書き出した閲覧用HTML（ビューア）やバックアップにもそのまま反映されます。バックアップから読み込み直しても、<strong>ピンの番号や紐づけはそのまま</strong>引き継がれます。' },
     // ── 保存（バックアップ）（追加） ──
     { cat:'保存（バックアップ）', q:'保存に時間がかかる／止まったように見えます', a:'写真が多いと<strong>ZIPを作るのに時間</strong>がかかります（数百枚で数十秒かかることも）。画面はそのまま<strong>待って</strong>ください。どうしても重いときは、<strong>区切りでまとめて</strong>小分け保存に切り替えると軽くなります。保存が終わると共有・ダウンロードの案内が出ます。' },
     { cat:'保存（バックアップ）', q:'どのくらいの頻度で保存すればいい？目安は？', a:'目安は<strong>30〜50枚ごと</strong>、または<strong>休憩・移動・帰社の前</strong>です。未保存の<strong>赤い数字</strong>がたまってきたら保存の合図。こまめに保存しておくほど、万一のときに失う範囲が小さくなります。' },
@@ -6179,7 +6188,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (q) list = list.filter(function(p) {
       return String(p.filename).toLowerCase().indexOf(q) >= 0 || String(extractPhotoNumber(p.filename)).indexOf(q) >= 0;
     });
-    // v3-139：整列トグルON＝「地図に未登録のものを上・番号順」（表示の並べ替えのみ・photos配列は不変）。
+    // v3-139：整列トグルON＝「図面に未登録のものを上・番号順」（表示の並べ替えのみ・photos配列は不変）。
     //   OFFのときは従来どおり（新しく撮った順＝reverse）。
     var lsu = $('list-sort-undone'); if (lsu) lsu.checked = getSortUndoneFirst();
     if (getSortUndoneFirst()) {
@@ -9689,7 +9698,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   async function addBuilding() {
-    var name = prompt('登録する名前を入力してください（棟・事業所・エリアなど自由）。\n（例：A棟／本館／第1工場／○○事業所 など）\n※この名前は地図の整理用です。撮影記録CSVや写真の番号には影響しません。');
+    var name = prompt('登録する名前を入力してください（棟・事業所・エリアなど自由）。\n（例：A棟／本館／第1工場／○○事業所 など）\n※この名前は図面の整理用です。撮影記録CSVや写真の番号には影響しません。');
     if (name === null) return;
     name = name.trim();
     if (!name) return;
@@ -10259,7 +10268,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var pinGrpCollapsed = {}; // チップグループの開閉状態（表示のみ・openPinEditorで毎回リセット / v3-56）
   var pinFilterOpen = false; // しぼり込みパネルの開閉（表示のみ・開くたび畳む / v3-51）
 
-  // v3-163：地図のカーソルで今の操作を示す（配置＝十字／移動＝掴む手）
+  // v3-163：図面のカーソルで今の操作を示す（配置＝十字／移動＝掴む手）
   function updateMapCursor() {
     if (!pinEditorImg) return;
     pinEditorImg.style.cursor = (selectedMarkerType === 'hand') ? 'grab' : 'crosshair';
@@ -11347,11 +11356,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     _alignRoomOn = on;
     _alignApplyZoomNoMarkers();
     _hideEditorMarkers();   // ズーム変更でマーカーが出ないよう隠したまま
-    var b = $('layer-align-room'); if (b) { b.classList.toggle('is-on', on); b.textContent = on ? '🔍➕ 表示を元に戻す' : '🔍➖ 地図を小さく表示'; }
+    var b = $('layer-align-room'); if (b) { b.classList.toggle('is-on', on); b.textContent = on ? '🔍➕ 表示を元に戻す' : '🔍➖ 図面を小さく表示'; }
   }
   function _resetAlignRoomBtn() {
     _alignRoomOn = false;
-    var b = $('layer-align-room'); if (b) { b.classList.remove('is-on'); b.textContent = '🔍➖ 地図を小さく表示'; }
+    var b = $('layer-align-room'); if (b) { b.classList.remove('is-on'); b.textContent = '🔍➖ 図面を小さく表示'; }
   }
   async function commitAlign() {
     var sheet = resolveSheet(editSheetRef);
@@ -12681,7 +12690,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   // ===== 写真から連続でピンを置く =====
-  // この地図にまだ置いていない写真を、ファイル名の番号順で返す
+  // この図面にまだ置いていない写真を、ファイル名の番号順で返す
   function unplacedPhotosSorted() {
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return [];
@@ -12703,7 +12712,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!sheet) { alert('マップが見つかりません。'); return; }
     var queue = unplacedPhotosSorted();
     if (queue.length === 0) {
-      alert('この地図に置いていない写真がありません。\n（「撮影」タブで撮るか、すでに全部配置済みです）');
+      alert('この図面に置いていない写真がありません。\n（「撮影」タブで撮るか、すでに全部配置済みです）');
       return;
     }
     openPlaceSelect(queue);
@@ -13018,7 +13027,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (info) {
       info.innerHTML = '次に置く写真：<strong>' + (num ? ('No.' + num) : '(番号なし)') + '</strong> '
         + escapeHtml(ph ? ph.filename : '(写真なし)')
-        + ' <span class="placement-progress">(' + (placeIdx + 1) + ' / ' + placeQueue.length + ')</span><br>地図をタップして位置を置いてください。';
+        + ' <span class="placement-progress">(' + (placeIdx + 1) + ' / ' + placeQueue.length + ')</span><br>図面をタップして位置を置いてください。';
     }
     banner.style.display = 'flex';
   }
@@ -13761,7 +13770,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       setPendingShootPin(editSheetRef, pin.id, sfpLabel);
     }
     closePinDetail();
-    closePinEditor(); // 全画面の地図エディタを閉じてから撮影タブへ
+    closePinEditor(); // 全画面の図面エディタを閉じてから撮影タブへ
     var st = document.querySelector('.tab[data-view="shoot"]'); if (st) st.click();
     if (num) {
       var fn = getFilename();
@@ -13788,7 +13797,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ph = photos.find(function(p){ return p.id === pin.photoId; });
     if (!ph) { showToast('紐づく写真が見つかりませんでした'); return; }
     closePinDetail();
-    closePinEditor(); // 全画面の地図エディタを閉じてから評価タブへ
+    closePinEditor(); // 全画面の図面エディタを閉じてから評価タブへ
     enterEvalMode(pin.photoId); // 既存の評価フロー（評価タブへ遷移・評価バー表示）に乗せる
   });
 
@@ -14216,7 +14225,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         (sheetForCount.pins || []).forEach(function(p){ if (p.photoId != null) placedSet[p.photoId] = true; });
         var unplaced = photos.filter(function(p){ return !placedSet[p.id]; }).length;
         if (unplaced > 0) {
-          if (confirm('この地図に置いていない写真が ' + unplaced + ' 枚あります。\n\n［OK］写真を選んでピンを置く（番号付き）\n［キャンセル］自分でタップして置く')) {
+          if (confirm('この図面に置いていない写真が ' + unplaced + ' 枚あります。\n\n［OK］写真を選んでピンを置く（番号付き）\n［キャンセル］自分でタップして置く')) {
             startPhotoPlacement();
           }
         }
@@ -14603,7 +14612,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 既存の保存データモデル（building/sheets）をそのまま使う＝追加のみ。写真一覧(photos[])には触れない。
   function chooseOrCreateBuildingForMaps() {
     var bs = mapData.buildings || [];
-    var note = '※この名前は地図の整理用です（棟・事業所・エリアなど自由）。撮影記録CSVや写真の番号には影響しません。あとで「📍位置記録」タブで変更できます。';
+    var note = '※この名前は図面の整理用です（棟・事業所・エリアなど自由）。撮影記録CSVや写真の番号には影響しません。あとで「📍位置記録」タブで変更できます。';
     if (bs.length === 0) {
       var nm = prompt('取り込んだ図面・写真をまとめる名前を入力してください。\n（例：本社棟／第1工場／○○事業所 など）\n' + note + '\n\n空欄のままOKでも進められます（「読み込み図面」になります）。', '読み込み図面');
       if (nm === null) return null;
