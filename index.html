@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.167</title>
+<title>現場写真撮影アプリ v3.169</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -760,6 +760,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .layer-align-row > span:first-child { font-size: 12px; color: #6e6e73; width: 40px; flex-shrink: 0; }
   .layer-align-row input[type=range] { flex: 1; }
   .layer-align-val { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; }
+  /* v3-168：スライダ横の数値直接入力（大きさ／濃さ／回転） */
+  .layer-align-num {
+    width: 52px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px;
+    padding: 5px 6px; border: 1px solid #c7c7cc; border-radius: 6px; background: #fff; color: #1c1c1e;
+    margin-bottom: 0; -moz-appearance: textfield; flex: 0 0 auto;
+  }
+  .layer-align-num::-webkit-outer-spin-button, .layer-align-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .layer-align-unit { font-size: 12px; color: #6e6e73; min-width: 8px; flex-shrink: 0; }
   .layer-align-nudge { display: flex; align-items: center; gap: 6px; margin: 2px 0 8px; flex-wrap: nowrap; }
   .layer-align-nudge > span { font-size: 12px; color: #6e6e73; margin-right: 2px; flex-shrink: 0; }
   .layer-nudge-btn {
@@ -768,6 +776,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     font-size: 14px; cursor: pointer;
   }
   .layer-nudge-btn:active { background: #e2e2ea; }
+  .layer-align-undo { margin-left: 6px; }
+  .layer-nudge-btn:disabled, .layer-nudge-btn.is-off { opacity: 0.4; cursor: default; }
   .layer-align-reset {
     flex: 0 0 auto; width: auto; margin-bottom: 0;
     background: #fff; border: 1px solid #c7c7cc; color: #6e6e73; border-radius: 8px;
@@ -2317,7 +2327,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.167 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.169 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3470,14 +3480,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
     <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいときは「－」で少し縮小してから引くと余白ができます。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
-    <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><span class="layer-align-val" id="layer-align-scale-val">100%</span></div>
-    <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><span class="layer-align-val" id="layer-align-op-val">100%</span></div>
+    <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><input type="number" class="layer-align-num" id="layer-align-scale-val" min="5" max="1000" step="1" value="100" inputmode="numeric" aria-label="大きさ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
+    <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><input type="number" class="layer-align-num" id="layer-align-op-val" min="0" max="100" step="1" value="100" inputmode="numeric" aria-label="濃さ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row layer-align-rot-row">
       <span>回転</span>
       <button class="layer-nudge-btn" id="layer-align-rot-l" title="左に90°">↺90°</button>
       <button class="layer-nudge-btn" id="layer-align-rot-r" title="右に90°">↻90°</button>
       <input type="range" id="layer-align-rot" min="-180" max="180" value="0">
-      <span class="layer-align-val" id="layer-align-rot-val">0°</span>
+      <input type="number" class="layer-align-num" id="layer-align-rot-val" min="-180" max="180" step="1" value="0" inputmode="numeric" aria-label="回転（度・数値で入力）"><span class="layer-align-unit">°</span>
     </div>
     <div class="layer-align-nudge">
       <span>微調整</span>
@@ -3485,6 +3495,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="layer-nudge-btn" data-nudge="up" title="上へ">▲</button>
       <button class="layer-nudge-btn" data-nudge="down" title="下へ">▼</button>
       <button class="layer-nudge-btn" data-nudge="right" title="右へ">▶</button>
+      <button class="layer-nudge-btn layer-align-undo" id="layer-align-undo" title="1つ戻す（Ctrl+Z）" disabled>↩ 戻す</button>
       <button class="layer-align-reset" id="layer-align-reset">リセット</button>
     </div>
     <div class="layer-align-foot">
@@ -4164,7 +4175,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.167）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.169）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11189,12 +11200,57 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   var _alignScalePrev = 100;   // v3-160：大きさスライダ＝相対ズーム用の直前値
   var _alignPrevZoom = null, _alignPrevFit = null;   // v3-165：位置合わせ前のズーム/表示モード（退出時に復元）
+  // v3-169：位置合わせのUndo（確定前なら1手ずつ戻せる）
+  var alignUndoStack = [], _alignSliderDirty = false, _alignGestureSnap = null, _alignGesturePushed = false;
+  function _alignSnapshot() {
+    var L = _alignLayer(); if (!L) return null; var r = _layerRect(L);
+    return { fx: r.fx, fy: r.fy, fw: r.fw, fh: r.fh,
+             opacity: (typeof L.opacity === 'number') ? L.opacity : 1,
+             rot: (typeof L.rot === 'number') ? L.rot : 0 };
+  }
+  function _alignSameSnap(a, b) {
+    return a && b && a.fx === b.fx && a.fy === b.fy && a.fw === b.fw && a.fh === b.fh && a.opacity === b.opacity && a.rot === b.rot;
+  }
+  function _alignPushSnap(snap) {
+    if (!snap) return;
+    var top = alignUndoStack[alignUndoStack.length - 1];
+    if (_alignSameSnap(top, snap)) return;   // 変化なしは積まない
+    alignUndoStack.push(snap);
+    if (alignUndoStack.length > 60) alignUndoStack.shift();
+    _updateAlignUndoBtn();
+  }
+  function _alignPushUndo() { _alignPushSnap(_alignSnapshot()); }   // 離散操作＝適用前に呼ぶ
+  function _alignResetUndo() { alignUndoStack = []; _alignSliderDirty = false; _alignGestureSnap = null; _alignGesturePushed = false; _updateAlignUndoBtn(); }
+  function _updateAlignUndoBtn() {
+    var b = $('layer-align-undo'); if (!b) return;
+    var on = alignUndoStack.length > 0;
+    b.disabled = !on; b.classList.toggle('is-off', !on);
+  }
+  function _sliderUndoStart() { if (!_alignSliderDirty) { _alignPushUndo(); _alignSliderDirty = true; } }   // スライダ1ドラッグ＝1手
+  // v3-169：位置合わせUIを現在のレイヤー状態へ丸ごと同期（Undo/復元後に使用）
+  function _syncAlignUI() {
+    var L = _alignLayer(); if (!L) return;
+    _alignScalePrev = 100;   // 大きさは相対＝基準を100へ戻す
+    var ss = $('layer-align-scale'); if (ss) ss.value = 100;
+    var sb = $('layer-align-scale-val'); if (sb) sb.value = 100;
+    var ocur = Math.round(((typeof L.opacity === 'number') ? L.opacity : 1) * 100);
+    var os = $('layer-align-op'); if (os) os.value = ocur;
+    var ob = $('layer-align-op-val'); if (ob) ob.value = ocur;
+    _syncRotUI((typeof L.rot === 'number') ? L.rot : 0);
+  }
+  function _alignUndo() {
+    if (alignLayerId == null || !alignUndoStack.length) return;
+    var L = _alignLayer(); if (!L) return;
+    var snap = alignUndoStack.pop();
+    L.fx = snap.fx; L.fy = snap.fy; L.fw = snap.fw; L.fh = snap.fh; L.opacity = snap.opacity; L.rot = snap.rot;
+    _syncAlignUI(); updateAlignOverlay(); _updateAlignUndoBtn();
+  }
   // v3-167：回転角を [-180,180]（整数度）へ正規化
   function _normRot(d) { d = ((d % 360) + 360) % 360; if (d > 180) d -= 360; return Math.round(d); }
   // v3-167：回転スライダ／数値表示を現在値へ同期
   function _syncRotUI(d) {
     var s = $('layer-align-rot'); if (s) s.value = d;
-    var v = $('layer-align-rot-val'); if (v) v.textContent = d + '°';
+    var v = $('layer-align-rot-val'); if (v) v.value = d;
   }
   function updateAlignOverlay() {
     var ov = $('layer-align-overlay'); var fr = $('layer-align-frame'); var L = _alignLayer();
@@ -11231,6 +11287,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     alignLayerId = L.id;
     if (typeof L.rot !== 'number') L.rot = 0;   // v3-167：既定0で正規化（後方互換）
     alignPrev = { fx: L.fx, fy: L.fy, fw: L.fw, fh: L.fh, opacity: L.opacity, rot: L.rot };
+    _alignResetUndo();
     var base = await flattenLayers(sheet, L.id);   // 下敷き＝選択以外
     if (pinEditorImg) { pinEditorImg.onload = null; pinEditorImg.src = base; }
     var ov = $('layer-align-overlay');
@@ -11243,12 +11300,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var nm = $('layer-align-name'); if (nm) nm.textContent = L.name || 'レイヤー';
     _alignScalePrev = 100;
     var ss = $('layer-align-scale'); if (ss) ss.value = 100;
-    var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%';
+    var sv = $('layer-align-scale-val'); if (sv) sv.value = 100;
     var ocur = (typeof L.opacity === 'number') ? L.opacity : 1;
     var os = $('layer-align-op'); if (os) os.value = Math.round(ocur * 100);
-    var ovv = $('layer-align-op-val'); if (ovv) ovv.textContent = Math.round(ocur * 100) + '%';
+    var ovv = $('layer-align-op-val'); if (ovv) ovv.value = Math.round(ocur * 100);
     _syncRotUI((typeof L.rot === 'number') ? L.rot : 0);   // v3-167：回転UIを現在値へ
-    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '📐 この画像を動かす・伸縮・回転：ドラッグで移動／青い枠の四隅・辺の■で伸縮／枠の上の丸（↻）ドラッグか「回転」で傾きを直す。下の図に重ねて「確定」';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '📐 この画像を動かす・伸縮・回転：ドラッグで移動／四隅・辺の■で伸縮／枠上の丸（↻）か「回転」で傾き。間違えたら「↩ 戻す」かCtrl+Zで1手戻せます。下の図に重ねて「確定」';
     if (pinEditorStage) pinEditorStage.style.touchAction = 'none';
     setupAlignDrag();
   }
@@ -11261,7 +11318,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   async function commitAlign() {
     var sheet = resolveSheet(editSheetRef);
-    alignLayerId = null; alignPrev = null;
+    alignLayerId = null; alignPrev = null; _alignResetUndo();
     var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
     var fr = $('layer-align-frame'); if (fr) fr.style.display = 'none';
     var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
@@ -11277,7 +11334,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var L = _alignLayer();
     if (L && alignPrev) { L.fx = alignPrev.fx; L.fy = alignPrev.fy; L.fw = alignPrev.fw; L.fh = alignPrev.fh; L.opacity = alignPrev.opacity; L.rot = alignPrev.rot; }
     var sheet = resolveSheet(editSheetRef);
-    alignLayerId = null; alignPrev = null;
+    alignLayerId = null; alignPrev = null; _alignResetUndo();
     var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
     var fr = $('layer-align-frame'); if (fr) fr.style.display = 'none';
     var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
@@ -11290,7 +11347,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     renderLayerPanel();
   }
   function forceExitAlign() {
-    alignLayerId = null; alignPrev = null;
+    alignLayerId = null; alignPrev = null; _alignResetUndo();
     var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
     var fr = $('layer-align-frame'); if (fr) fr.style.display = 'none';
     var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
@@ -11331,6 +11388,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (alignLayerId == null) return;
       ev.preventDefault(); ev.stopPropagation();
       var L = _alignLayer(); if (!L) return;
+      _alignGestureSnap = _alignSnapshot(); _alignGesturePushed = false;   // v3-169：ドラッグ開始状態を控えて、動いたら1手として積む
       var t = ev.target;
       if (t && t.classList && t.classList.contains('align-rotate-handle')) {
         // v3-167：回転＝枠の外接矩形中心（回転しても中心は不変）を軸に、ポインタ方向へ追従
@@ -11349,6 +11407,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     fr.addEventListener('pointermove', function(ev){
       if (mode == null) return;
       ev.preventDefault(); ev.stopPropagation();
+      if (!_alignGesturePushed) { _alignPushSnap(_alignGestureSnap); _alignGesturePushed = true; }   // v3-169：実際に動いたときだけUndo点を作る
       if (mode === 'rotate') {
         var L2 = _alignLayer(); if (!L2 || !rotCenter) return;
         // 画面上の「中心→ポインタ」角度。ハンドルは枠の真上（-90°）なので +90° で枠の傾き＝rot
@@ -11370,7 +11429,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 大きさスライダは相対ズームなので、変形後は基準を100%へ戻す
       _alignScalePrev = 100;
       var ss = $('layer-align-scale'); if (ss) ss.value = 100;
-      var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%';
+      var sv = $('layer-align-scale-val'); if (sv) sv.value = 100;
     }
     fr.addEventListener('pointerup', endDrag);
     fr.addEventListener('pointercancel', endDrag);
@@ -13964,31 +14023,56 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     layerAddBtn.addEventListener('click', function(){ layerAddInput.value = ''; layerAddInput.click(); });
     layerAddInput.addEventListener('change', function(e){ var f = e.target.files && e.target.files[0]; if (f) addLayerFromFile(f); });
   }
-  // v3-155：位置合わせバー
-  var laScale = $('layer-align-scale');
-  if (laScale) laScale.addEventListener('input', function(){
+  // v3-155/168：位置合わせバー（スライダと数値入力は同じ適用関数を共有）
+  // 大きさ＝中心基準の相対ズーム（縦横比維持・枠を超えてよい／数値は5〜1000%まで＝画面端に届かなくても数値で拡大縮小できる）
+  function _scaleTo(v) {
     var L = _alignLayer(); if (!L) return;
-    var val = Math.max(20, Math.min(300, parseInt(laScale.value, 10) || 100));
+    v = Math.max(5, Math.min(1000, Math.round(v) || 100));
     var prev = (typeof _alignScalePrev === 'number' && _alignScalePrev > 0) ? _alignScalePrev : 100;
-    var factor = val / prev; _alignScalePrev = val;
+    var factor = v / prev; _alignScalePrev = v;
     var r = _layerRect(L);
     var nfw = Math.max(0.05, r.fw * factor), nfh = Math.max(0.05, r.fh * factor);
-    L.fx = r.fx + (r.fw - nfw) / 2; L.fy = r.fy + (r.fh - nfh) / 2; L.fw = nfw; L.fh = nfh;   // 中心基準・縦横比維持（枠を超えてよい）
-    var v = $('layer-align-scale-val'); if (v) v.textContent = val + '%';
+    L.fx = r.fx + (r.fw - nfw) / 2; L.fy = r.fy + (r.fh - nfh) / 2; L.fw = nfw; L.fh = nfh;
+    var ss = $('layer-align-scale'); if (ss) ss.value = Math.max(20, Math.min(300, v));
+    var nb = $('layer-align-scale-val'); if (nb) nb.value = v;
     updateAlignOverlay();
-  });
+  }
+  function _opTo(v) {
+    var L = _alignLayer(); if (!L) return;
+    v = Math.max(0, Math.min(100, Math.round(v) || 0));
+    L.opacity = v / 100;
+    var os = $('layer-align-op'); if (os) os.value = v;
+    var nb = $('layer-align-op-val'); if (nb) nb.value = v;
+    updateAlignOverlay();
+  }
+  var laScale = $('layer-align-scale');
+  if (laScale) { laScale.addEventListener('input', function(){ _sliderUndoStart(); _scaleTo(parseInt(laScale.value, 10) || 100); });
+                 laScale.addEventListener('change', function(){ _alignSliderDirty = false; }); }
+  var laScaleNum = $('layer-align-scale-val');
+  if (laScaleNum) laScaleNum.addEventListener('change', function(){ _alignPushUndo(); _scaleTo(parseFloat(laScaleNum.value) || 100); });
   var laOp = $('layer-align-op');
-  if (laOp) laOp.addEventListener('input', function(){ var L = _alignLayer(); if (!L) return; L.opacity = Math.max(0, Math.min(100, parseInt(laOp.value, 10) || 0)) / 100; var v = $('layer-align-op-val'); if (v) v.textContent = Math.round(L.opacity * 100) + '%'; updateAlignOverlay(); });
+  if (laOp) { laOp.addEventListener('input', function(){ _sliderUndoStart(); _opTo(parseInt(laOp.value, 10) || 0); });
+              laOp.addEventListener('change', function(){ _alignSliderDirty = false; }); }
+  var laOpNum = $('layer-align-op-val');
+  if (laOpNum) laOpNum.addEventListener('change', function(){ _alignPushUndo(); _opTo(parseFloat(laOpNum.value) || 0); });
   // v3-167：回転＝90°ボタン＋スライダ（回転ハンドルと同じ L.rot を操作）
   function _applyRot(nr) { var L = _alignLayer(); if (!L) return; nr = _normRot(nr); L.rot = nr; _syncRotUI(nr); updateAlignOverlay(); }
-  var laRotL = $('layer-align-rot-l'); if (laRotL) laRotL.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; _applyRot(((typeof L.rot === 'number') ? L.rot : 0) - 90); });
-  var laRotR = $('layer-align-rot-r'); if (laRotR) laRotR.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; _applyRot(((typeof L.rot === 'number') ? L.rot : 0) + 90); });
-  var laRot = $('layer-align-rot'); if (laRot) laRot.addEventListener('input', function(){ _applyRot(parseInt(laRot.value, 10) || 0); });
+  var laRotNum = $('layer-align-rot-val'); if (laRotNum) laRotNum.addEventListener('change', function(){ _alignPushUndo(); _applyRot(parseFloat(laRotNum.value) || 0); });
+  var laRotL = $('layer-align-rot-l'); if (laRotL) laRotL.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; _alignPushUndo(); _applyRot(((typeof L.rot === 'number') ? L.rot : 0) - 90); });
+  var laRotR = $('layer-align-rot-r'); if (laRotR) laRotR.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; _alignPushUndo(); _applyRot(((typeof L.rot === 'number') ? L.rot : 0) + 90); });
+  var laRot = $('layer-align-rot'); if (laRot) { laRot.addEventListener('input', function(){ _sliderUndoStart(); _applyRot(parseInt(laRot.value, 10) || 0); });
+                 laRot.addEventListener('change', function(){ _alignSliderDirty = false; }); }
+  var laUndo = $('layer-align-undo'); if (laUndo) laUndo.addEventListener('click', function(){ _alignUndo(); });
   Array.prototype.forEach.call(document.querySelectorAll('.layer-nudge-btn'), function(b){
-    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var r = _layerRect(L); var step = 0.01; var d = b.dataset.nudge; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = fx; L.fy = fy; updateAlignOverlay(); });
+    b.addEventListener('click', function(){ var d = b.dataset.nudge; if (!d) return; var L = _alignLayer(); if (!L) return; _alignPushUndo(); var r = _layerRect(L); var step = 0.01; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = fx; L.fy = fy; updateAlignOverlay(); });
   });
   var laReset = $('layer-align-reset');
-  if (laReset) laReset.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; L.fx = 0; L.fy = 0; L.fw = 1; L.fh = 1; delete L.tx; delete L.ty; delete L.scale; L.rot = 0; _syncRotUI(0); _alignScalePrev = 100; var ss = $('layer-align-scale'); if (ss) ss.value = 100; var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%'; updateAlignOverlay(); });
+  if (laReset) laReset.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; _alignPushUndo(); L.fx = 0; L.fy = 0; L.fw = 1; L.fh = 1; delete L.tx; delete L.ty; delete L.scale; L.rot = 0; _syncRotUI(0); _alignScalePrev = 100; var ss = $('layer-align-scale'); if (ss) ss.value = 100; var sv = $('layer-align-scale-val'); if (sv) sv.value = 100; updateAlignOverlay(); });
+  // v3-169：位置合わせ中の Ctrl+Z / Cmd+Z で1手戻す
+  document.addEventListener('keydown', function(ev){
+    if (alignLayerId == null) return;
+    if ((ev.ctrlKey || ev.metaKey) && !ev.shiftKey && (ev.key === 'z' || ev.key === 'Z')) { ev.preventDefault(); _alignUndo(); }
+  });
   var laDone = $('layer-align-done'); if (laDone) laDone.addEventListener('click', function(){ commitAlign(); });
   var laCancel = $('layer-align-cancel'); if (laCancel) laCancel.addEventListener('click', function(){ cancelAlign(); });
 
