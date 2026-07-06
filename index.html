@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.163</title>
+<title>現場写真撮影アプリ v3.164</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2301,7 +2301,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.163 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.164 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3452,7 +3452,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で上下左右に伸縮して、<strong>下の図（透けて見える地図）にぴったり重ねます</strong>（長方形→正方形もOK）。「大きさ」は縦横そのままの拡大縮小、「濃さ」を下げると下の図と見比べられます。<strong>青い枠＝保存される範囲</strong>で、その中で合わせます（枠の外は保存されません）。</p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも自由に伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。「大きさ」は縦横比を保った拡大縮小、「濃さ」を下げると下の図と見比べられます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。<strong>もっと大きく広げたいときは、地図を縮小（－／全体表示）</strong>すると四方に余白ができて、どの向きにも伸ばせます。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><span class="layer-align-val" id="layer-align-scale-val">100%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><span class="layer-align-val" id="layer-align-op-val">100%</span></div>
     <div class="layer-align-nudge">
@@ -4140,7 +4140,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.163）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.164）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11254,18 +11254,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       L.fx = pend.fx; L.fy = pend.fy; L.fw = pend.fw; L.fh = pend.fh; updateAlignOverlay();
     }
     function compute(p) {
-      var Lft = startR.fx, Rgt = startR.fx + startR.fw, Top = startR.fy, Bot = startR.fy + startR.fh;
+      var fx = startR.fx, fy = startR.fy, fw = startR.fw, fh = startR.fh;
       var dx = p.x - px0, dy = p.y - py0;
-      if (mode === 'move') {   // 移動：枠[0,1]内に収める（サイズ不変）
-        var w = startR.fw, h = startR.fh;
-        return { fx: Math.max(0, Math.min(1 - w, startR.fx + dx)), fy: Math.max(0, Math.min(1 - h, startR.fy + dy)), fw: w, fh: h };
-      }
-      // 伸縮：動かす辺だけを枠[0,1]内・最小サイズMINでクランプ（対辺は固定）＝左右上下対称
-      if (mode.indexOf('e') >= 0) { Rgt = Math.max(Lft + MIN, Math.min(1, startR.fx + startR.fw + dx)); }
-      if (mode.indexOf('w') >= 0) { Lft = Math.min(Rgt - MIN, Math.max(0, startR.fx + dx)); }
-      if (mode.indexOf('s') >= 0) { Bot = Math.max(Top + MIN, Math.min(1, startR.fy + startR.fh + dy)); }
-      if (mode.indexOf('n') >= 0) { Top = Math.min(Bot - MIN, Math.max(0, startR.fy + dy)); }
-      return { fx: Lft, fy: Top, fw: Rgt - Lft, fh: Bot - Top };
+      if (mode === 'move') { return { fx: startR.fx + dx, fy: startR.fy + dy, fw: fw, fh: fh }; }   // 移動＝制限なし
+      // 伸縮＝動かす辺だけを動かす（枠を超えて上下左右に自由・最小サイズMINのみ）
+      if (mode.indexOf('e') >= 0) { fw = startR.fw + dx; }                    // 右辺
+      if (mode.indexOf('w') >= 0) { fx = startR.fx + dx; fw = startR.fw - dx; } // 左辺
+      if (mode.indexOf('s') >= 0) { fh = startR.fh + dy; }                    // 下辺
+      if (mode.indexOf('n') >= 0) { fy = startR.fy + dy; fh = startR.fh - dy; } // 上辺
+      if (fw < MIN) { if (mode.indexOf('w') >= 0) fx = startR.fx + startR.fw - MIN; fw = MIN; }
+      if (fh < MIN) { if (mode.indexOf('n') >= 0) fy = startR.fy + startR.fh - MIN; fh = MIN; }
+      return { fx: fx, fy: fy, fw: fw, fh: fh };
     }
     fr.addEventListener('pointerdown', function(ev){
       if (alignLayerId == null) return;
@@ -13895,16 +13894,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var prev = (typeof _alignScalePrev === 'number' && _alignScalePrev > 0) ? _alignScalePrev : 100;
     var factor = val / prev; _alignScalePrev = val;
     var r = _layerRect(L);
-    var nfw = Math.min(1, Math.max(0.05, r.fw * factor)), nfh = Math.min(1, Math.max(0.05, r.fh * factor));
-    var nfx = r.fx + (r.fw - nfw) / 2, nfy = r.fy + (r.fh - nfh) / 2;   // 中心基準
-    L.fx = Math.max(0, Math.min(1 - nfw, nfx)); L.fy = Math.max(0, Math.min(1 - nfh, nfy)); L.fw = nfw; L.fh = nfh;   // 枠[0,1]内にクランプ
+    var nfw = Math.max(0.05, r.fw * factor), nfh = Math.max(0.05, r.fh * factor);
+    L.fx = r.fx + (r.fw - nfw) / 2; L.fy = r.fy + (r.fh - nfh) / 2; L.fw = nfw; L.fh = nfh;   // 中心基準・縦横比維持（枠を超えてよい）
     var v = $('layer-align-scale-val'); if (v) v.textContent = val + '%';
     updateAlignOverlay();
   });
   var laOp = $('layer-align-op');
   if (laOp) laOp.addEventListener('input', function(){ var L = _alignLayer(); if (!L) return; L.opacity = Math.max(0, Math.min(100, parseInt(laOp.value, 10) || 0)) / 100; var v = $('layer-align-op-val'); if (v) v.textContent = Math.round(L.opacity * 100) + '%'; updateAlignOverlay(); });
   Array.prototype.forEach.call(document.querySelectorAll('.layer-nudge-btn'), function(b){
-    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var r = _layerRect(L); var step = 0.01; var d = b.dataset.nudge; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = Math.max(0, Math.min(1 - r.fw, fx)); L.fy = Math.max(0, Math.min(1 - r.fh, fy)); updateAlignOverlay(); });
+    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var r = _layerRect(L); var step = 0.01; var d = b.dataset.nudge; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = fx; L.fy = fy; updateAlignOverlay(); });
   });
   var laReset = $('layer-align-reset');
   if (laReset) laReset.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; L.fx = 0; L.fy = 0; L.fw = 1; L.fh = 1; delete L.tx; delete L.ty; delete L.scale; _alignScalePrev = 100; var ss = $('layer-align-scale'); if (ss) ss.value = 100; var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%'; updateAlignOverlay(); });
