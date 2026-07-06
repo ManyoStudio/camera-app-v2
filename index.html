@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.164</title>
+<title>現場写真撮影アプリ v3.165</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -731,6 +731,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .align-handle.s { left: 50%; top: 100%; cursor: ns-resize; }
   .align-handle.e { left: 100%; top: 50%; cursor: ew-resize; }
   .align-handle.w { left: 0; top: 50%; cursor: ew-resize; }
+  /* v3-165：位置合わせ中は地図を上下も中央寄せ＝枠の四方に均等な余白（マウスが画面端に達する前にハンドルを枠外へ引ける） */
+  .pin-editor-stage.align-room { align-items: center; }
   .layer-align-bar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 41;
     background: #fff; border-top: 1px solid #d9d7ef; box-shadow: 0 -4px 14px rgba(0,0,0,0.12);
@@ -2301,7 +2303,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.164 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.165 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3452,7 +3454,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも自由に伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。「大きさ」は縦横比を保った拡大縮小、「濃さ」を下げると下の図と見比べられます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。<strong>もっと大きく広げたいときは、地図を縮小（－／全体表示）</strong>すると四方に余白ができて、どの向きにも伸ばせます。</p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも自由に伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>位置合わせ中は地図を縮小表示にして枠の四方に余白</strong>を作っているので、シングルモニターでも四隅・辺を外側へ引けば枠を超えて伸ばせます（もっと必要なら「－」でさらに縮小、または「大きさ」で拡大）。「濃さ」を下げると下の図と見比べ。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><span class="layer-align-val" id="layer-align-scale-val">100%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><span class="layer-align-val" id="layer-align-op-val">100%</span></div>
     <div class="layer-align-nudge">
@@ -4140,7 +4142,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.164）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.165）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11154,6 +11156,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return null;
   }
   var _alignScalePrev = 100;   // v3-160：大きさスライダ＝相対ズーム用の直前値
+  var _alignPrevZoom = null, _alignPrevFit = null;   // v3-165：位置合わせ前のズーム/表示モード（退出時に復元）
   function updateAlignOverlay() {
     var ov = $('layer-align-overlay'); var fr = $('layer-align-frame'); var L = _alignLayer();
     if (!ov || !L) return;
@@ -11199,9 +11202,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ocur = (typeof L.opacity === 'number') ? L.opacity : 1;
     var os = $('layer-align-op'); if (os) os.value = Math.round(ocur * 100);
     var ovv = $('layer-align-op-val'); if (ovv) ovv.textContent = Math.round(ocur * 100) + '%';
-    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '📐 この画像を動かす・伸縮：ドラッグで移動／青い枠の四隅・辺の■で上下左右に伸縮。下の図に重なるように合わせて「確定」';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '📐 この画像を動かす・伸縮：ドラッグで移動／青い枠の四隅・辺の■で上下左右に伸縮。地図は縮小表示中（枠の外へも引けます）。下の図に重なるように合わせて「確定」';
     if (pinEditorStage) pinEditorStage.style.touchAction = 'none';
+    // v3-165：地図を縮小して枠の四方に余白を作る＝シングルモニターでもマウスが画面端に達する前にハンドルを枠外へ引ける
+    _alignPrevZoom = pinZoom; _alignPrevFit = pinFitMode;
+    if (pinEditorStage) pinEditorStage.classList.add('align-room');
+    pinFitMode = 'whole';
+    if (pinComputeBase()) {
+      pinZoom = 0.6;
+      pinEditorImg.style.width = (pinBaseWidth * pinZoom) + 'px';
+      pinEditorImg.style.maxWidth = 'none';
+      var _zl = $('pin-zoom-level'); if (_zl) _zl.textContent = Math.round(pinZoom * 100) + '%';
+      if (pinEditorStage) { pinEditorStage.scrollLeft = 0; pinEditorStage.scrollTop = 0; }
+      updateAlignOverlay();
+    }
     setupAlignDrag();
+  }
+  // v3-165：位置合わせ退出時に元のズーム/表示モードへ戻す
+  function _restoreAlignZoom() {
+    var st = $('pin-editor-stage'); if (st) st.classList.remove('align-room');
+    if (_alignPrevFit != null) pinFitMode = _alignPrevFit;
+    if (_alignPrevZoom != null) { pinZoom = _alignPrevZoom; if (pinComputeBase()) applyZoom(); }
+    _alignPrevZoom = null; _alignPrevFit = null;
   }
   async function commitAlign() {
     var sheet = resolveSheet(editSheetRef);
@@ -11213,6 +11235,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (pinEditorStage) pinEditorStage.style.touchAction = '';
     var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
     if (sheet) { await refreshLayerComposite(sheet, true); }   // 変形込みで平坦化・保存・表示更新
+    _restoreAlignZoom();
     _showEditorMarkers();
     renderLayerPanel();
   }
@@ -11229,6 +11252,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
     _showEditorMarkers();
     if (sheet) { var s2 = sheet; applyLayers(s2).then(function(){ if (pinEditorImg) pinEditorImg.src = s2.dataUrl; }); }
+    _restoreAlignZoom();
     renderLayerPanel();
   }
   function forceExitAlign() {
@@ -11236,7 +11260,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ov = $('layer-align-overlay'); if (ov) { ov.style.display = 'none'; ov.src = ''; }
     var fr = $('layer-align-frame'); if (fr) fr.style.display = 'none';
     var ab = $('layer-align-bar'); if (ab) ab.style.display = 'none';
-    if (pinEditorStage) pinEditorStage.style.touchAction = '';
+    if (pinEditorStage) { pinEditorStage.style.touchAction = ''; pinEditorStage.classList.remove('align-room'); }
+    if (_alignPrevFit != null) pinFitMode = _alignPrevFit;
+    if (_alignPrevZoom != null) pinZoom = _alignPrevZoom;
+    _alignPrevZoom = null; _alignPrevFit = null;
   }
   var _alignDragWired = false;
   function setupAlignDrag() {
