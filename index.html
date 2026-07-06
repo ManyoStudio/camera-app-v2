@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.162</title>
+<title>現場写真撮影アプリ v3.163</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2301,7 +2301,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.162 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.163 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4140,7 +4140,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.162）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.163）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10219,6 +10219,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var pinGrpCollapsed = {}; // チップグループの開閉状態（表示のみ・openPinEditorで毎回リセット / v3-56）
   var pinFilterOpen = false; // しぼり込みパネルの開閉（表示のみ・開くたび畳む / v3-51）
 
+  // v3-163：地図のカーソルで今の操作を示す（配置＝十字／移動＝掴む手）
+  function updateMapCursor() {
+    if (!pinEditorImg) return;
+    pinEditorImg.style.cursor = (selectedMarkerType === 'hand') ? 'grab' : 'crosshair';
+  }
   // マーカー種類の切替
   Array.prototype.forEach.call(document.querySelectorAll('.marker-type-btn'), function(btn) {
     btn.addEventListener('click', function() {
@@ -10228,7 +10233,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
       var note = $('pin-editor-mode-note');
       if (note) {
-        if (selectedMarkerType === 'pin') note.textContent = '色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます';
+        if (selectedMarkerType === 'pin') note.textContent = '色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます。置いたピンは長押しでそのまま移動できます';
         else if (selectedMarkerType === 'memo') note.textContent = '色を選んでマップをタップ → メモ文字を入力できます';
         else if (selectedMarkerType === 'arrow') note.textContent = '色を選んでマップをタップ → 矢印を置き、先端をドラッグで長さ・向きを調整';
         else note.textContent = '✋ 移動モード：1本指でマーカーを動かす／2本指でつまむと、ピン・メモは大きさ変更、矢印は拡大・回転ができます';
@@ -10239,6 +10244,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 手モード中はステージのスクロールを止め、マーカードラッグを優先
       var stage = $('pin-editor-stage');
       if (stage) stage.style.touchAction = (selectedMarkerType === 'hand') ? 'none' : 'auto';
+      updateMapCursor();   // v3-163：配置中＝十字カーソル／移動＝掴むカーソルで、今の操作が一目で分かる
       // 手モードに切り替えたらマーカーを再描画（ドラッグ可能にする）
       renderPins();
     });
@@ -11506,9 +11512,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       b.classList.toggle('selected', b.dataset.type === 'pin');
     });
     var _omn = $('pin-editor-mode-note');
-    if (_omn) _omn.textContent = '色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます';
+    if (_omn) _omn.textContent = '色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます。置いたピンは長押しでそのまま移動できます';
     var _ocr = $('pin-color-row'); if (_ocr) _ocr.style.display = 'flex';
     var _ost0 = $('pin-editor-stage'); if (_ost0) _ost0.style.touchAction = 'auto';
+    updateMapCursor();   // v3-163：開いた直後から配置カーソル（十字）
     try { clearLastCreatedPin(); } catch(e) {} // (9 / v3-76) 開くたび直前undoを解除（チップも隠す）
     // 番号フィルタはマップを開くたびに解除（毎回まず全表示）
     pinFilterText = '';
@@ -12221,6 +12228,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     m.onclick = function(ev) {
       ev.stopPropagation();
       if (movingPinId) return;
+      if (handJustDragged) return; // v3-163：長押しドラッグ直後のクリックで詳細を開かない
       if (selectedMarkerType === 'hand') return; // 手モードのクリックは無視（ドラッグ優先）
       openPinDetail(pin.id);
     };
@@ -12233,6 +12241,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     el.style.touchAction = 'none'; // ブラウザのスクロール/ジェスチャを抑止
     var dragRect = null;      // ドラッグ開始時の画像矩形（毎回計算しないでキャッシュ）
     var pendingX = null, pendingY = null, rafId = null;
+    var dragging = false, lpTimer = null, lpX = 0, lpY = 0, lpPid = null;   // v3-163：長押しドラッグ用
     function flush() {
       rafId = null;
       if (pendingX === null) return;
@@ -12244,18 +12253,38 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       el.style.left = pendingX + '%';
       el.style.top = pendingY + '%';
     }
-    el.addEventListener('pointerdown', function(ev) {
-      if (selectedMarkerType !== 'hand') return;
-      if (pinchActive) return;
-      ev.stopPropagation();
-      ev.preventDefault();
+    function beginDrag(pid) {
+      dragging = true;
       handDragId = pin.id;
       el.style.zIndex = '30';
       el.style.willChange = 'left, top';   // 移動を最適化するヒント
       dragRect = pinEditorImg.getBoundingClientRect();   // 基準を1回だけ取得
-      if (el.setPointerCapture) { try { el.setPointerCapture(ev.pointerId); } catch(e){} }
+      if (el.setPointerCapture && pid != null) { try { el.setPointerCapture(pid); } catch(e){} }
+    }
+    function cancelLP() { if (lpTimer) { clearTimeout(lpTimer); lpTimer = null; } }
+    el.addEventListener('pointerdown', function(ev) {
+      if (pinchActive) return;
+      if (selectedMarkerType === 'hand') {
+        // 移動モード：即ドラッグ
+        ev.stopPropagation(); ev.preventDefault();
+        beginDrag(ev.pointerId);
+      } else {
+        // v3-163 既定モード：長押し（約0.35秒）でドラッグ開始。すぐ離せば通常タップ＝詳細を開く
+        lpX = ev.clientX; lpY = ev.clientY; lpPid = ev.pointerId;
+        cancelLP();
+        lpTimer = setTimeout(function() {
+          lpTimer = null;
+          beginDrag(lpPid);
+          try { if (navigator.vibrate) navigator.vibrate(15); } catch(e){}   // 触覚フィードバック（対応端末）
+        }, 350);
+      }
     });
     el.addEventListener('pointermove', function(ev) {
+      if (!dragging) {
+        // 長押し待ち中に動いたらキャンセル（誤ドラッグ・スクロール防止）
+        if (lpTimer && (Math.abs(ev.clientX - lpX) > 8 || Math.abs(ev.clientY - lpY) > 8)) cancelLP();
+        return;
+      }
       if (handDragId !== pin.id) return;
       ev.preventDefault();
       ev.stopPropagation();
@@ -12268,7 +12297,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (rafId === null) rafId = requestAnimationFrame(flush);
     });
     function endDrag(ev) {
-      if (handDragId !== pin.id) return;
+      cancelLP();
+      if (!dragging || handDragId !== pin.id) { dragging = false; return; }
       ev.preventDefault();
       ev.stopPropagation();
       if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
@@ -12276,6 +12306,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       pendingX = pendingY = null;
       dragRect = null;
       handDragId = null;
+      dragging = false;
       el.style.zIndex = '';
       el.style.willChange = '';
       if (el.releasePointerCapture) { try { el.releasePointerCapture(ev.pointerId); } catch(e){} }
@@ -12302,6 +12333,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     m.onclick = function(ev) {
       ev.stopPropagation();
       if (movingPinId) return;
+      if (handJustDragged) return; // v3-163：長押しドラッグ直後のクリックで詳細を開かない
       if (selectedMarkerType === 'hand') return;
       openPinDetail(pin.id);
     };
@@ -12993,6 +13025,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (type === 'memo') { newPin.text = opts.text || ''; }
     else if (type === 'arrow') { newPin.x2 = Math.min(100, x + 12); newPin.y2 = y; }
     else { newPin.photoId = opts.photoId || null; }
+    if (opts.label != null && String(opts.label).trim() !== '') newPin.label = String(opts.label).trim();   // v3-163：設備ID等の任意ラベル（空欄なら通し番号を表示）
     if (type === 'pin' && newPin.photoId != null) {
       try { ensurePinNumRuleDecided(photos.find(function(p){ return p.id === newPin.photoId; })); } catch (e) {}
     }
@@ -13096,7 +13129,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (!btn) { if (ev.target === sheet) closePinActionSheet(); return; } // 背景タップで閉じる
         var act = btn.getAttribute('data-act');
         closePinActionSheet();
-        if (act === 'pin') { await createMarkerAt('pin', pendingTapX, pendingTapY, { photoId: null }); }
+        if (act === 'pin') {
+          var eid = prompt('設備ID・番号を入力してください（空欄なら通し番号）\n例：0010', '');
+          if (eid === null) return;   // キャンセル＝配置しない
+          await createMarkerAt('pin', pendingTapX, pendingTapY, { photoId: null, label: eid.trim() });
+        }
         else if (act === 'photo') { openPinPhotoPicker(); }
         else if (act === 'memo') { var t = prompt('メモの内容を入力してください（例：要補修、漏水あり 等）'); if (t === null) return; await createMarkerAt('memo', pendingTapX, pendingTapY, { text: t.trim() }); }
         else if (act === 'arrow') { await createMarkerAt('arrow', pendingTapX, pendingTapY, {}); }
