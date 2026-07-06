@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.169</title>
+<title>現場写真撮影アプリ v3.170</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -758,7 +758,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .layer-align-hint { margin: 0 0 6px; font-size: 11px; line-height: 1.4; color: #6e6e73; }
   .layer-align-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
   .layer-align-row > span:first-child { font-size: 12px; color: #6e6e73; width: 40px; flex-shrink: 0; }
-  .layer-align-row input[type=range] { flex: 1; }
+  .layer-align-row input[type=range] { flex: 1; min-width: 0; }
   .layer-align-val { width: 46px; text-align: right; font-variant-numeric: tabular-nums; font-size: 12px; }
   /* v3-168：スライダ横の数値直接入力（大きさ／濃さ／回転） */
   .layer-align-num {
@@ -768,16 +768,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   .layer-align-num::-webkit-outer-spin-button, .layer-align-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .layer-align-unit { font-size: 12px; color: #6e6e73; min-width: 8px; flex-shrink: 0; }
-  .layer-align-nudge { display: flex; align-items: center; gap: 6px; margin: 2px 0 8px; flex-wrap: nowrap; }
+  .layer-align-nudge { display: flex; align-items: center; gap: 6px; margin: 2px 0 6px; flex-wrap: wrap; }
   .layer-align-nudge > span { font-size: 12px; color: #6e6e73; margin-right: 2px; flex-shrink: 0; }
+  /* v3-170：戻す・余白・リセットの操作行（狭い画面では折り返す） */
+  .layer-align-actions { display: flex; align-items: center; gap: 6px; margin: 0 0 8px; flex-wrap: wrap; }
   .layer-nudge-btn {
     flex: 0 0 auto; width: auto; min-width: 40px; margin-bottom: 0;
     background: #f0f0f5; color: #1c1c1e; border: 1px solid #d1d1d6; border-radius: 8px; padding: 8px 10px;
     font-size: 14px; cursor: pointer;
   }
   .layer-nudge-btn:active { background: #e2e2ea; }
-  .layer-align-undo { margin-left: 6px; }
   .layer-nudge-btn:disabled, .layer-nudge-btn.is-off { opacity: 0.4; cursor: default; }
+  .layer-align-room.is-on { background: #eaf3ff; border-color: #0071e3; color: #0071e3; }
   .layer-align-reset {
     flex: 0 0 auto; width: auto; margin-bottom: 0;
     background: #fff; border: 1px solid #c7c7cc; color: #6e6e73; border-radius: 8px;
@@ -2327,7 +2329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.169 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.170 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3479,7 +3481,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
     <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいときは「－」で少し縮小してから引くと余白ができます。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で<strong>上下左右どの方向にも伸縮</strong>して、下の図（透けて見える地図）に重ねます（長方形→正方形もOK）。<strong>今の表示のまま細かく合わせられます</strong>。<strong>「大きさ」スライダは中心から縦横比を保って拡大縮小</strong>（マウスが端に届かなくても枠を超えて広げられます）。枠より大きく片側だけ伸ばしたいのにハンドルが画面端で止まるときは、<strong>「⤢ 余白を作る」</strong>を押すと地図が少し縮んで四方に余白ができ、枠の外まで引けます（もう一度押すと元の大きさ）。「濃さ」を下げると下の図と見比べ。<strong>傾き（方位）がずれているときは「回転」</strong>＝90°ボタン／スライダ、または<strong>青い枠の上の丸ハンドル（↻）をドラッグ</strong>で直せます。<strong>青い枠＝保存される範囲</strong>（枠からはみ出した部分は保存されません）。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><input type="number" class="layer-align-num" id="layer-align-scale-val" min="5" max="1000" step="1" value="100" inputmode="numeric" aria-label="大きさ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><input type="number" class="layer-align-num" id="layer-align-op-val" min="0" max="100" step="1" value="100" inputmode="numeric" aria-label="濃さ（％・数値で入力）"><span class="layer-align-unit">%</span></div>
     <div class="layer-align-row layer-align-rot-row">
@@ -3495,7 +3497,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="layer-nudge-btn" data-nudge="up" title="上へ">▲</button>
       <button class="layer-nudge-btn" data-nudge="down" title="下へ">▼</button>
       <button class="layer-nudge-btn" data-nudge="right" title="右へ">▶</button>
+    </div>
+    <div class="layer-align-actions">
       <button class="layer-nudge-btn layer-align-undo" id="layer-align-undo" title="1つ戻す（Ctrl+Z）" disabled>↩ 戻す</button>
+      <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面端で止まるとき、地図を縮めて周りに余白を作り、枠の外まで引けるようにします（もう一度押すと元の大きさ）">⤢ 余白を作る</button>
       <button class="layer-align-reset" id="layer-align-reset">リセット</button>
     </div>
     <div class="layer-align-foot">
@@ -4175,7 +4180,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.169）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.170）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11200,6 +11205,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   var _alignScalePrev = 100;   // v3-160：大きさスライダ＝相対ズーム用の直前値
   var _alignPrevZoom = null, _alignPrevFit = null;   // v3-165：位置合わせ前のズーム/表示モード（退出時に復元）
+  var _alignRoomOn = false;   // v3-170：余白（縮小）モードのオン/オフ
   // v3-169：位置合わせのUndo（確定前なら1手ずつ戻せる）
   var alignUndoStack = [], _alignSliderDirty = false, _alignGestureSnap = null, _alignGesturePushed = false;
   function _alignSnapshot() {
@@ -11288,6 +11294,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (typeof L.rot !== 'number') L.rot = 0;   // v3-167：既定0で正規化（後方互換）
     alignPrev = { fx: L.fx, fy: L.fy, fw: L.fw, fh: L.fh, opacity: L.opacity, rot: L.rot };
     _alignResetUndo();
+    _alignPrevZoom = null; _alignPrevFit = null; _resetAlignRoomBtn();   // v3-170：余白モードは既定オフ
     var base = await flattenLayers(sheet, L.id);   // 下敷き＝選択以外
     if (pinEditorImg) { pinEditorImg.onload = null; pinEditorImg.src = base; }
     var ov = $('layer-align-overlay');
@@ -11316,6 +11323,36 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (_alignPrevZoom != null) { pinZoom = _alignPrevZoom; if (pinComputeBase()) applyZoom(); }
     _alignPrevZoom = null; _alignPrevFit = null;
   }
+  // v3-170：位置合わせだけを縮小して四方に余白を作る（ハンドルを画面端の外まで引ける）。既定オフ＝等倍で精密に合わせる。
+  //   マーカーは隠したまま（renderPins を経由しない軽量ズーム適用）で、下敷き画像と枠だけを縮小/復元する。
+  function _alignApplyZoomNoMarkers() {
+    if (!pinComputeBase()) return;
+    var w = pinBaseWidth * pinZoom;
+    if (pinEditorImg) { pinEditorImg.style.width = w + 'px'; pinEditorImg.style.maxWidth = 'none'; }
+    var lvl = $('pin-zoom-level'); if (lvl) lvl.textContent = Math.round(pinZoom * 100) + '%';
+    updateAlignOverlay();
+  }
+  function _setAlignRoom(on) {
+    var st = $('pin-editor-stage');
+    if (on) {
+      if (_alignPrevZoom == null) { _alignPrevZoom = pinZoom; _alignPrevFit = pinFitMode; }   // 直前の表示を一度だけ控える
+      if (st) st.classList.add('align-room');
+      pinFitMode = 'whole'; pinZoom = 0.6;   // 全体を小さめに＝四方に余白
+    } else {
+      if (st) st.classList.remove('align-room');
+      if (_alignPrevFit != null) pinFitMode = _alignPrevFit;
+      if (_alignPrevZoom != null) pinZoom = _alignPrevZoom;
+      _alignPrevZoom = null; _alignPrevFit = null;
+    }
+    _alignRoomOn = on;
+    _alignApplyZoomNoMarkers();
+    _hideEditorMarkers();   // ズーム変更でマーカーが出ないよう隠したまま
+    var b = $('layer-align-room'); if (b) { b.classList.toggle('is-on', on); b.textContent = on ? '⤢ 余白オフ（元の大きさ）' : '⤢ 余白を作る'; }
+  }
+  function _resetAlignRoomBtn() {
+    _alignRoomOn = false;
+    var b = $('layer-align-room'); if (b) { b.classList.remove('is-on'); b.textContent = '⤢ 余白を作る'; }
+  }
   async function commitAlign() {
     var sheet = resolveSheet(editSheetRef);
     alignLayerId = null; alignPrev = null; _alignResetUndo();
@@ -11326,7 +11363,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (pinEditorStage) pinEditorStage.style.touchAction = '';
     var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
     if (sheet) { await refreshLayerComposite(sheet, true); }   // 変形込みで平坦化・保存・表示更新
-    _restoreAlignZoom();
+    _restoreAlignZoom(); _resetAlignRoomBtn();
     _showEditorMarkers();
     renderLayerPanel();
   }
@@ -11343,7 +11380,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var hint = $('pin-editor-hint'); if (hint) hint.textContent = '🗂 下地を重ねて不透明度で位置を見比べ／いらない下地は🗑。ピンは残ります';
     _showEditorMarkers();
     if (sheet) { var s2 = sheet; applyLayers(s2).then(function(){ if (pinEditorImg) pinEditorImg.src = s2.dataUrl; }); }
-    _restoreAlignZoom();
+    _restoreAlignZoom(); _resetAlignRoomBtn();
     renderLayerPanel();
   }
   function forceExitAlign() {
@@ -11354,7 +11391,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (pinEditorStage) { pinEditorStage.style.touchAction = ''; pinEditorStage.classList.remove('align-room'); }
     if (_alignPrevFit != null) pinFitMode = _alignPrevFit;
     if (_alignPrevZoom != null) pinZoom = _alignPrevZoom;
-    _alignPrevZoom = null; _alignPrevFit = null;
+    _alignPrevZoom = null; _alignPrevFit = null; _resetAlignRoomBtn();
   }
   var _alignDragWired = false;
   function setupAlignDrag() {
@@ -14063,6 +14100,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var laRot = $('layer-align-rot'); if (laRot) { laRot.addEventListener('input', function(){ _sliderUndoStart(); _applyRot(parseInt(laRot.value, 10) || 0); });
                  laRot.addEventListener('change', function(){ _alignSliderDirty = false; }); }
   var laUndo = $('layer-align-undo'); if (laUndo) laUndo.addEventListener('click', function(){ _alignUndo(); });
+  var laRoom = $('layer-align-room'); if (laRoom) laRoom.addEventListener('click', function(){ if (alignLayerId == null) return; _setAlignRoom(!_alignRoomOn); });
   Array.prototype.forEach.call(document.querySelectorAll('.layer-nudge-btn'), function(b){
     b.addEventListener('click', function(){ var d = b.dataset.nudge; if (!d) return; var L = _alignLayer(); if (!L) return; _alignPushUndo(); var r = _layerRect(L); var step = 0.01; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = fx; L.fy = fy; updateAlignOverlay(); });
   });
