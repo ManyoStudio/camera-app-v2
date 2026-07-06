@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.174</title>
+<title>現場写真撮影アプリ v3.175</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2329,7 +2329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.174 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.175 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4180,7 +4180,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.174）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.175）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -4938,6 +4938,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { code:"04-03-04", big:"空調設備", mid:"空調機", small:"ルームエアコン", g:"5~2", u:"2" },
     { code:"04-03-05", big:"空調設備", mid:"空調機", small:"エアハンドリングユニット_大型", g:"5~2", u:"3" },
     { code:"04-03-06", big:"空調設備", mid:"空調機", small:"ファンコイル", g:"5~2", u:"3" },
+    { code:"04-03-07", big:"空調設備", mid:"空調機", small:"ビル用マルチ_室内機", g:"5~2", u:"2" },
     { code:"04-04-01", big:"空調設備", mid:"換気設備", small:"全熱交換器", g:"5~2", u:"3" },
     { code:"04-04-02", big:"空調設備", mid:"換気設備", small:"送風機_大型ファン", g:"5~2", u:"3" },
     { code:"04-04-03", big:"空調設備", mid:"換気設備", small:"有圧換気扇", g:"5~2", u:"2" },
@@ -4969,17 +4970,28 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { code:"05-03-01", big:"衛生設備", mid:"排水設備", small:"排水ポンプ_水中", g:"5~2", u:"4" },
     { code:"05-03-02", big:"衛生設備", mid:"排水設備", small:"浄化槽", g:"5", u:"2" },
     { code:"05-03-03", big:"衛生設備", mid:"排水設備", small:"排水処理設備", g:"5", u:"2" },
+    { code:"05-03-04", big:"衛生設備", mid:"排水設備", small:"排水ポンプ_陸上", g:"5~2", u:"4" },
+    { code:"05-03-05", big:"衛生設備", mid:"排水設備", small:"排水処理設備_構成設備_1M", g:"5", u:"2" },
+    { code:"05-03-06", big:"衛生設備", mid:"排水設備", small:"排水処理設備_構成設備_5M", g:"5", u:"2" },
+    { code:"05-03-07", big:"衛生設備", mid:"排水設備", small:"排水処理設備_構成設備_10M", g:"5", u:"2" },
+    { code:"05-03-08", big:"衛生設備", mid:"排水設備", small:"排水処理設備_構成設備_20M", g:"5", u:"2" },
     { code:"05-04-01", big:"衛生設備", mid:"衛生器具", small:"便器_洗面器", g:"3", u:"2" },
     { code:"05-05-01", big:"衛生設備", mid:"衛生配管類", small:"給水管_鉄・ライニング", g:"3", u:"2" },
     { code:"05-05-02", big:"衛生設備", mid:"衛生配管類", small:"給水管_ステンレス", g:"3", u:"2" },
     { code:"05-05-03", big:"衛生設備", mid:"衛生配管類", small:"給水管_樹脂", g:"3", u:"2" },
     { code:"05-05-04", big:"衛生設備", mid:"衛生配管類", small:"排水管_塩ビ・VP", g:"3", u:"2" },
     { code:"05-05-05", big:"衛生設備", mid:"衛生配管類", small:"排水管_鉄", g:"3", u:"2" },
+    { code:"05-05-06", big:"衛生設備", mid:"衛生配管類", small:"エア配管_鉄", g:"3", u:"2" },
+    { code:"05-05-07", big:"衛生設備", mid:"衛生配管類", small:"エア配管_ステンレス", g:"3", u:"2" },
+    { code:"05-05-08", big:"衛生設備", mid:"衛生配管類", small:"ガス管_鉄", g:"3", u:"2" },
+    { code:"05-06-01", big:"衛生設備", mid:"ガス設備", small:"ガバナ", g:"5~2", u:"2" },
+    { code:"05-06-02", big:"衛生設備", mid:"ガス設備", small:"LNGプラント", g:"5~2", u:"5" },
     { code:"06-01-01", big:"建築付帯設備", mid:"昇降機", small:"エレベーター_人荷・荷物", g:"5", u:"2" },
     { code:"06-01-02", big:"建築付帯設備", mid:"昇降機", small:"小荷物専用", g:"5", u:"2" },
     { code:"06-01-03", big:"建築付帯設備", mid:"昇降機", small:"エスカレーター", g:"2", u:"2" },
     { code:"06-02-01", big:"建築付帯設備", mid:"雷保護設備", small:"避雷針", g:"3", u:"3" },
     { code:"07-01-01", big:"ユーティリティ設備", mid:"圧縮空気設備", small:"コンプレッサー", g:"5", u:"4" },
+    { code:"07-01-02", big:"ユーティリティ設備", mid:"圧縮空気設備", small:"エアドライヤ", g:"5", u:"4" },
     { code:"07-02-01", big:"ユーティリティ設備", mid:"局所排気設備", small:"送風機_大型ファン", g:"5", u:"4" },
     { code:"08-01-01", big:"消防設備", mid:"警報設備", small:"自動火災報知器", g:"5", u:"3" },
     { code:"08-01-02", big:"消防設備", mid:"警報設備", small:"非常放送アンプ", g:"5", u:"3" },
@@ -4996,6 +5008,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { code:"08-03-06", big:"消防設備", mid:"消火設備", small:"ガス_泡消火", g:"5", u:"3" },
     { code:"08-03-07", big:"消防設備", mid:"消火設備", small:"消火栓ポンプ", g:"5", u:"3" },
     { code:"08-03-08", big:"消防設備", mid:"消火設備", small:"防火水槽", g:"5", u:"3" },
+    { code:"08-03-09", big:"消防設備", mid:"消火設備", small:"防火水槽_地下コンクリート", g:"5", u:"3" },
     { code:"08-04-01", big:"消防設備", mid:"消防配管類", small:"消火管_埋設", g:"5", u:"4" },
   ];
   var DB_NAME = 'CameraAppDB', DB_VERSION = 4;
@@ -8547,7 +8560,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   });
 
   // ===== 分類機能（大→中→小＋検索＋あいまい＋G/U自動入力）/ 段階1・v3-40 =====
-  // CLASSIFY_MASTER（段階0で埋め込み済み・200件）を参照。保存データには新キー(cls*)だけを追加し、既存キーは一切変えない。
+  // CLASSIFY_MASTER（段階0で埋め込み・以後拡充／現在213件）を参照。保存データには新キー(cls*)だけを追加し、既存キーは一切変えない。
   var selectedCls = null;          // 現在選択中の分類（CLASSIFY_MASTERの1要素）。未選択は null。
   var clsCurBig = null, clsCurMid = null; // 段階選択で「いま見ている」大・中（確定ではない）
 
