@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.160</title>
+<title>現場写真撮影アプリ v3.162</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2301,7 +2301,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.160 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.162 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3451,8 +3451,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   <!-- v3-155：レイヤー位置合わせバー（選択レイヤーの移動・拡大縮小） -->
   <div class="layer-align-bar" id="layer-align-bar" style="display:none;">
-    <p class="layer-align-title">◇ 位置合わせ：<span id="layer-align-name">レイヤー</span></p>
-    <p class="layer-align-hint"><strong>画像をドラッグ</strong>で移動。<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で上下左右を自由に伸縮（長方形→正方形もOK）。「大きさ」は縦横そのままの拡大縮小、「濃さ」で下敷きと見比べ。</p>
+    <p class="layer-align-title">📐 位置と大きさの調整：<span id="layer-align-name">レイヤー</span></p>
+    <p class="layer-align-hint">この画像を<strong>ドラッグ</strong>で動かし、<strong>青い枠の四隅（■）・辺の中点（●）をドラッグ</strong>で上下左右に伸縮して、<strong>下の図（透けて見える地図）にぴったり重ねます</strong>（長方形→正方形もOK）。「大きさ」は縦横そのままの拡大縮小、「濃さ」を下げると下の図と見比べられます。<strong>青い枠＝保存される範囲</strong>で、その中で合わせます（枠の外は保存されません）。</p>
     <div class="layer-align-row"><span>大きさ</span><input type="range" id="layer-align-scale" min="20" max="300" value="100"><span class="layer-align-val" id="layer-align-scale-val">100%</span></div>
     <div class="layer-align-row"><span>濃さ</span><input type="range" id="layer-align-op" min="0" max="100" value="100"><span class="layer-align-val" id="layer-align-op-val">100%</span></div>
     <div class="layer-align-nudge">
@@ -4140,7 +4140,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.160）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.162）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -11028,6 +11028,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       pinEditorImg.onload = function(){ pinEditorImg.onload = null; renderPins(); };
       pinEditorImg.src = sheet.dataUrl;
     }
+    if (mapSheetImg && sheet && sheet.id === currentSheetId) mapSheetImg.src = sheet.dataUrl;   // v3-162：マッププレビューも最新合成に同期（古い重ね合わせが残るのを防ぐ）
     if (saveNow) { try { await saveMapData(mapData); } catch(e){} }
     else scheduleLayerSave();
   }
@@ -11056,7 +11057,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         + '<div class="layer-op-row"><span>濃さ</span><input type="range" min="0" max="100" value="' + op + '" data-act="op" data-li="' + vi + '"><span class="layer-op-val">' + op + '%</span></div>'
         + (vi === 0
             ? '<div class="layer-base-note">いちばん下（下敷き）です</div>'
-            : '<button class="layer-align-btn" data-act="align" data-li="' + vi + '" title="移動・拡大縮小で下敷きに合わせる">◇ 位置合わせ（下敷きに合わせる）</button>')
+            : '<button class="layer-align-btn" data-act="align" data-li="' + vi + '" title="この画像をドラッグで動かし、四隅・辺で伸縮して、下の図にぴったり重ねます">📐 この画像を動かす・伸縮する（重ねる位置と大きさを調整）</button>')
         + '</div>';
     }
     listEl.innerHTML = html;
@@ -11192,7 +11193,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ocur = (typeof L.opacity === 'number') ? L.opacity : 1;
     var os = $('layer-align-op'); if (os) os.value = Math.round(ocur * 100);
     var ovv = $('layer-align-op-val'); if (ovv) ovv.textContent = Math.round(ocur * 100) + '%';
-    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '◇ 画像＝ドラッグで移動／青い枠の四隅・辺の■をドラッグで上下左右に伸縮（長方形→正方形も可）。下敷きに合わせて「確定」';
+    var hint = $('pin-editor-hint'); if (hint) hint.textContent = '📐 この画像を動かす・伸縮：ドラッグで移動／青い枠の四隅・辺の■で上下左右に伸縮。下の図に重なるように合わせて「確定」';
     if (pinEditorStage) pinEditorStage.style.touchAction = 'none';
     setupAlignDrag();
   }
@@ -11247,16 +11248,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       L.fx = pend.fx; L.fy = pend.fy; L.fw = pend.fw; L.fh = pend.fh; updateAlignOverlay();
     }
     function compute(p) {
-      var fx = startR.fx, fy = startR.fy, fw = startR.fw, fh = startR.fh;
+      var Lft = startR.fx, Rgt = startR.fx + startR.fw, Top = startR.fy, Bot = startR.fy + startR.fh;
       var dx = p.x - px0, dy = p.y - py0;
-      if (mode === 'move') { fx = startR.fx + dx; fy = startR.fy + dy; return { fx:fx, fy:fy, fw:fw, fh:fh }; }
-      if (mode.indexOf('e') >= 0) { fw = startR.fw + dx; }                    // 右辺
-      if (mode.indexOf('w') >= 0) { fx = startR.fx + dx; fw = startR.fw - dx; } // 左辺
-      if (mode.indexOf('s') >= 0) { fh = startR.fh + dy; }                    // 下辺
-      if (mode.indexOf('n') >= 0) { fy = startR.fy + dy; fh = startR.fh - dy; } // 上辺
-      if (fw < MIN) { if (mode.indexOf('w') >= 0) fx = startR.fx + startR.fw - MIN; fw = MIN; }
-      if (fh < MIN) { if (mode.indexOf('n') >= 0) fy = startR.fy + startR.fh - MIN; fh = MIN; }
-      return { fx:fx, fy:fy, fw:fw, fh:fh };
+      if (mode === 'move') {   // 移動：枠[0,1]内に収める（サイズ不変）
+        var w = startR.fw, h = startR.fh;
+        return { fx: Math.max(0, Math.min(1 - w, startR.fx + dx)), fy: Math.max(0, Math.min(1 - h, startR.fy + dy)), fw: w, fh: h };
+      }
+      // 伸縮：動かす辺だけを枠[0,1]内・最小サイズMINでクランプ（対辺は固定）＝左右上下対称
+      if (mode.indexOf('e') >= 0) { Rgt = Math.max(Lft + MIN, Math.min(1, startR.fx + startR.fw + dx)); }
+      if (mode.indexOf('w') >= 0) { Lft = Math.min(Rgt - MIN, Math.max(0, startR.fx + dx)); }
+      if (mode.indexOf('s') >= 0) { Bot = Math.max(Top + MIN, Math.min(1, startR.fy + startR.fh + dy)); }
+      if (mode.indexOf('n') >= 0) { Top = Math.min(Bot - MIN, Math.max(0, startR.fy + dy)); }
+      return { fx: Lft, fy: Top, fw: Rgt - Lft, fh: Bot - Top };
     }
     fr.addEventListener('pointerdown', function(ev){
       if (alignLayerId == null) return;
@@ -11708,6 +11711,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (drawMode) { drawMode = false; var tb = $('draw-toolbar'); if (tb) tb.style.display = 'none'; var tl = document.querySelector('.pin-editor-tools'); if (tl) tl.style.display = ''; if (drawCanvasEl) drawCanvasEl.style.display = 'none'; }
     if (layerMode) { try { exitLayerMode(); } catch(e) { layerMode = false; var lt = $('layer-toolbar'); if (lt) lt.style.display = 'none'; var lts = document.querySelector('.pin-editor-tools'); if (lts) lts.style.display = ''; } }
     try { forceExitAlign(); } catch(e) {}
+    try { var _cs = resolveSheet(editSheetRef); if (mapSheetImg && _cs && _cs.id === currentSheetId) mapSheetImg.src = _cs.dataUrl; } catch(e) {}   // v3-162：閉じる時にマッププレビューを最新へ
     pinEditor.style.display = 'none';
     editSheetRef = null;
     pendingAutoPhotoId = null;
@@ -13854,15 +13858,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var prev = (typeof _alignScalePrev === 'number' && _alignScalePrev > 0) ? _alignScalePrev : 100;
     var factor = val / prev; _alignScalePrev = val;
     var r = _layerRect(L);
-    var nfw = Math.max(0.05, r.fw * factor), nfh = Math.max(0.05, r.fh * factor);
-    L.fx = r.fx + (r.fw - nfw) / 2; L.fy = r.fy + (r.fh - nfh) / 2; L.fw = nfw; L.fh = nfh;   // 中心基準で拡大縮小（縦横比は維持）
+    var nfw = Math.min(1, Math.max(0.05, r.fw * factor)), nfh = Math.min(1, Math.max(0.05, r.fh * factor));
+    var nfx = r.fx + (r.fw - nfw) / 2, nfy = r.fy + (r.fh - nfh) / 2;   // 中心基準
+    L.fx = Math.max(0, Math.min(1 - nfw, nfx)); L.fy = Math.max(0, Math.min(1 - nfh, nfy)); L.fw = nfw; L.fh = nfh;   // 枠[0,1]内にクランプ
     var v = $('layer-align-scale-val'); if (v) v.textContent = val + '%';
     updateAlignOverlay();
   });
   var laOp = $('layer-align-op');
   if (laOp) laOp.addEventListener('input', function(){ var L = _alignLayer(); if (!L) return; L.opacity = Math.max(0, Math.min(100, parseInt(laOp.value, 10) || 0)) / 100; var v = $('layer-align-op-val'); if (v) v.textContent = Math.round(L.opacity * 100) + '%'; updateAlignOverlay(); });
   Array.prototype.forEach.call(document.querySelectorAll('.layer-nudge-btn'), function(b){
-    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var r = _layerRect(L); var step = 0.01; var d = b.dataset.nudge; L.fx = r.fx; L.fy = r.fy; L.fw = r.fw; L.fh = r.fh; if (d === 'left') L.fx -= step; else if (d === 'right') L.fx += step; else if (d === 'up') L.fy -= step; else if (d === 'down') L.fy += step; updateAlignOverlay(); });
+    b.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; var r = _layerRect(L); var step = 0.01; var d = b.dataset.nudge; var fx = r.fx, fy = r.fy; if (d === 'left') fx -= step; else if (d === 'right') fx += step; else if (d === 'up') fy -= step; else if (d === 'down') fy += step; L.fw = r.fw; L.fh = r.fh; L.fx = Math.max(0, Math.min(1 - r.fw, fx)); L.fy = Math.max(0, Math.min(1 - r.fh, fy)); updateAlignOverlay(); });
   });
   var laReset = $('layer-align-reset');
   if (laReset) laReset.addEventListener('click', function(){ var L = _alignLayer(); if (!L) return; L.fx = 0; L.fy = 0; L.fw = 1; L.fh = 1; delete L.tx; delete L.ty; delete L.scale; _alignScalePrev = 100; var ss = $('layer-align-scale'); if (ss) ss.value = 100; var sv = $('layer-align-scale-val'); if (sv) sv.textContent = '100%'; updateAlignOverlay(); });
