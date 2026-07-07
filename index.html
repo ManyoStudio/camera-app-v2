@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.176</title>
+<title>現場写真撮影アプリ v3.177</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2328,7 +2328,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.176 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.177 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3241,33 +3241,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div id="map-buildings-list"></div>
     </div>
 
-    <div class="card">
-      <p class="card-title">📍 位置記録</p>
-      <p class="desc-collapsible" data-desc="map-intro" data-desc-label="位置記録とは" style="font-size: 13px; color: #6e6e73; margin: 0 0 10px 0; line-height:1.6;">
-        建物の図面の上に、撮影した場所の目印（ピン）を打って「どこを撮ったか」を記録する機能です。<br>
-        後から「この設備はどの位置か」がひと目で分かり、撮り漏れの確認にも役立ちます。
-      </p>
-      <div class="map-howto desc-collapsible" data-desc="map-howto" data-desc-label="使い方の流れ">
-        <p class="map-howto-title">使い方の流れ</p>
-        <ol class="map-howto-steps">
-          <li><strong>棟（建物）の情報を登録</strong>（例：A棟、本館）</li>
-          <li>棟の中に<strong>区分を登録</strong>（例：1階、南面。省略も可）</li>
-          <li>区分や棟に<strong>マップ（図面・写真等）を読み込む</strong></li>
-          <li>マップの上に<strong>ピンを打って</strong>撮影位置を記録</li>
-        </ol>
-        <p class="map-howto-note">※ マップは平面図に限りません。立面図・配置図・系統図・現場写真など何でも使えます。</p>
-      </div>
-      <div class="map-howto desc-collapsible" data-desc="map-save" data-desc-label="保存・持ち運び・PC事前準備" style="background:#e7f3ff;border-color:#b8d8ff;">
-        <p class="map-howto-title">💾 保存・持ち運び・PCでの事前準備</p>
-        <p style="font-size:12px;color:#1d1d1f;margin:0;line-height:1.7;">
-          ここで登録した棟・マップ・ピンは、<strong>「📤 保存」タブ → 「📍 位置記録データの保存（ZIP）」</strong>でZIPファイルにできます。<strong>写真がなくても保存できます。</strong><br>
-          PCやほかの端末で位置記録だけ用意しておき、そのZIPをこの端末の<strong>「📥 データを読み込む」</strong>で読み込めば、現場ですぐ使えます。<br>
-          PCで見るだけ・印刷したいときは「📄 閲覧用HTMLを書き出す」が使えます。
-        </p>
-      </div>
-      <p id="map-breadcrumb" class="map-breadcrumb"></p>
-    </div>
-
     <!-- 第2階層：棟の中（区分リスト＋棟直下のマップリスト） -->
     <div class="card" id="map-inside-card" style="display:none;">
       <button id="map-back-btn" class="secondary" style="margin-bottom:12px;">← 棟一覧へ戻る</button>
@@ -3315,6 +3288,33 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="sheet-thumb-box">
         <img id="map-sheet-img" alt="マップ" />
       </div>
+    </div>
+
+    <div class="card">
+      <p class="card-title">📍 位置記録</p>
+      <p class="desc-collapsible" data-desc="map-intro" data-desc-label="位置記録とは" style="font-size: 13px; color: #6e6e73; margin: 0 0 10px 0; line-height:1.6;">
+        建物の図面の上に、撮影した場所の目印（ピン）を打って「どこを撮ったか」を記録する機能です。<br>
+        後から「この設備はどの位置か」がひと目で分かり、撮り漏れの確認にも役立ちます。
+      </p>
+      <div class="map-howto desc-collapsible" data-desc="map-howto" data-desc-label="使い方の流れ">
+        <p class="map-howto-title">使い方の流れ</p>
+        <ol class="map-howto-steps">
+          <li><strong>棟（建物）の情報を登録</strong>（例：A棟、本館）</li>
+          <li>棟の中に<strong>区分を登録</strong>（例：1階、南面。省略も可）</li>
+          <li>区分や棟に<strong>マップ（図面・写真等）を読み込む</strong></li>
+          <li>マップの上に<strong>ピンを打って</strong>撮影位置を記録</li>
+        </ol>
+        <p class="map-howto-note">※ マップは平面図に限りません。立面図・配置図・系統図・現場写真など何でも使えます。</p>
+      </div>
+      <div class="map-howto desc-collapsible" data-desc="map-save" data-desc-label="保存・持ち運び・PC事前準備" style="background:#e7f3ff;border-color:#b8d8ff;">
+        <p class="map-howto-title">💾 保存・持ち運び・PCでの事前準備</p>
+        <p style="font-size:12px;color:#1d1d1f;margin:0;line-height:1.7;">
+          ここで登録した棟・マップ・ピンは、<strong>「📤 保存」タブ → 「📍 位置記録データの保存（ZIP）」</strong>でZIPファイルにできます。<strong>写真がなくても保存できます。</strong><br>
+          PCやほかの端末で位置記録だけ用意しておき、そのZIPをこの端末の<strong>「📥 データを読み込む」</strong>で読み込めば、現場ですぐ使えます。<br>
+          PCで見るだけ・印刷したいときは「📄 閲覧用HTMLを書き出す」が使えます。
+        </p>
+      </div>
+      <p id="map-breadcrumb" class="map-breadcrumb"></p>
     </div>
 
     <input type="file" id="map-sheet-input" accept="image/*,.zip,application/zip" multiple style="display:none;" />
@@ -4179,7 +4179,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.176）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.177）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
