@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.177</title>
+<title>現場写真撮影アプリ v3.178</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -647,6 +647,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     width: auto;
     cursor: pointer;
   }
+  /* v3-178：一覧の並び替え・絞り込みバー（棟／マップ一覧）。表示のみで保存データは不変。 */
+  .map-list-bar { display:flex; flex-direction:column; gap:6px; margin:0 0 10px; }
+  .mlb-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .mlb-lbl { font-size:12px; color:#6e6e73; flex-shrink:0; }
+  .mlb-sort {
+    flex:1; min-width:150px; padding:8px 10px; border:1px solid #d0d0d5;
+    border-radius:8px; font-size:13px; background:#fff; color:#1d1d1f; width:auto;
+  }
+  .mlb-search {
+    flex:1; min-width:150px; padding:8px 10px; border:1px solid #d0d0d5;
+    border-radius:8px; font-size:13px; width:auto;
+  }
+  .mlb-pinless { font-size:12px; color:#1d1d1f; display:flex; align-items:center; gap:4px; flex-shrink:0; cursor:pointer; }
+  .mlb-pinless input { width:auto; margin:0; }
+  .mlb-count { font-size:11px; color:#8a8a8e; min-height:14px; }
+
   /* v3-153：下地（図面）の差し替え／元に戻す */
   .map-swap-base {
     width: 100%; background: #fff; color: #0a7d4b; border: 1px solid #b7e0c8;
@@ -2328,7 +2344,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.177 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.178 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4179,7 +4195,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.177）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.178）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -9625,65 +9641,120 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return total;
   }
 
+  // ===== v3-178：一覧の並び替え・絞り込み（棟／マップ）=====
+  // 状態は種別ごと（building / sheet）に保持し localStorage に永続。表示のみで保存データ（mapData）は不変。
+  var MAP_LIST_VIEW = { building:{sort:'manual',q:'',pinless:false}, sheet:{sort:'manual',q:'',pinless:false} };
+  try {
+    var _mlv = JSON.parse(localStorage.getItem('mapListView') || 'null');
+    if (_mlv) { ['building','sheet'].forEach(function(k){ if(_mlv[k]) { if(typeof _mlv[k].sort==='string') MAP_LIST_VIEW[k].sort=_mlv[k].sort; if(typeof _mlv[k].q==='string') MAP_LIST_VIEW[k].q=_mlv[k].q; MAP_LIST_VIEW[k].pinless=!!_mlv[k].pinless; } }); }
+  } catch(e) {}
+  function saveMapListView(){ try { localStorage.setItem('mapListView', JSON.stringify(MAP_LIST_VIEW)); } catch(e) {} }
+  function mlvNorm(s){ s=String(s==null?'':s); try{ s=s.normalize('NFKC'); }catch(e){} return s.toLowerCase(); }
+  // items配列 → 絞り込み＋並び替え済みの表示配列。manualActive＝手動並び（↑↓可）かどうか。
+  function computeListView(items, kind, pinCountOf){
+    var st = MAP_LIST_VIEW[kind]; var q = mlvNorm(st.q||'');
+    var rows = items.map(function(it,i){ return { it:it, i:i, pins:pinCountOf(it) }; });
+    var filtered = rows.filter(function(o){
+      if (st.pinless && o.pins>0) return false;
+      if (q && mlvNorm(o.it.name).indexOf(q)<0) return false;
+      return true;
+    });
+    if (st.sort==='name') filtered.sort(function(a,b){ return String(a.it.name).localeCompare(String(b.it.name),'ja',{numeric:true,sensitivity:'base'}) || a.i-b.i; });
+    else if (st.sort==='pinAsc') filtered.sort(function(a,b){ return (a.pins-b.pins) || a.i-b.i; });
+    else if (st.sort==='pinDesc') filtered.sort(function(a,b){ return (b.pins-a.pins) || a.i-b.i; });
+    var manualActive = (st.sort==='manual') && !q && !st.pinless;
+    return { view: filtered.map(function(o){return o.it;}), manualActive: manualActive, total: items.length, shown: filtered.length };
+  }
+  function listBarHtml(kind){
+    var st = MAP_LIST_VIEW[kind];
+    var noun = (kind==='building') ? '棟' : 'マップ';
+    function opt(v,l){ return '<option value="'+v+'"'+(st.sort===v?' selected':'')+'>'+l+'</option>'; }
+    return '<div class="map-list-bar" data-kind="'+kind+'">'
+      + '<div class="mlb-row"><span class="mlb-lbl">並び替え</span>'
+      + '<select class="mlb-sort">'
+      + opt('manual','手動（自分で並べる）') + opt('name','名前順（あ→ん・A→Z）')
+      + opt('pinAsc','ピンが少ない順') + opt('pinDesc','ピンが多い順')
+      + '</select></div>'
+      + '<div class="mlb-row">'
+      + '<input class="mlb-search" type="text" inputmode="search" placeholder="'+noun+'名でしぼり込み" value="'+escapeHtml(st.q||'')+'">'
+      + '<label class="mlb-pinless"><input type="checkbox" class="mlb-pinless-cb"'+(st.pinless?' checked':'')+'> ピンなしだけ</label>'
+      + '</div>'
+      + '<div class="mlb-count"></div>'
+      + '</div>';
+  }
+  // バーのイベント配線（全再描画のたびに呼ぶ）。変更時は renderRows（行だけ再描画）で検索欄のフォーカスを保つ。
+  function wireListBar(container, kind, renderRows){
+    var bar = container.querySelector('.map-list-bar'); if (!bar) return;
+    var st = MAP_LIST_VIEW[kind];
+    var sel = bar.querySelector('.mlb-sort');
+    if (sel) sel.addEventListener('change', function(){ st.sort = sel.value; saveMapListView(); renderRows(); });
+    var sr = bar.querySelector('.mlb-search');
+    if (sr) sr.addEventListener('input', function(){ st.q = sr.value; saveMapListView(); renderRows(); });
+    var cb = bar.querySelector('.mlb-pinless-cb');
+    if (cb) cb.addEventListener('change', function(){ st.pinless = cb.checked; saveMapListView(); renderRows(); });
+  }
+  function mlbUpdateCount(container, v){
+    var cnt = container.querySelector('.mlb-count'); if (!cnt) return;
+    cnt.textContent = (v.shown===v.total) ? ('全'+v.total+'件') : (v.shown+' / '+v.total+'件を表示');
+  }
+
   function renderBuildingsList() {
     if (!mapBuildingsList) return;
     if (mapData.buildings.length === 0) {
       mapBuildingsList.innerHTML = '<div class="map-empty">まだ棟（建物）が登録されていません。<br>下の「＋ 棟（建物）の情報を登録する」を押して、最初の棟を登録してください。</div>';
       return;
     }
-    var html = '';
-    mapData.buildings.forEach(function(b, idx) {
-      var areaCount = (b.areas || []).length;
-      var sheetCount = countSheetsInBuilding(b);
-      var pinCount = countPinsInBuilding(b);
-      var sub = [];
-      if (areaCount > 0) sub.push('区分' + areaCount);
-      sub.push('マップ' + sheetCount);
-      sub.push('ピン計' + pinCount);
-      var isFirst = (idx === 0), isLast = (idx === mapData.buildings.length - 1);
-      html += '<div class="map-item" data-id="' + b.id + '">'
-        + '<div class="map-item-main" data-open="' + b.id + '">'
-        + '<p class="map-item-name">🏢 ' + escapeHtml(b.name) + '</p>'
-        + '<p class="map-item-sub">' + sub.join(' ・ ') + '</p>'
-        + '</div>'
-        + '<div class="map-item-actions">'
-        + '<button class="map-item-move" data-up="' + b.id + '"' + (isFirst ? ' disabled' : '') + '>↑</button>'
-        + '<button class="map-item-move" data-down="' + b.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>'
-        + '<button class="map-item-rename" data-rename="' + b.id + '">✏️</button>'
-        + '<button class="map-item-open" data-open="' + b.id + '">開く</button>'
-        + '<button class="map-item-del" data-del="' + b.id + '">🗑</button>'
-        + '</div></div>';
-    });
-    mapBuildingsList.innerHTML = html;
-
-    // イベント付与
-    mapBuildingsList.querySelectorAll('[data-open]').forEach(function(el) {
-      el.addEventListener('click', function() { openBuilding(el.dataset.open); });
-    });
-    mapBuildingsList.querySelectorAll('[data-del]').forEach(function(el) {
-      el.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        deleteBuilding(el.dataset.del);
+    mapBuildingsList.innerHTML = listBarHtml('building') + '<div class="map-list-rows"></div>';
+    var rowsEl = mapBuildingsList.querySelector('.map-list-rows');
+    function renderRows() {
+      var arr = mapData.buildings;
+      var v = computeListView(arr, 'building', function(b){ return countPinsInBuilding(b); });
+      var manual = v.manualActive;
+      var html = '';
+      v.view.forEach(function(b) {
+        var oi = arr.indexOf(b);
+        var isFirst = (oi === 0), isLast = (oi === arr.length - 1);
+        var areaCount = (b.areas || []).length;
+        var sheetCount = countSheetsInBuilding(b);
+        var pinCount = countPinsInBuilding(b);
+        var sub = [];
+        if (areaCount > 0) sub.push('区分' + areaCount);
+        sub.push('マップ' + sheetCount);
+        sub.push('ピン計' + pinCount);
+        html += '<div class="map-item" data-id="' + b.id + '">'
+          + '<div class="map-item-main" data-open="' + b.id + '">'
+          + '<p class="map-item-name">🏢 ' + escapeHtml(b.name) + '</p>'
+          + '<p class="map-item-sub">' + sub.join(' ・ ') + '</p>'
+          + '</div>'
+          + '<div class="map-item-actions">'
+          + (manual ? '<button class="map-item-move" data-up="' + b.id + '"' + (isFirst ? ' disabled' : '') + '>↑</button>'
+                    + '<button class="map-item-move" data-down="' + b.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>' : '')
+          + '<button class="map-item-rename" data-rename="' + b.id + '">✏️</button>'
+          + '<button class="map-item-open" data-open="' + b.id + '">開く</button>'
+          + '<button class="map-item-del" data-del="' + b.id + '">🗑</button>'
+          + '</div></div>';
       });
-    });
-    mapBuildingsList.querySelectorAll('[data-rename]').forEach(function(el) {
-      el.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        renameBuilding(el.dataset.rename);
+      if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合う棟がありません（並び替え・絞り込みを解除してください）。</div>';
+      rowsEl.innerHTML = html;
+      mlbUpdateCount(mapBuildingsList, v);
+      rowsEl.querySelectorAll('[data-open]').forEach(function(el) {
+        el.addEventListener('click', function() { openBuilding(el.dataset.open); });
       });
-    });
-    mapBuildingsList.querySelectorAll('[data-up]').forEach(function(el) {
-      el.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        moveBuilding(el.dataset.up, -1);
+      rowsEl.querySelectorAll('[data-del]').forEach(function(el) {
+        el.addEventListener('click', function(ev) { ev.stopPropagation(); deleteBuilding(el.dataset.del); });
       });
-    });
-    mapBuildingsList.querySelectorAll('[data-down]').forEach(function(el) {
-      el.addEventListener('click', function(ev) {
-        ev.stopPropagation();
-        moveBuilding(el.dataset.down, 1);
+      rowsEl.querySelectorAll('[data-rename]').forEach(function(el) {
+        el.addEventListener('click', function(ev) { ev.stopPropagation(); renameBuilding(el.dataset.rename); });
       });
-    });
+      rowsEl.querySelectorAll('[data-up]').forEach(function(el) {
+        el.addEventListener('click', function(ev) { ev.stopPropagation(); moveBuilding(el.dataset.up, -1); });
+      });
+      rowsEl.querySelectorAll('[data-down]').forEach(function(el) {
+        el.addEventListener('click', function(ev) { ev.stopPropagation(); moveBuilding(el.dataset.down, 1); });
+      });
+    }
+    wireListBar(mapBuildingsList, 'building', renderRows);
+    renderRows();
   }
 
   async function renameBuilding(id) {
@@ -9707,6 +9778,35 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var tmp = arr[idx]; arr[idx] = arr[ni]; arr[ni] = tmp;
     try { await saveMapData(mapData); } catch(e) {}
     renderBuildingsList();
+  }
+
+  // v3-178：区分の並べ替え（手動並びのときだけ↑↓が出る）
+  async function moveArea(areaId, dir) {
+    var b = getBuilding(currentBuildingId);
+    if (!b || !b.areas) return;
+    var idx = b.areas.findIndex(function(x){ return x.id === areaId; });
+    if (idx < 0) return;
+    var ni = idx + dir;
+    if (ni < 0 || ni >= b.areas.length) return;
+    var tmp = b.areas[idx]; b.areas[idx] = b.areas[ni]; b.areas[ni] = tmp;
+    try { await saveMapData(mapData); } catch(e) {}
+    renderAreasList(b);
+  }
+
+  // v3-178：マップの並べ替え（棟直下＝areaId:null／区分内＝areaId 指定。表示中の一覧を再描画）
+  async function moveSheet(sheetId, areaId, dir) {
+    var b = getBuilding(currentBuildingId);
+    if (!b) return;
+    var list = areaId ? (getArea(b, areaId) || {}).sheets : b.sheets;
+    if (!list) return;
+    var idx = list.findIndex(function(x){ return x.id === sheetId; });
+    if (idx < 0) return;
+    var ni = idx + dir;
+    if (ni < 0 || ni >= list.length) return;
+    var tmp = list[idx]; list[idx] = list[ni]; list[ni] = tmp;
+    try { await saveMapData(mapData); } catch(e) {}
+    if (areaId) { var a = getArea(b, areaId); if (a) renderSheetsList(b, a, mapAreaSheetsList); }
+    else renderSheetsList(b, null, mapSheetsList);
   }
 
   async function addBuilding() {
@@ -9809,14 +9909,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       return;
     }
     var html = '';
-    b.areas.forEach(function(a) {
+    b.areas.forEach(function(a, idx) {
       var pinCount = (a.sheets || []).reduce(function(t, s){ return t + (s.pins||[]).length; }, 0);
+      var isFirst = (idx === 0), isLast = (idx === b.areas.length - 1);
       html += '<div class="map-item">'
         + '<div class="map-item-main" data-openarea="' + a.id + '">'
         + '<p class="map-item-name">🗂 ' + escapeHtml(a.name) + '</p>'
         + '<p class="map-item-sub">マップ' + (a.sheets||[]).length + ' ・ ピン計' + pinCount + '</p>'
         + '</div>'
         + '<div class="map-item-actions">'
+        + '<button class="map-item-move" data-uparea="' + a.id + '"' + (isFirst ? ' disabled' : '') + '>↑</button>'
+        + '<button class="map-item-move" data-downarea="' + a.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>'
         + '<button class="map-item-open" data-openarea="' + a.id + '">開く</button>'
         + '<button class="map-item-del" data-delarea="' + a.id + '">🗑</button>'
         + '</div></div>';
@@ -9828,38 +9931,66 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     mapAreasList.querySelectorAll('[data-delarea]').forEach(function(el) {
       el.addEventListener('click', function(ev){ ev.stopPropagation(); deleteArea(el.dataset.delarea); });
     });
+    mapAreasList.querySelectorAll('[data-uparea]').forEach(function(el) {
+      el.addEventListener('click', function(ev){ ev.stopPropagation(); moveArea(el.dataset.uparea, -1); });
+    });
+    mapAreasList.querySelectorAll('[data-downarea]').forEach(function(el) {
+      el.addEventListener('click', function(ev){ ev.stopPropagation(); moveArea(el.dataset.downarea, 1); });
+    });
   }
 
   // マップリスト（container に描画。area=null なら棟直下）
   function renderSheetsList(b, area, container) {
-    var sheets = area ? (area.sheets || []) : (b.sheets || []);
-    if (sheets.length === 0) {
+    var getSheets = function(){ return area ? (area.sheets || []) : (b.sheets || []); };
+    var areaId = area ? area.id : null;
+    if (getSheets().length === 0) {
       container.innerHTML = '<div class="map-empty" style="padding:12px;">マップはまだありません。<br>「＋ マップを追加」で図面や写真を読み込んでください。</div>';
       return;
     }
-    var html = '';
-    sheets.forEach(function(s) {
-      html += '<div class="map-item">'
-        + '<div class="map-item-main" data-opensheet="' + s.id + '">'
-        + '<p class="map-item-name">📄 ' + escapeHtml(s.name) + '</p>'
-        + '<p class="map-item-sub">ピン' + (s.pins||[]).length + '</p>'
-        + '</div>'
-        + '<div class="map-item-actions">'
-        + '<button class="map-item-open" data-opensheet="' + s.id + '">開く</button>'
-        + '<button class="map-item-dup" data-dupsheet="' + s.id + '" title="このマップを複製（1F/2F/屋根などで使い分け）">📄+ 複製</button>'
-        + '<button class="map-item-del" data-delsheet="' + s.id + '">🗑</button>'
-        + '</div></div>';
-    });
-    container.innerHTML = html;
-    container.querySelectorAll('[data-opensheet]').forEach(function(el) {
-      el.addEventListener('click', function(){ openSheet(el.dataset.opensheet, area ? area.id : null); });
-    });
-    container.querySelectorAll('[data-delsheet]').forEach(function(el) {
-      el.addEventListener('click', function(ev){ ev.stopPropagation(); deleteSheet(el.dataset.delsheet, area ? area.id : null); });
-    });
-    container.querySelectorAll('[data-dupsheet]').forEach(function(el) {
-      el.addEventListener('click', function(ev){ ev.stopPropagation(); duplicateSheet(el.dataset.dupsheet, area ? area.id : null); });
-    });
+    container.innerHTML = listBarHtml('sheet') + '<div class="map-list-rows"></div>';
+    var rowsEl = container.querySelector('.map-list-rows');
+    function renderRows() {
+      var sheets = getSheets();
+      var v = computeListView(sheets, 'sheet', function(s){ return (s.pins||[]).length; });
+      var manual = v.manualActive;
+      var html = '';
+      v.view.forEach(function(s) {
+        var oi = sheets.indexOf(s);
+        var isFirst = (oi === 0), isLast = (oi === sheets.length - 1);
+        html += '<div class="map-item">'
+          + '<div class="map-item-main" data-opensheet="' + s.id + '">'
+          + '<p class="map-item-name">📄 ' + escapeHtml(s.name) + '</p>'
+          + '<p class="map-item-sub">ピン' + (s.pins||[]).length + '</p>'
+          + '</div>'
+          + '<div class="map-item-actions">'
+          + (manual ? '<button class="map-item-move" data-upsheet="' + s.id + '"' + (isFirst ? ' disabled' : '') + '>↑</button>'
+                    + '<button class="map-item-move" data-downsheet="' + s.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>' : '')
+          + '<button class="map-item-open" data-opensheet="' + s.id + '">開く</button>'
+          + '<button class="map-item-dup" data-dupsheet="' + s.id + '" title="このマップを複製（1F/2F/屋根などで使い分け）">📄+ 複製</button>'
+          + '<button class="map-item-del" data-delsheet="' + s.id + '">🗑</button>'
+          + '</div></div>';
+      });
+      if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合うマップがありません（並び替え・絞り込みを解除してください）。</div>';
+      rowsEl.innerHTML = html;
+      mlbUpdateCount(container, v);
+      rowsEl.querySelectorAll('[data-opensheet]').forEach(function(el) {
+        el.addEventListener('click', function(){ openSheet(el.dataset.opensheet, areaId); });
+      });
+      rowsEl.querySelectorAll('[data-delsheet]').forEach(function(el) {
+        el.addEventListener('click', function(ev){ ev.stopPropagation(); deleteSheet(el.dataset.delsheet, areaId); });
+      });
+      rowsEl.querySelectorAll('[data-dupsheet]').forEach(function(el) {
+        el.addEventListener('click', function(ev){ ev.stopPropagation(); duplicateSheet(el.dataset.dupsheet, areaId); });
+      });
+      rowsEl.querySelectorAll('[data-upsheet]').forEach(function(el) {
+        el.addEventListener('click', function(ev){ ev.stopPropagation(); moveSheet(el.dataset.upsheet, areaId, -1); });
+      });
+      rowsEl.querySelectorAll('[data-downsheet]').forEach(function(el) {
+        el.addEventListener('click', function(ev){ ev.stopPropagation(); moveSheet(el.dataset.downsheet, areaId, 1); });
+      });
+    }
+    wireListBar(container, 'sheet', renderRows);
+    renderRows();
   }
 
   async function addArea() {
