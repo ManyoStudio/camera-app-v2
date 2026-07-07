@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.181</title>
+<title>現場写真撮影アプリ v3.182</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2370,7 +2370,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.181 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.182 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-07）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4221,7 +4221,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.181）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.182）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -10333,14 +10333,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var name = prompt('複製したマップの名前を入力してください。\n（例：1階、2階、屋根 など。同じ図面を階ごとに使い分けられます）\n※ピンは引き継がず、空の同じ台紙として複製します。', defName);
     if (name === null) return;                       // キャンセル
     name = (name || '').trim() || defName;
-    var copy = {
-      id: genId(),
-      name: name,
-      dataUrl: src.dataUrl,
-      bgDataUrl: (src.bgDataUrl != null ? src.bgDataUrl : src.dataUrl),
-      drawDataUrl: (src.drawDataUrl != null ? src.drawDataUrl : null),
-      pins: []                                        // ピンなし＝空の同台紙（安全・用途に最適）
-    };
+    // v3-182：全属性を継承する浅コピー＋配列のみディープコピー。
+    //   旧実装はキー列挙（id/name/dataUrl/bgDataUrl/drawDataUrl/pins）だったため、
+    //   後発フィールド layers[]（v3-154）と vectorLines[] が複製されず、
+    //   複製マップでレイヤーが1枚に潰れる／作図線が消えるバグがあった。
+    //   エクスポート往復(copySheet)と同じ全キー継承へ統一し、将来の新フィールドも自動追随。
+    var copy = {};
+    for (var kk in src) copy[kk] = src[kk];           // 全属性を継承（新フィールドも自動追随）
+    copy.id = genId();
+    copy.name = name;
+    copy.bgDataUrl = (src.bgDataUrl != null ? src.bgDataUrl : src.dataUrl);
+    copy.drawDataUrl = (src.drawDataUrl != null ? src.drawDataUrl : null);
+    copy.pins = [];                                    // ピンなし＝空の同台紙（安全・用途に最適）
+    // 配列は参照共有を避けてディープコピー（元マップ編集で複製が壊れないように）
+    if (Array.isArray(src.layers))      copy.layers      = JSON.parse(JSON.stringify(src.layers));
+    if (Array.isArray(src.vectorLines)) copy.vectorLines = JSON.parse(JSON.stringify(src.vectorLines));
     list.splice(idx + 1, 0, copy);                    // 元マップの直後に挿入
     try { await saveMapData(mapData); } catch(e) {}
     if (areaId) { var a = getArea(b, areaId); renderSheetsList(b, a, mapAreaSheetsList); }
