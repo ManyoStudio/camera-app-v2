@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.187</title>
+<title>現場写真撮影アプリ v3.188</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -688,6 +688,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     box-shadow:0 6px 18px rgba(0,0,0,0.35); cursor:pointer; max-width:92%;
   }
   #rename-undo-chip button:active { transform:scale(0.97); opacity:0.9; }
+
+  /* v3-188：番号入力で一括並べ替え（棟／区分／マップ共通・表示と配列順のみ／データ内容不変） */
+  .mo-enter-row { margin:0 0 8px 0; }
+  .mo-enter {
+    width:auto; background:#eef4ff; color:#0a63d6; border:1px solid #b9d4ff;
+    border-radius:8px; padding:7px 12px; font-size:12px; font-weight:700; cursor:pointer; margin:0;
+  }
+  .mo-enter:active { transform:scale(0.98); }
+  .mo-panel { border:1px solid #b9d4ff; border-radius:12px; background:#f7faff; padding:12px; }
+  .mo-hint { font-size:12px; color:#0a63d6; line-height:1.6; margin:0 0 10px 0; }
+  .mo-row { display:flex; align-items:center; gap:10px; padding:8px 6px; border-bottom:1px solid #e3ecf9; }
+  .mo-row:last-of-type { border-bottom:none; }
+  .mo-num {
+    width:64px; flex-shrink:0; text-align:center; font-size:16px; font-weight:700;
+    padding:8px 4px; border:1px solid #9db9e0; border-radius:8px; background:#fff; color:#1d1d1f; margin:0;
+  }
+  .mo-name { flex:1; min-width:0; font-size:14px; font-weight:600; color:#1d1d1f; overflow-wrap:anywhere; }
+  .mo-actions { display:flex; gap:8px; margin-top:12px; }
+  .mo-apply { flex:1; background:#007aff; color:#fff; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; margin:0; }
+  .mo-apply:active { transform:scale(0.98); }
+  .mo-cancel { flex:1; background:#e5e5ea; color:#1d1d1f; border:none; border-radius:10px; padding:12px; font-size:14px; font-weight:700; cursor:pointer; margin:0; }
 
   /* v3-153：下地（図面）の差し替え／元に戻す */
   .map-swap-base {
@@ -2418,7 +2439,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.187 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-07）</span></span>
+  <span>📷 現場写真撮影アプリ v3.188 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-08）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4283,7 +4304,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.187）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.188）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
@@ -9804,6 +9825,94 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     cnt.textContent = txt;
   }
 
+  // ===== v3-188：番号入力で一括並べ替え（棟／区分／マップ共通）=====
+  // 一覧に番号ボックスを出し、番号の小さい順（＝上）に対象配列を並べ替える。
+  // データ内容は不変（配列の順序のみ変更）＝moveSheet 等と同じ非破壊操作。適用で即保存。
+  var mapReorder = null; // { kind:'building'|'area'|'sheet', areaId:(string|null) } または null（同時に1一覧のみ）
+
+  // 純粋関数（DOM非依存・テスト容易）：entries=[{item,num,i}] を「番号昇順→元位置」で安定ソートし item配列を返す。
+  // num は数値／null／空／NaN（＝空欄扱い＝末尾）。同番は元の並び順を維持。
+  function sortByOrderNumbers(entries){
+    var deco = entries.map(function(e, k){
+      var raw = e.num;
+      var n = (raw==null || raw==='' || isNaN(raw)) ? Infinity : Number(raw);
+      return { it:e.item, n:n, i:(typeof e.i==='number'?e.i:k) };
+    });
+    deco.sort(function(a,b){ return (a.n-b.n) || (a.i-b.i); });
+    return deco.map(function(o){ return o.it; });
+  }
+  // 対象配列を numById（id→数値/null）で番号昇順に in place 並べ替え。戻り値＝並べ替え前のid順（undo用）。
+  function applyReorderToArray(arr, numById){
+    var prevOrder = arr.map(function(it){ return it.id; });
+    var entries = arr.map(function(it, i){ return { item:it, num:numById[it.id], i:i }; });
+    var sorted = sortByOrderNumbers(entries);
+    arr.length = 0; Array.prototype.push.apply(arr, sorted);  // 参照を保ったまま並べ替え
+    return prevOrder;
+  }
+  // id順スナップショットへ復元（undo）。idOrderに無い項目は末尾に温存（安全策）。
+  function restoreOrder(arr, idOrder){
+    var byId = {}; arr.forEach(function(it){ byId[it.id] = it; });
+    var rebuilt = idOrder.map(function(id){ return byId[id]; }).filter(function(x){ return x; });
+    arr.forEach(function(it){ if (idOrder.indexOf(it.id) < 0) rebuilt.push(it); });
+    arr.length = 0; Array.prototype.push.apply(arr, rebuilt);
+  }
+  function reorderPanelHtml(items, noun){
+    var rows = '';
+    items.forEach(function(it, i){
+      rows += '<div class="mo-row">'
+        + '<input class="mo-num" type="number" inputmode="numeric" min="1" step="1" value="' + (i+1) + '" data-moid="' + it.id + '">'
+        + '<span class="mo-name">' + escapeHtml(it.name) + '</span>'
+        + '</div>';
+    });
+    return '<div class="mo-panel">'
+      + '<p class="mo-hint">🔢 ' + noun + 'の左の番号を打ち替えて「並べ替えを適用」を押すと、<strong>番号の小さい順（上から）</strong>に並びます。連番でも 10・20・30… の飛び番号でもOK。同じ番号は今の並び順のまま、空欄は最後になります。</p>'
+      + '<div class="mo-rows">' + rows + '</div>'
+      + '<div class="mo-actions">'
+      + '<button class="mo-apply" type="button">並べ替えを適用</button>'
+      + '<button class="mo-cancel" type="button">取消</button>'
+      + '</div>'
+      + '</div>';
+  }
+  function readReorderInputs(rootEl){
+    var numById = {};
+    rootEl.querySelectorAll('.mo-num').forEach(function(inp){
+      var id = inp.getAttribute('data-moid');
+      var raw = (inp.value==null ? '' : String(inp.value)).trim();
+      numById[id] = (raw==='') ? null : Number(raw);
+    });
+    return numById;
+  }
+  // 「元に戻す」チップ（rename-undo-chip の要素・CSSを流用）
+  function showReorderUndo(restoreFn){
+    var host = document.getElementById('rename-undo-chip');
+    if (!host) { host = document.createElement('div'); host.id = 'rename-undo-chip'; document.body.appendChild(host); }
+    host.innerHTML = '';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.innerHTML = '並び順を変更しました　<span style="text-decoration:underline;">↩ 元に戻す</span>';
+    btn.addEventListener('click', function(){ hideRenameUndo(); try { restoreFn(); } catch(e) {} });
+    host.appendChild(btn);
+    host.classList.add('show');
+    if (_renameUndoTimer) clearTimeout(_renameUndoTimer);
+    _renameUndoTimer = setTimeout(hideRenameUndo, 6000);
+  }
+  // 並べ替えパネルを hostEl に描画して配線。arr＝対象配列（手動順）／rerenderAll＝一覧の再描画関数。
+  function renderReorderInto(hostEl, arr, noun, rerenderAll){
+    hostEl.innerHTML = reorderPanelHtml(arr, noun);
+    var applyBtn = hostEl.querySelector('.mo-apply');
+    var cancelBtn = hostEl.querySelector('.mo-cancel');
+    if (applyBtn) applyBtn.addEventListener('click', function(){
+      var numById = readReorderInputs(hostEl);
+      var prev = applyReorderToArray(arr, numById);
+      saveMapData(mapData).catch(function(){});   // 適用で即保存
+      mapReorder = null;
+      rerenderAll();
+      if (typeof showToast === 'function') showToast('番号順に並べ替えました');
+      showReorderUndo(function(){ restoreOrder(arr, prev); saveMapData(mapData).catch(function(){}); rerenderAll(); if (typeof showToast === 'function') showToast('並び順を元に戻しました'); });
+    });
+    if (cancelBtn) cancelBtn.addEventListener('click', function(){ mapReorder = null; rerenderAll(); });
+  }
+
   function renderBuildingsList() {
     if (!mapBuildingsList) return;
     if (mapData.buildings.length === 0) {
@@ -9814,7 +9923,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var rowsEl = mapBuildingsList.querySelector('.map-list-rows');
     function renderRows() {
       var arr = mapData.buildings;
-      var v = computeListView(arr, 'building', function(b){ return countPinsInBuilding(b); });
+      var pinCountOf = function(b){ return countPinsInBuilding(b); };
+      if (mapReorder && mapReorder.kind === 'building') {
+        renderReorderInto(rowsEl, arr, '棟', renderBuildingsList);
+        return;
+      }
+      var v = computeListView(arr, 'building', pinCountOf);
       var canReorder = v.canReorder;
       var html = '';
       v.view.forEach(function(b, vi) {
@@ -9840,8 +9954,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           + '</div></div>';
       });
       if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合う棟がありません（並び替え・絞り込みを解除してください）。</div>';
+      else if (v.canReorder && arr.length >= 2) html = '<div class="mo-enter-row"><button class="mo-enter" type="button">🔢 番号で並べ替え</button></div>' + html;
       rowsEl.innerHTML = html;
       mlbUpdateCount(mapBuildingsList, v);
+      var _mob = rowsEl.querySelector('.mo-enter');
+      if (_mob) _mob.addEventListener('click', function(){ applySortToArray(arr, 'building', pinCountOf); mapReorder = { kind:'building', areaId:null }; renderBuildingsList(); });
       rowsEl.querySelectorAll('[data-open]').forEach(function(el) {
         el.addEventListener('click', function() { openBuilding(el.dataset.open); });
       });
@@ -10074,6 +10191,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function getArea(b, id) { return (b.areas || []).find(function(x){ return x.id === id; }); }
 
   function hideAllMapCards() {
+    mapReorder = null;  // v3-188：画面切替で並べ替えモードを解除（別一覧に持ち越さない）
     mapBuildingsCard.style.display = 'none';
     mapInsideCard.style.display = 'none';
     mapAreaCard.style.display = 'none';
@@ -10107,6 +10225,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       mapAreasList.innerHTML = '<div class="map-empty" style="padding:12px;">区分はまだありません（使わなくてもOK）</div>';
       return;
     }
+    if (mapReorder && mapReorder.kind === 'area') {
+      renderReorderInto(mapAreasList, b.areas, '区分', function(){ renderAreasList(b); });
+      return;
+    }
     var html = '';
     b.areas.forEach(function(a, idx) {
       var pinCount = (a.sheets || []).reduce(function(t, s){ return t + (s.pins||[]).length; }, 0);
@@ -10124,7 +10246,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         + '<button class="map-item-del" data-delarea="' + a.id + '">🗑</button>'
         + '</div></div>';
     });
+    if (b.areas.length >= 2) html = '<div class="mo-enter-row"><button class="mo-enter" type="button">🔢 番号で並べ替え</button></div>' + html;
     mapAreasList.innerHTML = html;
+    var _moa = mapAreasList.querySelector('.mo-enter');
+    if (_moa) _moa.addEventListener('click', function(){ mapReorder = { kind:'area', areaId:null }; renderAreasList(b); });
     mapAreasList.querySelectorAll('[data-openarea]').forEach(function(el) {
       el.addEventListener('click', function(){ openArea(el.dataset.openarea); });
     });
@@ -10154,7 +10279,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var rowsEl = container.querySelector('.map-list-rows');
     function renderRows() {
       var sheets = getSheets();
-      var v = computeListView(sheets, 'sheet', function(s){ return (s.pins||[]).length; });
+      var pinCountOf = function(s){ return (s.pins||[]).length; };
+      var arr = area ? area.sheets : b.sheets;
+      if (mapReorder && mapReorder.kind === 'sheet' && mapReorder.areaId === areaId) {
+        renderReorderInto(rowsEl, arr, 'マップ', function(){ renderSheetsList(b, area, container); });
+        return;
+      }
+      var v = computeListView(sheets, 'sheet', pinCountOf);
       var canReorder = v.canReorder;
       var html = '';
       v.view.forEach(function(s, vi) {
@@ -10174,8 +10305,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           + '</div></div>';
       });
       if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合うマップがありません（並び替え・絞り込みを解除してください）。</div>';
+      else if (v.canReorder && arr.length >= 2) html = '<div class="mo-enter-row"><button class="mo-enter" type="button">🔢 番号で並べ替え</button></div>' + html;
       rowsEl.innerHTML = html;
       mlbUpdateCount(container, v);
+      var _mos = rowsEl.querySelector('.mo-enter');
+      if (_mos) _mos.addEventListener('click', function(){ applySortToArray(arr, 'sheet', pinCountOf); mapReorder = { kind:'sheet', areaId:areaId }; renderSheetsList(b, area, container); });
       rowsEl.querySelectorAll('[data-opensheet]').forEach(function(el) {
         el.addEventListener('click', function(){ openSheet(el.dataset.opensheet, areaId); });
       });
