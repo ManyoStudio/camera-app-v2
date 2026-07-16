@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.192</title>
+<title>現場写真撮影アプリ v3.193</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2441,7 +2441,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.192 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-08）</span></span>
+  <span>📷 現場写真撮影アプリ v3.193 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-17）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2568,13 +2568,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <input type="file" id="camera" accept="image/*" capture="environment" />
       <div class="info-box desc-collapsible" data-desc="shoot-branch" data-desc-label="番号のつき方（枝番ルール）" style="margin:12px 0;">
         <strong>番号のつき方（枝番ルール）</strong><br>
-        1枚目は番号のうしろに <strong>_0</strong> が付きます。例：<strong>0001</strong> と入力 → <strong>0001_0</strong> で保存。<br>
-        同じ設備を続けて撮ると、2枚目は <strong>0001_1</strong>、3枚目は <strong>0001_2</strong> … と自動で枝番が増えます。<br>
+        1枚目は番号のうしろに <strong>_1</strong> が付きます。例：<strong>0001</strong> と入力 → <strong>0001_1</strong> で保存。<br>
+        同じ設備を続けて撮ると、2枚目は <strong>0001_2</strong>、3枚目は <strong>0001_3</strong> … と自動で枝番が増えます。<br>
         <strong>同じ設備を連続で撮るときは：</strong> まず1枚撮ると画面上部に緑のバナーが出ます。その案内にそって「📷 続けて撮影」を押すだけで、同じ番号の枝番で次々撮れます。ピンぼけ等で撮り直すときは「🔄 今の1枚を撮り直す」を押せば、失敗分は残らず同じ番号で撮り直せます。
       </div>
       <p class="shoot-help desc-collapsible" data-desc="shoot-help" data-desc-label="続けて撮影のしかた">
         💡 撮影してこの画面に戻ると、画面上部に <strong>「📷 続けて撮影」</strong> ボタンが出ます。<br>
-        同じ設備を前方・左右・後方など複数アングルで撮るときは、これを押すと <strong>_1, _2…</strong> と枝番を付けて続けて撮影できます。撮り直しは <strong>「🔄 今の1枚を撮り直す」</strong> で失敗分を残さず差し替えできます。
+        同じ設備を前方・左右・後方など複数アングルで撮るときは、これを押すと <strong>_2, _3…</strong> と枝番を付けて続けて撮影できます。撮り直しは <strong>「🔄 今の1枚を撮り直す」</strong> で失敗分を残さず差し替えできます。
       </p>
       <p id="continuous-info" class="continuous-info" style="display:none;"></p>
 
@@ -2586,7 +2586,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         同じ設備を前方・左右・後方など複数アングルで撮る場合におすすめ。<br>
         ① 先にiPhone標準カメラで必要な枚数を撮影<br>
         ② このボタン→「フォトライブラリ」から撮った写真を複数選択<br>
-        ③ 選んだ枚数分が <strong>ファイル名_0, _1, _2…</strong> と自動で枝番号保存されます
+        ③ 選んだ枚数分が <strong>ファイル名_1, _2, _3…</strong> と自動で枝番号保存されます
       </p>
       <p id="bulk-info" class="continuous-info" style="display:none;"></p>
     </div>
@@ -4314,10 +4314,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.192）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.193）。' },
 
     // ── 2. 撮影（📸撮影） ──
-    { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_1, _2 …）を続けて撮れます。' },
+    { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
     { cat:'撮影', q:'番号が決まっていない設備を撮るには？', a:'撮影画面の「🔢 不明設備（ダミー番号）」を使うと、設定した開始番号から自動で番号をつけて撮影できます（開始番号は ⚙️ 設定タブで登録）。' },
     { cat:'撮影', q:'撮った写真を撮り直したい／番号を変えたい', a:'<strong>📋 撮影リスト</strong>タブで設備を選ぶと、「この番号で撮り直す」「番号を変更」ができます。<strong>番号を変えても、図面のピンは張り替え不要</strong>です（自動でつながったままになります）。' },
     { cat:'撮影', q:'ファイル名の番号に先頭ゼロの確認が出るのはなぜ？', a:'ファイル名が数字だけのとき、<strong>先頭のゼロ（例 0001）を補う確認</strong>が出ます。意図した桁になっているか確かめて進めてください（⚙️ 設定の桁チェックで調整できます）。' },
@@ -4329,7 +4329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'評価・分類', q:'写真を撮らずに評価だけ先に登録したい（分担作業）', a:'「🧾 写真なしで登録」で、番号・G.U.T評価・メモを入力してから登録できます。あとで写真担当のZIPを読み込んで合流すると、同じ番号の写真が自動で入ります。' },
     { cat:'評価・分類', q:'設備の分類（大・中・小）はどう選びますか？', a:'撮影・評価の画面にある <strong>🏷 分類</strong> から、大分類 → 中分類 → 小分類の順に選びます。検索ボックスに設備名を入れて絞り込むこともできます。分類は任意で、選ばなくても撮影・保存できます。' },
     { cat:'評価・分類', q:'分類を選ぶとG・Uに数字が入るのはなぜ？', a:'分類ごとに目安の <strong>G・U初期値</strong> が用意されており、選ぶと自動で入ります。<strong>あくまで初期値なので、現地に合わせて手で変更できます。</strong>範囲で示される分類はそのまま記録されます。' },
-    { cat:'評価・分類', q:'G.U.T評価はいつ入力しますか？', a:'撮影したあと、<strong>📊 評価</strong>タブで入力します。同じ設備を続けて撮っても、評価は<strong>その設備の先頭の写真（_0）にまとめて保存</strong>されます。' },
+    { cat:'評価・分類', q:'G.U.T評価はいつ入力しますか？', a:'撮影したあと、<strong>📊 評価</strong>タブで入力します。同じ設備を続けて撮っても、評価は<strong>その設備の先頭の写真（_1）にまとめて保存</strong>されます。' },
     { cat:'評価・分類', q:'分類で「5~2」のように範囲で出るのは何ですか？', a:'<strong>その場では確定しない（未確定）の目印</strong>です。現場では基本そのままにし、あとの工程（客先ヒアリング等）で 5／4／3／2 に確定します。<strong>CSVには「5~2」のまま出る</strong>ので、あとから未確定だと分かります。' },
     { cat:'評価・分類', q:'つけた設備分類を直したい／選び直したい', a:'撮影・評価の画面の <strong>🏷 分類</strong> から、もう一度<strong>大分類 → 中分類 → 小分類</strong>を選び直すと置き換わります。選び直すと<strong>G・Uの初期値も入り直します</strong>（現地に合わせて手で直せます）。分類は任意なので、迷うときは選ばずに保存しても問題ありません。' },
 
@@ -4422,7 +4422,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'複数人で使うとき、設定はそろえるべき？', a:'番号の読み取り（先頭／末尾）や撮る番号のルールは、<strong>担当どうしでそろえておく</strong>と、あとで写真とピンを合流したときにズレません。データの合流自体は、各自が保存したZIPを<strong>📥 読込</strong>で取り込めばできます。' },
     // ── 撮影（追加） ──
     { cat:'撮影', q:'写真がぶれる／暗くて読めない', a:'<strong>両手で構えて一呼吸おいてから</strong>撮るとぶれにくくなります。暗い場所は端末の<strong>ライト</strong>を使うか、明るい角度から撮ってください。銘板（番号プレート）は<strong>正面から近づいて</strong>撮ると、あとで番号が読みやすくなります。撮り直しは一覧からできます。' },
-    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_1, _2）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_1・_2…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。番号を分けたいときは別番号で撮ってください。' },
+    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_2, _3）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_2・_3…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。番号を分けたいときは別番号で撮ってください。' },
     { cat:'撮影', q:'撮影した場所（GPS・位置情報）は記録されますか？', a:'このアプリの「位置記録」は、<strong>図面（マップ）のどこにピンを置いたか</strong>を記録するもので、<strong>あなたの現在地（GPS）を追跡するものではありません</strong>。データは端末の中だけにあり、インターネットにも送られません（オフラインで動きます）。' },
     { cat:'撮影', q:'手袋をしているとボタンが押しにくい', a:'撮影や保存の主要ボタンは<strong>大きめのタップ式</strong>にしてあります。反応が鈍いときは、手袋の指先が乾いているか確認し、<strong>ゆっくり一度だけタップ</strong>してください（連打は誤作動のもとです）。長押し操作は機種により効かないため、基本は<strong>タップ</strong>です。' },
     // ── 評価・分類（追加） ──
@@ -4616,7 +4616,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var br = branchIndexOf(p.filename); if (br == null) br = 0;
       if (!groups[key]) { groups[key] = { rep: p, repBranch: br, ids: [], count: 0 }; }
       var g = groups[key];
-      if (br < g.repBranch) { g.repBranch = br; g.rep = p; } // 代表＝最小枝番（_0優先）
+      if (br < g.repBranch) { g.repBranch = br; g.rep = p; } // 代表＝最小枝番（旧_0／新_1のいずれも最小が代表）
       g.ids.push(p.id); g.count++;
     });
     var rows = [];
@@ -5510,8 +5510,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
     });
     var base = parts.length > 0 ? parts.join('_') : '(ファイル名)';
-    // 1枚目は必ず枝番 _0 が付く（連続撮影では _1, _2 … と増える）
-    preview.textContent = base + '_0.jpg';
+    // 1枚目は必ず枝番 _1 が付く（連続撮影では _2, _3 … と増える）
+    preview.textContent = base + '_1.jpg';
 
     // 保存フォルダのプレビュー
     var folderLine = $('folder-preview-line');
@@ -5523,12 +5523,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       });
       if (fparts.length > 0) {
         // 指定があれば項目フォルダ優先
-        folderPrev.textContent = fparts.join(' / ') + ' / ' + base + '_0.jpg';
+        folderPrev.textContent = fparts.join(' / ') + ' / ' + base + '_1.jpg';
         folderLine.style.display = '';
       } else {
         // 指定が無ければ番号で自動振り分け
-        var bf = numberBucketFolder(base + '_0.jpg');
-        folderPrev.textContent = bf + ' / ' + base + '_0.jpg';
+        var bf = numberBucketFolder(base + '_1.jpg');
+        folderPrev.textContent = bf + ' / ' + base + '_1.jpg';
         folderLine.style.display = '';
       }
     }
@@ -5778,7 +5778,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       box.appendChild(btn);
     });
   }
-  // 採番してファイル名欄にセット（撮影は通常フロー。連続モードはリセットして _0 始まりにする）
+  // 採番してファイル名欄にセット（撮影は通常フロー。連続モードはリセットして _1 始まりにする）
   function assignDummyNumber(start) {
     var n = nextDummyNumber(start);
     var fn = getFilename(); if (!fn) return;
@@ -6104,7 +6104,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 設備キー（会社/事業所/棟/基番号）。枝番違いは同じ設備
   function equipmentKeyOf(p) { return (p.client||'') + '/' + (p.site||'') + '/' + (p.building||'') + '/' + extractPhotoNumber(p.filename); }
   // 分割保存エンジン：設備（基番号）を最小のかたまりとして targetSize 枚を目安に分割する。
-  // 同じ設備の枝番（_0,_1…）は必ず同じZIPに入り、別ZIPに分断されない。巨大設備は割らず単体チャンクになる。
+  // 同じ設備の枝番（_1,_2…／旧データの _0 含む）は必ず同じZIPに入り、別ZIPに分断されない。巨大設備は割らず単体チャンクになる。
   function splitIntoChunks(list, targetSize) {
     targetSize = targetSize || 40;
     var order = [], groups = {};
@@ -6120,7 +6120,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   // ファイル名末尾の枝番 _N の N（無ければ null）
   function branchIndexOf(filename) { var base = String(filename||'').replace(/\.[^.]+$/, ''); var m = base.match(/_(\d+)$/); return m ? parseInt(m[1], 10) : null; }
-  // 枝番と拡張子を除いたフルネーム。例「東京_3001_0.jpg」→「東京_3001」
+  // 枝番と拡張子を除いたフルネーム。例「東京_3001_1.jpg」→「東京_3001」
   function baseFullNameOf(filename) { var base = String(filename||'').replace(/\.[^.]+$/, ''); return base.replace(/_\d+$/, ''); }
   // 写真配列から設備グループ情報を作る（代表＝最小枝番、最大枝番、ベース名）
   function buildEquipmentGroups() {
@@ -6142,7 +6142,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     continuousMode.active = true;
     continuousMode.baseFullName = group.baseFullName;
     continuousMode.counter = group.maxBranch;     // 次は maxBranch+1
-    equipmentBaseId = group.repId;                // 評価は _0 に紐づく
+    equipmentBaseId = group.repId;                // 評価は代表＝最小枝番に紐づく（旧_0／新_1）
     var shootTab = document.querySelector('.tab[data-view="shoot"]'); if (shootTab) shootTab.click();
     if (continuousInfo) {
       continuousInfo.style.display = 'block';
@@ -6163,7 +6163,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   async function renameEquipment(p, siblings) {
     var oldNum = extractPhotoNumber(p.filename);
-    var input = prompt('設備の番号を変更します（枝番 _0,_1… はそのまま引き継ぎます）。\n新しい番号を入力してください。', oldNum);
+    var input = prompt('設備の番号を変更します（枝番 _1,_2… はそのまま引き継ぎます）。\n新しい番号を入力してください。', oldNum);
     if (input === null) return;
     var newNum = input.trim().replace(/\.jpg$/i, '');
     if (!newNum || newNum === oldNum) return;
@@ -6271,7 +6271,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var parts = [];
     fields.forEach(function(f){ if (f.included && f.value.trim()) parts.push(sanitize(f.value)); });
     var base = parts.length > 0 ? parts.join('_') : 'untitled';
-    var newFilename = base + '_0.jpg';
+    var newFilename = base + '_1.jpg';
     var cl = sanitize(clientField ? clientField.value : '') || '未分類';
     var st = sanitize(siteField ? siteField.value : '') || '未分類';
     var bl = sanitize(buildingField ? buildingField.value : '') || '未分類';
@@ -6887,12 +6887,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       advanceToNextEquipment('撮影を終了しました。次の設備の番号を入力して撮影してください。');
     });
   }
-  // 連続撮影を終了して、その設備（_0）のG.U.T評価へ進む（評価モードに入る）
+  // 連続撮影を終了して、その設備の代表写真のG.U.T評価へ進む（評価モードに入る）
   var continuousEvalBtn = $('continuous-eval-btn');
   var evalBar = $('eval-bar');
   var evalSaveBtn = $('eval-save-btn');
   var evalSkipBtn = $('eval-skip-btn');
-  var evalModeBaseId = null; // 評価モードで評価対象になっている_0のid
+  var evalModeBaseId = null; // 評価モードで評価対象になっている代表写真のid
 
   function enterEvalMode(baseId) {
     var ph0 = photos.find(function(p){ return p.id === baseId; });
@@ -7237,7 +7237,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       } catch(e) {}
       lastShotPhotoId = null;
       // いま使った枝番を1つ戻す → 次の連続撮影で同じ枝番が再利用される
-      continuousMode.counter = Math.max(-1, continuousMode.counter - 1);
+      // v3-193：起点が _1 になったので下限は 0（次に +1 して _1 になる）。-1 のままだと _0 が復活する
+      continuousMode.counter = Math.max(0, continuousMode.counter - 1);
       updateStats();
       renderList();
       showContinuousBanner();
@@ -7318,7 +7319,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 1枚ずつ読み込んで枝番号付きで保存
       for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        var branchNum = i; // _0, _1, _2 ...（1枚目=_0）
+        var branchNum = i + 1; // _1, _2, _3 ...（1枚目=_1）
         var fullName = baseName + '_' + branchNum;
         try {
           var dataUrl = await readFileAsDataURL(file);
@@ -7357,7 +7358,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       bulkCamera.value = '';
 
       if (bulkInfo) {
-        bulkInfo.innerHTML = '✅ ' + savedCount + ' 枚を読み込みました（<strong>' + baseName + '_0</strong> 〜 <strong>' + baseName + '_' + (savedCount - 1) + '</strong>）'
+        bulkInfo.innerHTML = '✅ ' + savedCount + ' 枚を読み込みました（<strong>' + baseName + '_1</strong> 〜 <strong>' + baseName + '_' + savedCount + '</strong>）'
           + (errorCount > 0 ? '<br>⚠️ ' + errorCount + ' 枚は読み込みに失敗しました' : '');
       }
 
@@ -7398,9 +7399,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
 
-  // ===== 撮影後パネル（その設備の評価：G.U.Tは1枚目_0に保存）=====
-  var activeShotId = null;      // パネルで編集対象の写真id（＝その設備の_0）
-  var equipmentBaseId = null;   // いま撮影中の設備の1枚目(_0)のid
+  // ===== 撮影後パネル（その設備の評価：G.U.Tは1枚目_1に保存）=====
+  var activeShotId = null;      // パネルで編集対象の写真id（＝その設備の代表＝1枚目）
+  var equipmentBaseId = null;   // いま撮影中の設備の1枚目(_1)のid
 
   function clearGutMemoInputs() {
     if (memo) memo.value = '';
@@ -7496,11 +7497,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 一覧からの差し替え撮影：元のファイル名（枝番込み）をそのまま使う
       fullName = String(retakeContext.filename || '').replace(/\.jpg$/i, '');
     } else if (isContinuousShot && continuousMode.active) {
-      // 連続撮影モード：1枚目が _0、2枚目 _1、3枚目 _2 …
+      // 連続撮影モード：1枚目が _1、2枚目 _2、3枚目 _3 …
       continuousMode.counter += 1;
       fullName = continuousMode.baseFullName + '_' + continuousMode.counter;
     } else {
-      // 通常撮影（1枚目）：表示順で連結し、必ず枝番 _0 を付ける
+      // 通常撮影（1枚目）：表示順で連結し、必ず枝番 _1 を付ける
       var parts = [];
       fields.forEach(function(f) {
         if (f.included && f.value.trim()) {
@@ -7508,7 +7509,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       });
       var base = parts.length > 0 ? parts.join('_') : 'untitled';
-      fullName = base + '_0';
+      fullName = base + '_1';
     }
     
     var reader = new FileReader();
@@ -7621,8 +7622,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         } else {
           // 初回撮影：連続撮影モードを開始可能な状態にする（baseは枝番なし、いま使った枝番は0）
           continuousMode.active = true;
-          continuousMode.baseFullName = fullName.replace(/_0$/, '');
-          continuousMode.counter = 0; // 1枚目=_0。次のもう一枚は _1
+          // v3-193：枝番の起点が _1 になったため、末尾の枝番は値に依存せず剥がす
+          // （_0 固定だと baseFullName に _1 が残り、2枚目が「0001_1_2」と壊れる）
+          continuousMode.baseFullName = fullName.replace(/_\d+$/, '');
+          continuousMode.counter = 1; // 1枚目=_1。次のもう一枚は _2
 
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
@@ -7646,7 +7649,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         // 位置記録バナーを表示（マップがなくても常に表示）
         showPinrecBanner();
 
-        // この設備の1枚目(_0)のidを記録（「撮影を終了してG.U.T評価へ」で使う）
+        // この設備の1枚目(_1)のidを記録（「撮影を終了してG.U.T評価へ」で使う）
         if (shotKind === 'first') {
           equipmentBaseId = photo.id;
         }
@@ -14528,7 +14531,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (ph) num = extractPhotoNumber(ph.filename) || '';
     }
     // (逆算ループ / v3-140) 写真がまだ無い先行ピンのときだけ、起点ピンを記憶して撮影タブへ。
-    // 次に保存した写真がこのピンへ自動で紐づく（写真ありのピンは _0 を代表として温存＝上書きしない）。
+    // 次に保存した写真がこのピンへ自動で紐づく（写真ありのピンは代表＝最小枝番を温存＝上書きしない）。
     if (!pin.photoId) {
       var sfpLabel = (pin.label != null && String(pin.label).trim() !== '') ? String(pin.label).trim() : ('ピン ' + (pin.no != null ? pin.no : ''));
       setPendingShootPin(editSheetRef, pin.id, sfpLabel);
