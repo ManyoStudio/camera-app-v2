@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.193</title>
+<title>現場写真撮影アプリ v3.196</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1690,6 +1690,40 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     cursor: pointer;
   }
   .shoot-for-pin-cancel:active { background: rgba(255,255,255,0.32); }
+  /* v3-194：撮り直し中バナー（どの番号を撮り直しているかを常時明示し、やめられるようにする） */
+  .retake-banner {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #ff9500;
+    padding: 10px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .retake-banner-text {
+    flex: 1;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+  .retake-banner-text .rtk-name { color: #1d1d1f; }
+  .retake-banner-cancel {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.7);
+    font-size: 13px;
+    font-weight: 700;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin: 0;
+    width: auto;
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .retake-banner-cancel:active { background: rgba(255,255,255,0.36); }
   .folder-toggle {
     display: flex; align-items: center; gap: 6px;
     padding: 5px 10px; margin: 6px 0 0 0;
@@ -2441,7 +2475,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.193 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-17）</span></span>
+  <span>📷 現場写真撮影アプリ v3.196 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-07-17）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2480,6 +2514,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <div id="shoot-for-pin-banner" class="shoot-for-pin-banner" style="display:none;">
   <span class="shoot-for-pin-text">📍 先行ピン「<span class="sfp-name" id="shoot-for-pin-name"></span>」用に撮影中。<br>このまま撮ると、その写真が自動で紐づきます。</span>
   <button id="shoot-for-pin-cancel" class="shoot-for-pin-cancel">解除</button>
+</div>
+
+<div id="retake-banner" class="retake-banner" style="display:none;">
+  <span class="retake-banner-text">🔄 <span class="rtk-name" id="retake-banner-name"></span> を撮り直し中。<br>このまま撮ると、写真だけが差し替わります（番号の入力は不要です）。</span>
+  <button id="retake-banner-cancel" class="retake-banner-cancel">やめる</button>
 </div>
 
 <div class="container">
@@ -4314,7 +4353,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.193）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.196）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -6011,7 +6050,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (u <= 0) return;
     if (Date.now() < backupSnoozeUntil) return;
     // どの画面でも撮影系モーダルやエディタが開いている最中は邪魔しない
-    var editorOpen = (document.querySelector('.editor.show') !== null);
+    // v3-196：旧判定 querySelector('.editor.show') の '.editor' は配布ビューア（VIEWER_TEMPLATE）内の
+    //   クラスで、アプリ本体には存在しない＝ガードが常に false になり、ピン編集中でも
+    //   バックアップの大ポップアップが被さって作業を中断させていた。
+    //   アプリのピンエディタは #pin-editor（style.display の 'flex'/'none' 切替）なので、その表示状態で判定する。
+    var pinEd = $('pin-editor');
+    var editorOpen = !!(pinEd && pinEd.style.display && pinEd.style.display !== 'none');
     if (editorOpen) return;
     var recoveryOpen = (function(){ var r = $('recoveryModal'); return r && r.classList.contains('show'); })();
     if (recoveryOpen) return;
@@ -6479,25 +6523,23 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var retake = document.createElement('button');
       retake.className = 'photo-retake';
       retake.textContent = '🔄 この番号で撮り直す';
-      retake.onclick = async function(ev) {
+      retake.onclick = function(ev) {
         ev.stopPropagation();
-        if (!confirm('「' + p.filename + '」を撮り直します。\n\n今の写真を消して、同じ番号・同じ情報のまま新しい写真に差し替えます。\nカメラが起動します。よろしいですか？')) return;
-        // 元情報を引き継ぐ
+        if (!confirm('「' + p.filename + '」を撮り直します。\n\n同じ番号・同じ情報のまま、写真だけを新しく差し替えます。\n（新しい写真を保存するまで、今の写真は消えません）\n\nカメラが起動します。よろしいですか？')) return;
+        // 元情報を引き継ぐ（v3-194：id を持たせて「同じレコードの更新」にする）
         retakeContext = {
+          id: p.id,
           client: p.client, site: p.site, building: p.building, filename: p.filename,
           fields: p.fields, memo: p.memo,
           gValue: p.gValue, uValue: p.uValue, tValue: p.tValue,
           tTarget: p.tTarget, guEdited: p.guEdited, tChecked: p.tChecked, tBasis: p.tBasis,
           clsCode: p.clsCode, clsBig: p.clsBig, clsMid: p.clsMid, clsSmall: p.clsSmall, clsGInit: p.clsGInit, clsUInit: p.clsUInit
         };
-        // 古い1枚を削除
-        try {
-          await deletePhotoFromDB(p.id);
-          var idx2 = photos.findIndex(function(ph){ return ph.id === p.id; });
-          if (idx2 !== -1) photos.splice(idx2, 1);
-        } catch(e) {}
-        renderList();
+        showRetakeBanner(p.filename);
         // 撮影タブへ切り替えてカメラ起動
+        // ★v3-194：ここで await してはいけない。iOS(WebKit)は非同期の後にユーザー操作の有効期限
+        //   （transient activation）を失い、camera.click() が黙って不発になる（v3-136の学び）。
+        //   旧実装は await deletePhotoFromDB() を挟んでいたため、iPadでカメラが起動しなかった。
         var shootTab = document.querySelector('.tab[data-view="shoot"]');
         if (shootTab) shootTab.click();
         isContinuousShot = false;
@@ -6726,6 +6768,31 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var continuousBannerName = $('continuous-banner-name');
   var isContinuousShot = false; // 次回の撮影が連続モードかどうか
   var retakeContext = null;     // 一覧から「この番号で撮り直す」を押したときの、元写真の情報
+
+  // ===== (v3-194) 撮り直し中バナー =====
+  //   目的：(1) どの番号を撮り直しているか常時明示（撮影画面が空欄で「リセットされた」と誤解されるのを防ぐ）
+  //         (2) やめる手段を用意（旧実装は retakeContext を解除できず、次に普通に撮った1枚が
+  //             入力した番号を無視して古い番号で保存される事故があった）
+  function showRetakeBanner(filename) {
+    var b = $('retake-banner');
+    if (!b) return;
+    var n = $('retake-banner-name');
+    if (n) n.textContent = filename || '';
+    b.style.display = 'flex';
+  }
+  function hideRetakeBanner() {
+    var b = $('retake-banner');
+    if (b) b.style.display = 'none';
+  }
+  (function setupRetakeBanner() {
+    var c = $('retake-banner-cancel');
+    if (!c) return;
+    c.addEventListener('click', function() {
+      retakeContext = null;
+      hideRetakeBanner();
+      if (typeof showToast === 'function') showToast('撮り直しをやめました。元の写真はそのまま残っています。');
+    });
+  })();
 
   // ===== 位置記録バナー（撮影後に表示）=====
   var pinrecBanner = $('pinrec-banner');
@@ -7221,29 +7288,31 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       enterLocatePhase('評価をスキップしました。図面にピンを置くか、「この設備を完了」を押してください。');
     });
   }
-  // 連続撮影中：今の1枚を撮り直す（直前の写真を消して、同じ枝番で撮り直す＝失敗分が溜まらない）
+  // 連続撮影中：今の1枚を撮り直す（v3-194：同じレコードを更新＝同じ枝番のまま写真だけ差し替え。失敗分が溜まらない）
   var continuousRetakeBtn = $('continuous-retake-btn');
   if (continuousRetakeBtn) {
-    continuousRetakeBtn.addEventListener('click', async function() {
+    continuousRetakeBtn.addEventListener('click', function() {
       if (!continuousMode.active) return;
       if (lastShotPhotoId == null) { alert('撮り直せる写真がありません。'); return; }
       var last = photos.find(function(p){ return p.id === lastShotPhotoId; });
-      var nm = last ? last.filename : '';
-      if (!confirm('直前に撮った ' + (nm || 'この1枚') + ' を消して、同じ番号で撮り直します。\n\nよろしいですか？')) return;
-      try {
-        await deletePhotoFromDB(lastShotPhotoId);
-        var idx = photos.findIndex(function(p){ return p.id === lastShotPhotoId; });
-        if (idx !== -1) photos.splice(idx, 1);
-      } catch(e) {}
-      lastShotPhotoId = null;
-      // いま使った枝番を1つ戻す → 次の連続撮影で同じ枝番が再利用される
-      // v3-193：起点が _1 になったので下限は 0（次に +1 して _1 になる）。-1 のままだと _0 が復活する
-      continuousMode.counter = Math.max(0, continuousMode.counter - 1);
-      updateStats();
-      renderList();
-      showContinuousBanner();
-      // そのままカメラを起動して撮り直し
-      isContinuousShot = true;
+      if (!last) { alert('撮り直せる写真がありません。'); return; }
+      if (!confirm('直前に撮った ' + last.filename + ' を、同じ番号のまま撮り直します。\n\n（新しい写真を保存するまで、今の写真は消えません）\n\nよろしいですか？')) return;
+      // v3-194：一覧からの撮り直しと同じ「同じレコードを更新」方式に統一。
+      //   旧実装は〔先に削除→枝番カウンタを1つ戻す→再撮影で同じ枝番〕だったが、
+      //   (a) await deletePhotoFromDB の後の camera.click() が iOS で不発、
+      //   (b) 撮る前に消すので中断すると1枚失う、という2つの問題があった。
+      //   同じレコードを更新すれば、削除もカウンタ操作も不要（枝番は rc.filename がそのまま使われる）。
+      retakeContext = {
+        id: last.id,
+        client: last.client, site: last.site, building: last.building, filename: last.filename,
+        fields: last.fields, memo: last.memo,
+        gValue: last.gValue, uValue: last.uValue, tValue: last.tValue,
+        tTarget: last.tTarget, guEdited: last.guEdited, tChecked: last.tChecked, tBasis: last.tBasis,
+        clsCode: last.clsCode, clsBig: last.clsBig, clsMid: last.clsMid, clsSmall: last.clsSmall, clsGInit: last.clsGInit, clsUInit: last.clsUInit
+      };
+      showRetakeBanner(last.filename);
+      // ★await を挟まずカメラ起動（transient activation を保つ）
+      isContinuousShot = false;
       camera.click();
     });
   }
@@ -7590,8 +7659,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       
       try {
-        await savePhotoToDB(photo);
-        photos.push(photo);
+        if (retakeContext && retakeContext.id != null) {
+          // v3-194：撮り直し＝新規追加ではなく「同じレコードの更新」。
+          //   ・id を変えない → pin.photoId の紐づけが切れない（旧実装は add() で新idになり切れていた）
+          //   ・photos 配列の位置を変えない → 一覧の並びが動かない（旧実装は末尾へ push＝先頭に浮上）
+          //   ・撮る前に元写真を消さない → 撮影を中断しても元写真が残る
+          photo.id = retakeContext.id;
+          await updatePhotoInDB(photo);   // store.put＝同一idで上書き
+          var ri = photos.findIndex(function(p){ return p.id === retakeContext.id; });
+          if (ri !== -1) photos[ri] = photo; else photos.push(photo);
+          // ★v3-195：撮り直した画像は「新しく撮った分」として数え直す。
+          //   未保存判定はパスキー（会社/事業所/棟/ファイル名）の集合 backedUpKeys で行うが、
+          //   撮り直しはファイル名が同じため、元の写真が保存済みだと新しい画像まで「保存済み」扱いになり、
+          //   「🆕 新しく撮った分だけバックアップ」から漏れ、未保存カウントも増えなかった。
+          //   キーを外せば直後の updateStats → checkBackupReminder → updateUnsavedPill で表示も自動追随する。
+          try { backedUpKeys.delete(photoPathKey(photo)); persistBackedUpKeys(); } catch(e) {}
+        } else {
+          await savePhotoToDB(photo);
+          photos.push(photo);
+        }
         updateStats();
         lastShotPhotoId = photo.id;
         // (逆算ループ / v3-140) 先行ピン「📷この位置で撮影」から来た最初の1枚を起点ピンへ自動リンク（撮り直しは除外）。
@@ -7603,6 +7689,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (retakeContext) {
           // 差し替え撮影：連続モードは開始せず、差し替え完了を表示
           retakeContext = null;
+          hideRetakeBanner();   // v3-194：撮り直し中バナーを閉じる
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
             continuousInfo.innerHTML = '🔄 <strong>' + photo.filename + '</strong> を撮り直して差し替えました。';
@@ -7614,13 +7701,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           // 連続撮影モード継続中：counterを進め、バナーを更新
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
-            continuousInfo.innerHTML = '🔗 連続撮影中：<strong>' + photo.filename + '</strong> を保存しました（' + (continuousMode.counter + 1) + '枚目）。<br>ピンぼけ等で撮り直すときは、上部バナーの「🔄 今の1枚を撮り直す」を押してください（失敗分は残りません）。';
+            // v3-194：_1 始まりでは「枝番 N ＝ N枚目」なので counter がそのまま枚数。
+            //   旧 _0 始まりの名残で counter+1 のままだと、2枚目を「3枚目」と誤表示していた。
+            continuousInfo.innerHTML = '🔗 連続撮影中：<strong>' + photo.filename + '</strong> を保存しました（' + continuousMode.counter + '枚目）。<br>ピンぼけ等で撮り直すときは、上部バナーの「🔄 今の1枚を撮り直す」を押してください（同じ番号のまま写真だけ差し替わります）。';
           }
           showContinuousBanner();
           shootBtn.textContent = '✓ 連続撮影で保存しました';
           shootBtn.style.background = '#34c759';
         } else {
-          // 初回撮影：連続撮影モードを開始可能な状態にする（baseは枝番なし、いま使った枝番は0）
+          // 初回撮影：連続撮影モードを開始可能な状態にする（baseは枝番なし、いま使った枝番は1）
           continuousMode.active = true;
           // v3-193：枝番の起点が _1 になったため、末尾の枝番は値に依存せず剥がす
           // （_0 固定だと baseFullName に _1 が残り、2枚目が「0001_1_2」と壊れる）
@@ -7629,7 +7718,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
-            continuousInfo.innerHTML = '🔗 <strong>' + photo.filename + '</strong> を保存しました。<br>同じ設備を続けて撮るなら、画面上部の緑のバナー「📷 続けて撮影」を押してください（_1, _2… と枝番が付きます）。';
+            continuousInfo.innerHTML = '🔗 <strong>' + photo.filename + '</strong> を保存しました。<br>同じ設備を続けて撮るなら、画面上部の緑のバナー「📷 続けて撮影」を押してください（_2, _3… と枝番が付きます）。';
           }
           showContinuousBanner();
 
@@ -12934,10 +13023,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return out;
   }
   // 写真あり/なし（ピンのみ）。表示のみ。
+  // v3-194：photoId が「入っているか」ではなく「その写真が実在するか」で数える。
+  //   旧実装は photoId != null だけを見ていたため、写真を削除した後もピンが「📷写真あり」と数えられ、
+  //   現存idで照合する equipHasPin（＝撮影リストの紐づけ状況）と表示が食い違っていた。
+  function pinHasLivePhoto(pin) {
+    if (pin.photoId == null) return false;
+    return !!photos.find(function(p){ return p.id === pin.photoId; });
+  }
   function collectSheetPhoto(sheet) {
     var pins = (sheet && sheet.pins) ? sheet.pins : [];
     var yes = 0, no = 0;
-    pins.forEach(function(pin){ if ((pin.type||'pin') !== 'pin') return; if (pin.photoId != null) yes++; else no++; });
+    pins.forEach(function(pin){ if ((pin.type||'pin') !== 'pin') return; if (pinHasLivePhoto(pin)) yes++; else no++; });
     var out = [];
     if (yes > 0) out.push({ key:'yes', label:'📷 写真あり', count:yes });
     if (no > 0) out.push({ key:'no', label:'📷 写真なし', count:no });
@@ -12953,7 +13049,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function pinPassesPhotoFilter(pin) {
     var keys = Object.keys(pinPhotoChecked);
     if (keys.length === 0) return true;
-    var k = (pin.photoId != null) ? 'yes' : 'no';
+    var k = pinHasLivePhoto(pin) ? 'yes' : 'no';   // v3-194：チップの数え方と一致させる
     return pinPhotoChecked[k] === true;
   }
   // 種類チップ描画（2種類以上のときだけ表示。cls系CSSを再利用）
