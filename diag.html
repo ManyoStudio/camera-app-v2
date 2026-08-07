@@ -39,7 +39,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>データ復元・診断ツール（強力版）</h1>
+  <h1>データ復元・診断ツール（強力版）<span style="font-size:12px;font-weight:400;opacity:.75;">　diag v1.1（2026-08-07）</span></h1>
   <p class="lead"><strong>あわてなくて大丈夫です。</strong>写真は端末の中に残っている可能性が高く、ここから取り出して保存できます。<br>必ず、いつも撮影に使っているのと<strong>同じ端末・同じブラウザ</strong>で開いてください。コピーや入力は不要。やることは<strong>「① 取り出す → ② 保存する」の2つだけ</strong>です。</p>
   <p class="lead" style="background:#fff7e6;border:2px solid #f0a000;border-radius:10px;padding:10px 12px;color:#7a4d00;font-size:14px;">⚠️ 全部の保存が終わるまで、ブラウザの<strong>「履歴」や「サイトデータ」は消さないでください</strong>（消すと取り出せなくなります）。</p>
   <p class="lead" style="font-size:13px;color:#6e6e73;">このページは<strong>救出専用の別ページ（アドレスが違います）</strong>です。撮影アプリに戻るときは、ページ下の「📷 撮影アプリに戻る」を押してください（アドレス末尾の <code>diag.html</code> を消すのと同じです）。</p>
@@ -70,7 +70,7 @@
     <p id="chunkInfo" class="muted" style="margin-top:8px;"></p>
     <p class="muted">→ <strong>ここでやるのは「保存」だけでOKです。</strong>まず上のオレンジ枠を、「ファイル」アプリなど<strong>消えない場所</strong>に全部ためてください。これで写真の確保は完了です。<br><strong>（あとで・別の日でもOK）</strong>写真をアプリで元どおり使いたくなったら、アプリの「📤 保存・読込」→「📥 データを読み込む（復元）」で、保存したZIPを<strong>順番にすべて</strong>読み込みます（自動でひとつにまとまります）。<strong>今すぐ読み込む必要はありません。</strong></p>
     <hr style="border:none;border-top:1px solid #e3e9f0;margin:14px 0;">
-    <button id="jsonBtn" class="btn-zip">（予備）位置記録だけJSONで保存</button>
+    <button id="jsonBtn" class="btn-zip">（予備）位置記録＋旧図面データをJSONで保存</button>
     <div id="saveLinkJson"></div>
     <div id="rescueStatus" class="note"></div>
   </div>
@@ -333,10 +333,17 @@ $('nextChunkBtn').addEventListener('click', function(){
 $('jsonBtn').addEventListener('click', function(){
   try{
     if(!loadedPhotos){$('rescueStatus').textContent='先に「救出をはじめる」を押してください。';return;}
-    // 予備は「位置記録のみ」をJSONで（軽い）。写真本体はZIP小分けで保存済み前提。
-    var dump={version:1,app:'camera-app',rescued:true,kind:'mapdata-only',exportedAt:new Date().toISOString(),mapData:mapDataWithPhotoKeysRescued(loadedMapData),floorplan:loadedFloorplan};
-    appendSaveLink(sB(JSON.stringify(dump)),'位置記録のみ_'+stamp()+'.json','application/json','saveLinkJson');
-    $('rescueStatus').innerHTML='✅ 位置記録（棟・マップ）の予備JSONを用意しました。下のオレンジ枠を保存してください。';
+    // 予備JSON＝位置記録（棟・マップ・ピン）＋ floorplan ストア（旧版の図面データ）。
+    // floorplan は本体 v3.196 では読み書きしない名残ストアだが、古い端末には旧図面が残っている
+    // 可能性があり、救出ツールの性質上そこは取りこぼさない。ただし中身がファイル名より広いので
+    // 「位置記録と旧図面」と明示し、空のときは載せない（現行端末では実際に空になる）。
+    var dump={version:1,app:'camera-app',rescued:true,kind:'mapdata-only',exportedAt:new Date().toISOString(),mapData:mapDataWithPhotoKeysRescued(loadedMapData)};
+    var hasFp=!!(loadedFloorplan&&loadedFloorplan.length);
+    if(hasFp){ dump.kind='mapdata-and-floorplan'; dump.floorplan=loadedFloorplan; }
+    appendSaveLink(sB(JSON.stringify(dump)),(hasFp?'位置記録と旧図面_':'位置記録のみ_')+stamp()+'.json','application/json','saveLinkJson');
+    $('rescueStatus').innerHTML=hasFp
+      ? '✅ 予備JSONを用意しました。下のオレンジ枠を保存してください。<br><span class="warnline">※このファイルには位置記録のほかに<strong>旧図面データ</strong>も含まれます。人に渡すときはご注意ください。</span>'
+      : '✅ 位置記録（棟・マップ）の予備JSONを用意しました。下のオレンジ枠を保存してください。';
   }catch(e){ $('rescueStatus').textContent='⚠️ JSON保存エラー：'+(e&&e.message?e.message:e); }
 });
 </script>
