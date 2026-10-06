@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.197</title>
+<title>現場写真撮影アプリ v3.198</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2477,7 +2477,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.197 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.198 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-06）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2519,7 +2519,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 </div>
 
 <div id="retake-banner" class="retake-banner" style="display:none;">
-  <span class="retake-banner-text">🔄 <span class="rtk-name" id="retake-banner-name"></span> を撮り直し中。<br>このまま撮ると、写真だけが差し替わります（番号の入力は不要です）。</span>
+  <span class="retake-banner-text">🔄 <span class="rtk-name" id="retake-banner-name"></span> を撮り直し中。<br>帯の「📷 撮り直す」で撮ると、写真だけが差し替わります（番号の入力は不要です）。青い撮影ボタンで撮ると、撮り直しをやめて新しい写真になります。</span>
+  <button id="retake-banner-shoot" class="retake-banner-cancel">📷 撮り直す</button>
   <button id="retake-banner-cancel" class="retake-banner-cancel">やめる</button>
 </div>
 
@@ -4355,12 +4356,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.197）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.198）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
     { cat:'撮影', q:'番号が決まっていない設備を撮るには？', a:'撮影画面の「🔢 不明設備（ダミー番号）」を使うと、設定した開始番号から自動で番号をつけて撮影できます（開始番号は ⚙️ 設定タブで登録）。' },
-    { cat:'撮影', q:'撮った写真を撮り直したい／番号を変えたい', a:'<strong>📋 撮影リスト</strong>タブで設備を選ぶと、「この番号で撮り直す」「番号を変更」ができます。<strong>番号を変えても、図面のピンは張り替え不要</strong>です（自動でつながったままになります）。' },
+    { cat:'撮影', q:'撮った写真を撮り直したい／番号を変えたい', a:'<strong>📋 撮影リスト</strong>タブで設備を選ぶと、「この番号で撮り直す」「番号を変更」ができます。撮り直しのカメラを写真なしで閉じたときは、画面の上の<strong>帯の「📷 撮り直す」</strong>で撮り直せます（青い撮影ボタンで撮ると、撮り直しをやめて新しい写真になります）。<strong>番号を変えても、図面のピンは張り替え不要</strong>です（自動でつながったままになります）。' },
     { cat:'撮影', q:'ファイル名の番号に先頭ゼロの確認が出るのはなぜ？', a:'ファイル名が数字だけのとき、<strong>先頭のゼロ（例 0001）を補う確認</strong>が出ます。意図した桁になっているか確かめて進めてください（⚙️ 設定の桁チェックで調整できます）。' },
 
     { cat:'撮影', q:'ファイル名（番号）の入力方法を変えたい（10キー／番号／通常）', a:'番号の入力欄の上に <strong>🔢10キー／🔢番号／⌨️通常</strong> の3つの切り替えがあります（<strong>初期は🔢10キー</strong>）。<strong>🔢10キー</strong>はアプリ内の数字ボタンで、機種に左右されず確実に数字を打てます。<strong>🔢番号</strong>は端末の数字キーボード、<strong>⌨️通常</strong>は文字も打てる通常キーボードです。打ちやすいものを選んでください。' },
@@ -4429,7 +4430,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'読み込み・復元', q:'小分け保存を全部読み込めたか確認したい', a:'区切りでまとめて（分割）保存したZIPを読み込むと、<strong>「全◯個中◯個」</strong>と表示され、<strong>全部そろうと「完全復元」</strong>と出ます。足りないときは残りのZIPも読み込んでください。' },
     { cat:'読み込み・復元', q:'救出・バックアップしたZIPを別の端末やPCへ渡すには？', a:'オレンジの枠を<strong>タップ</strong>して「ファイル」アプリに保存し、<strong>SharePointなどの共有フォルダ</strong>に置けば、別の端末・PCから取り出せます。受け取った側は <strong>📥 読込</strong> タブの「データを読み込む」から取り込みます。小分けのZIPは<strong>すべて</strong>読み込むと補い合って復元できます。' },
 
-    { cat:'読み込み・復元', q:'iPhoneのHEIC写真やZIPを取り込めますか？', a:'写真の取り込みは <strong>ZIPファイル</strong>で行います（画像を1枚ずつ直接えらぶ方式には未対応です）。ZIPの中に <strong>HEIC／HEIF（iPhoneの写真形式）</strong> が入っていても取り込めます。取り込み前の確認画面で枚数・内容を確かめられます。' },
+    { cat:'読み込み・復元', q:'iPhoneのHEIC写真やZIPを取り込めますか？', a:'取り込み方は2つあります。<strong>「📷 写真ファイルを取り込む」</strong>では、写真ファイル（JPEG・PNG など。1枚でも複数でも）か、写真をまとめた<strong>ZIPファイル</strong>を取り込めます。ZIPの中に <strong>HEIC／HEIF（iPhoneの写真形式）</strong> が入っていても取り込めます。取り込み前の確認画面で枚数・内容を確かめられます。一方、<strong>「📥 データを読み込む」（バックアップの復元）では、ZIPの中の JPG・PNG だけが戻り、HEIC／HEIF の写真は戻りません</strong>（このアプリで撮った写真は名前が .jpg なので、ふだんの復元には影響しません）。' },
     { cat:'読み込み・復元', q:'取り込みで赤字の注意が出る／同名やHEIC・JPGの重複をまとめたい', a:'取り込みの確認画面では、<strong>同じ名前（拡張子だけ違う）や重複しそうな写真</strong>を見つけると<strong>赤字で注意</strong>します。<strong>「同名（拡張子違い）を1枚に整理」</strong>を押すと、同じ名前の写真（HEICとJPGなど）を1枚にまとめ、<strong>残した枚数・外した枚数</strong>を表示します。さらに <strong>「HEIC等を自動でオフ」</strong> にチェックを入れておくと、取り込みのたびに自動で同名を1枚へ整理します（<strong>初期はオフ＝今までどおり</strong>）。' },
     { cat:'読み込み・復元', q:'PCで棟ごとにマッピングしています。終わった棟は削除してよい？', a:'すぐ削除しないでください。<strong>①「区切りでまとめて」で全データを保存→②ZIPをひらいて中身を確認→③2か所以上に複製→④それから削除</strong>の順だと安全です。あとで棟を戻すときは <strong>📥 読込</strong> の <strong>「追加（マージ）」</strong> で合流できます（<strong>「置き換え」は既存を消す</strong>ので注意）。' },
     { cat:'読み込み・復元', q:'位置記録を取り込むとピンが設備番号でなく通し番号で出る', a:'写真の無い端末で取り込むと起こることがあります。<strong>元のZIP／位置記録HTMLを、📥 読込で「置き換え」取り込み</strong>すると、ファイル名から設備番号を読み取って<strong>ピンが設備番号で表示</strong>されます。<strong>今の通し番号の状態から書き出し直しても元の番号は戻りません</strong>。写真も一緒に取り込めば、番号・紐づけまでそろいます。' },
@@ -4453,24 +4454,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 10. その他 ──
     { cat:'その他', q:'「保存したつもり」で消えてしまうことはない？', a:'オレンジの枠を<strong>タップするまで</strong>、未保存の数字は0になりません。ただし、数字は「タップした」印で、本当に保存できたかまでは分かりません。<strong>消す前には、「ファイル」アプリでZIPがあるかを目で確かめてください。</strong>' },
     { cat:'その他', q:'「✅ この端末に記録しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・図面へのマーカー設置などが、<strong>この端末の中に記録された</strong>合図です。安心して次の操作に進めます。ただし、<strong>まだ端末の外（ファイル）には保存されていません。</strong>外に残すには「💾 保存」タブでバックアップします（そのときは「✅ ファイルに保存しました」と出ます）。' },
-    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください（タップした瞬間に、未保存の赤い数字が0に戻ります）。' },
+    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、未保存の赤い数字が減ります（iPad では、共有で「ファイル」に保存するか、「ファイルに保存できた」を押したときに減ります）。' },
 
     // ===== v3-143 追加Q&A（全12カテゴリを網羅拡充・実機FB反映） =====
     // ── はじめ・設定（追加） ──
     { cat:'はじめ・設定', q:'毎日どうやってアプリを開けばいいですか？', a:'<strong>いつも同じ場所から開く</strong>のがコツです。ブラウザの<strong>ブックマーク（お気に入り）に登録</strong>するか、配られた<strong>同じファイル／同じURL</strong>から開いてください。撮影データはその場所（ブラウザ）に残るので、毎回同じ入口から開けば続きから使えます。<strong>「Cookieとサイトデータを消す」操作はしない</strong>でください（データが消えます）。' },
-    { cat:'はじめ・設定', q:'文字が小さくて見づらい／大きくしたい', a:'画面は<strong>指で広げる（ピンチ）と拡大</strong>できます。常に大きくしたいときは、端末の<strong>設定 → 画面表示／文字の大きさ</strong>を上げてください。写真やマップは見るとき個別に拡大できます。' },
+    { cat:'はじめ・設定', q:'文字が小さくて見づらい／大きくしたい', a:'画面全体は、<strong>指で広げても拡大しない作り</strong>です。大きくしたいときは、端末の<strong>設定 → 画面表示／文字の大きさ</strong>を上げてください。写真やマップは見るとき個別に拡大できます。' },
     { cat:'はじめ・設定', q:'最初にやっておくとよい設定はありますか？', a:'はじめに3つだけ決めておくと迷いません。①<strong>撮る番号／撮らない番号</strong>（設定）②<strong>番号の読み取り（先頭／末尾）</strong>（操作レール）③<strong>バックアップのお知らせ枚数</strong>（設定）。あとは撮るたびに<strong>こまめに保存</strong>すれば安心です。' },
     { cat:'はじめ・設定', q:'複数人で使うとき、設定はそろえるべき？', a:'番号の読み取り（先頭／末尾）や撮る番号のルールは、<strong>担当どうしでそろえておく</strong>と、あとで写真とピンを合流したときにズレません。データの合流自体は、各自が保存したZIPを<strong>📥 読込</strong>で取り込めばできます。' },
     // ── 撮影（追加） ──
     { cat:'撮影', q:'写真がぶれる／暗くて読めない', a:'<strong>両手で構えて一呼吸おいてから</strong>撮るとぶれにくくなります。暗い場所は端末の<strong>ライト</strong>を使うか、明るい角度から撮ってください。銘板（番号プレート）は<strong>正面から近づいて</strong>撮ると、あとで番号が読みやすくなります。撮り直しは一覧からできます。' },
-    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_2, _3）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_2・_3…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。番号を分けたいときは別番号で撮ってください。' },
-    { cat:'撮影', q:'撮影した場所（GPS・位置情報）は記録されますか？', a:'このアプリの「位置記録」は、<strong>図面（マップ）のどこにピンを置いたか</strong>を記録するもので、<strong>あなたの現在地（GPS）を追跡するものではありません</strong>。データは端末の中だけにあり、インターネットにも送られません（オフラインで動きます）。' },
-    { cat:'撮影', q:'手袋をしているとボタンが押しにくい', a:'撮影や保存の主要ボタンは<strong>大きめのタップ式</strong>にしてあります。反応が鈍いときは、手袋の指先が乾いているか確認し、<strong>ゆっくり一度だけタップ</strong>してください（連打は誤作動のもとです）。長押し操作は機種により効かないため、基本は<strong>タップ</strong>です。' },
+    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_2, _3）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_2・_3…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。続けて撮るときは、<strong>「📷 続けて撮影」</strong>か、撮影リストの<strong>「📷 続きを撮る」</strong>を使います。<strong>同じ番号を入れ直して撮影ボタンを押すと</strong>、写真が重なるのを防ぐため止まり、「続きを撮る」を案内します。番号を分けたいときは別番号で撮ってください。' },
+    { cat:'撮影', q:'撮影した場所（GPS・位置情報）は記録されますか？', a:'このアプリの「位置記録」は、<strong>図面（マップ）のどこにピンを置いたか</strong>を記録するもので、<strong>あなたの現在地（GPS）を追跡するものではありません</strong>。ただし、撮影のときに<strong>「📍 位置情報（GPS座標）を記録する」に印が付いていると</strong>、その写真の撮影地点（緯度・経度）が写真の記録と撮影記録（CSV）に入ります。初期は印が付いていて、アプリを開くたびに付いた状態に戻ります。記録したくないときは、撮影の前に印を外してください。データは端末の中だけにあり、インターネットにも送られません（オフラインで動きます）。' },
+    { cat:'撮影', q:'手袋をしているとボタンが押しにくい', a:'撮影や保存の主要ボタンは<strong>大きめのタップ式</strong>にしてあります。反応が鈍いときは、手袋の指先が乾いているか確認し、<strong>ゆっくり一度だけタップ</strong>してください（連打は誤作動のもとです）。保存の枠（オレンジ）の長押しは機種によって効かないため、保存は<strong>タップ</strong>で行います。図面の<strong>ピンは、長押し（約0.35秒）</strong>でつかんで動かせます。' },
     // ── 評価・分類（追加） ──
     { cat:'評価・分類', q:'G・U・Tはそれぞれ何の略ですか？', a:'<strong>G＝重大性（影響の大きさ）</strong>、<strong>U＝緊急性（どれだけ早く対処すべきか）</strong>、<strong>T＝傾向（これから悪化しそうか）</strong>の3つの観点です。分類を選ぶとGとUの目安が自動で入り、Tは状態を見て選びます（「📖 観察項目から決める」も使えます）。' },
     { cat:'評価・分類', q:'入力した評価を後でまとめて見直したい／直したい', a:'<strong>📋 撮影リスト</strong>から写真を開くと、その写真の評価を<strong>開き直して修正</strong>できます。マップのピンからは詳細の<strong>🟢 GUT評価</strong>で見直せます（写真が紐づいたピンのみ）。直した内容は保存され、撮影記録CSVにも反映されます。' },
     { cat:'評価・分類', q:'分類がどうしても見つからない設備はどうすれば？', a:'まず<strong>📖 評価参考</strong>タブで<strong>俗称（室外機・分電盤 など）で検索</strong>してみてください。それでも無いときは、近い大分類・中分類だけ選んで進め、<strong>名称や番号で区別</strong>しておけば後から整理できます。分類は後から選び直せます。' },
-    { cat:'評価・分類', q:'同じ設備をもう一度評価したら上書きされますか？', a:'同じ写真の評価を開き直して保存すると、<strong>その写真の評価は新しい内容に更新</strong>されます（最後に保存したものが残ります）。別の面を別評価として残したいときは、<strong>別番号／別の写真</strong>として撮ってから評価してください。' },
+    { cat:'評価・分類', q:'同じ設備をもう一度評価したら上書きされますか？', a:'同じ写真の評価を開き直すと、<strong>前に保存した評価が入った状態で開きます</strong>。直したい所だけ変えて保存すると、<strong>その写真の評価は新しい内容に更新</strong>されます（最後に保存したものが残ります）。別の面を別評価として残したいときは、<strong>別番号／別の写真</strong>として撮ってから評価してください。' },
     // ── 参考・用語さがし（追加） ──
     { cat:'参考・用語さがし', q:'俗称で調べても出てこない言葉があります', a:'言い回しを変えて試してください（例「エアコン」→「空調」「室外機」）。それでも出ないときは、<strong>大分類のチップ</strong>から関連する観察項目をたどると見つかることがあります。検索は<strong>部分一致</strong>なので、短い言葉で探すのもコツです。' },
     { cat:'参考・用語さがし', q:'観察項目の言葉（専門用語）の意味がわかりません', a:'各観察項目には、検索したときに<strong>「手がかり」（目で見て分かるポイント）</strong>が表示されるものがあります。まずはそれを目安にしてください。判断に迷う場合は無理に細かく決めず、<strong>気づいた状態をメモ</strong>に残しておくと、あとで相談しやすくなります。' },
@@ -6831,7 +6832,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var b = $('retake-banner');
     if (b) b.style.display = 'none';
   }
+  // v3.198 D1：撮り直しの途中で、ふつうの撮影ボタン・続けて撮影を押したら、撮り直しをやめて新しい写真として撮る
+  //   （撮り直しのカメラを写真なしで閉じたあと、別の番号の写真で元の写真が上書きされるのを防ぐ。元の写真はそのまま）
+  function abandonRetakeForNewShot() {
+    if (!retakeContext) return;
+    retakeContext = null;
+    hideRetakeBanner();
+    if (typeof showToast === 'function') showToast('撮り直しをやめました（元の写真はそのままです）。新しい写真として撮ります。');
+  }
+  // v3.198 D1：撮り直しの写真を保存し終えたら、外の撮り直しの状態を解く。
+  //   ただし、その写真の撮り直しと同じときだけ（位置情報を待つ間に別の撮り直しを始めていたら、そちらは続ける）
+  function finishRetake(rc) {
+    if (rc && retakeContext === rc) { retakeContext = null; return true; }
+    return false;
+  }
   (function setupRetakeBanner() {
+    var again = $('retake-banner-shoot');   // v3.198 D1
+    if (again) again.addEventListener('click', function() {
+      if (!retakeContext) { hideRetakeBanner(); return; }
+      isContinuousShot = false;
+      camera.click();
+    });
     var c = $('retake-banner-cancel');
     if (!c) return;
     c.addEventListener('click', function() {
@@ -6936,7 +6957,38 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (continuousInfo) continuousInfo.style.display = 'none';
   }
 
+  // v3.198 B1：同じ会社・事業所・棟に、同じ名前の写真がもうあるか
+  //   同じ名前で撮ると、保存の ZIP の中で写真が上書きされる（片方が入らない）ため、撮影の前に止める。
+  function existingPhotoNamed(client, site, building, filename) {
+    return photos.some(function(p) { return p.client === client && p.site === site && p.building === building && p.filename === filename; });
+  }
+  // v3.198 B1：これから撮る写真の会社・事業所・棟と、名前のもと（撮影の処理と同じ作り方。地雷14）
+  function plannedShotName() {
+    var fields = getAllFields();
+    var cf = fields.find(function(f) { return f.key === 'client'; });
+    var sf = fields.find(function(f) { return f.key === 'site'; });
+    var bf = fields.find(function(f) { return f.key === 'building'; });
+    var parts = [];
+    fields.forEach(function(f) { if (f.included && f.value.trim()) parts.push(sanitize(f.value)); });
+    return {
+      client: sanitize(cf ? cf.value : '') || '未分類',
+      site: sanitize(sf ? sf.value : '') || '未分類',
+      building: sanitize(bf ? bf.value : '') || '未分類',
+      base: parts.length > 0 ? parts.join('_') : 'untitled'
+    };
+  }
   function startSingleShot() {
+    abandonRetakeForNewShot();   // v3.198 D1：撮り直しの途中なら、撮り直しをやめて新しく撮る
+    // v3.198 B1：1枚目は必ず「_1」になるので、同じ名前がもうあれば、カメラを開かずに止める。
+    //   ここに await を挟まない（カメラを開くときは、すぐ開く：地雷1）。撮り直しの途中は対象外（撮り直しの名前を使うため）。
+    if (!retakeContext) {
+      var plan = plannedShotName();
+      var first = plan.base + '_1.jpg';
+      if (existingPhotoNamed(plan.client, plan.site, plan.building, first)) {
+        alert('「' + first + '」は、もう撮ってあります。\n同じ名前で撮ると、保存の ZIP の中で写真が上書きされてしまいます。\n\n同じ設備を続けて撮るときは、撮影リストの「📷 続きを撮る」を使ってください。\n別の設備なら、番号を確かめてください。');
+        return;
+      }
+    }
     isContinuousShot = false;
     camera.click();
   }
@@ -6991,6 +7043,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (continuousShootBtn) {
     continuousShootBtn.addEventListener('click', function() {
       if (!continuousMode.active) return;
+      abandonRetakeForNewShot();   // v3.198 D1
       isContinuousShot = true;
       camera.click();
     });
@@ -7008,10 +7061,43 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var evalSkipBtn = $('eval-skip-btn');
   var evalModeBaseId = null; // 評価モードで評価対象になっている代表写真のid
 
+  // v3.198 L4：評価の画面を開くとき、その写真の前の評価（G・U・T・T の対象・2つの印・メモ・分類）を入力欄に入れ直す。
+  //   前は入れ直さず、空や別の設備の値のまま保存して、前の評価を上書きしていた（CAM-RISK 3-1）。
+  //   分類の初期値で G・U を上書きしない（applyClassificationGU は使わない）。T のボタンは押さずに印だけ付ける（地雷16）。
+  function loadEvalIntoForm(p) {
+    clearGutMemoInputs();   // いったん空にする（別の設備の値を残さない）
+    if (p.clsCode) {
+      // 分類マスタは読むだけ。マスタに無い番号なら、記録の値のまま持つ（保存で分類が消えないように）
+      var item = null;
+      for (var i = 0; i < CLASSIFY_MASTER.length; i++) { if (CLASSIFY_MASTER[i].code === p.clsCode) { item = CLASSIFY_MASTER[i]; break; } }
+      if (!item) item = { code: p.clsCode, big: p.clsBig || '', mid: p.clsMid || '', small: p.clsSmall || '', g: p.clsGInit || '', u: p.clsUInit || '' };
+      selectedCls = item; clsCurBig = item.big; clsCurMid = item.mid;
+      clsRenderBig(item.big); clsShowMid(item.big); clsShowSmall(item.big, item.mid);
+      clsUpdateBreadcrumb(true);   // 入れ直したときの注記（自動入力しました、とは言わない）
+    }
+    var gu = !!p.guEdited;
+    var guChk = $('gu-edit-check'), guArea = $('gu-edit-area'), gH = $('g-value'), uH = $('u-value');
+    if (guChk) guChk.checked = gu;
+    if (guArea) guArea.style.display = gu ? 'block' : 'none';
+    if (gH) gH.value = gu ? String(p.gValue || '') : '';
+    if (uH) uH.value = gu ? String(p.uValue || '') : '';
+    clsSyncGutButtons();
+    var tc = !!p.tChecked;
+    var tChk = $('t-check'), tArea = $('t-edit-area'), tH = $('t-value'), tBox = $('t-options-buttons');
+    if (tChk) tChk.checked = tc;
+    if (tArea) tArea.style.display = tc ? 'block' : 'none';
+    if (tH) tH.value = tc ? String(p.tValue || '') : '';
+    if (tBox) Array.prototype.forEach.call(tBox.children, function(ch) { ch.classList.toggle('selected', !!tH && tH.value !== '' && ch.dataset.value === tH.value); });
+    var want = (tc && p.tTarget) ? p.tTarget : 'equipment';
+    Array.prototype.forEach.call(document.getElementsByName('t-target'), function(r) { r.checked = (r.value === want); });
+    if (memo) memo.value = p.memo || '';
+  }
+
   function enterEvalMode(baseId) {
     var ph0 = photos.find(function(p){ return p.id === baseId; });
     if (!ph0) return;
     evalModeBaseId = baseId;
+    loadEvalIntoForm(ph0);   // v3.198 L4（T の根拠は、すぐ下で前のまま入れ直す）
     tHelperBasis = ph0.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ（手で再保存しても消えない）
     updateTBasisDisplay(tHelperBasis); // v3-119：評価タブの表示窓に反映
     endContinuousMode();        // 撮影バナーは閉じる
@@ -7277,6 +7363,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       '<span class="trk-steps">'+trkChip('撮影',shootState)+trkChip('評価',evalState)+trkChip('位置記録',pinState)+'</span>';
   }
   // 評価のあと：位置記録フェーズへ（完了は利用者が決める）
+  // v3.198 U5：ピンの欄を開く（ピンの帯から入るときと同じ開き方。もう開いていれば何もしない）
+  function openPinSection() {
+    if (pinSectionBody && pinSectionBody.style.display === 'none') {
+      pinSectionBody.style.display = 'block';
+      if (pinSectionArrow) pinSectionArrow.classList.add('open');
+      try { refreshPinBuildingSelect(); } catch (e) {}
+    }
+  }
   function enterLocatePhase(msg){
     if (evalBar) evalBar.style.display = 'none';
     var cbar=$('complete-bar'); if(cbar) cbar.style.display='flex';
@@ -7284,6 +7378,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var cn=$('complete-bar-name'); if(cn) cn.textContent = p0 ? (p0.filename||'') : '';
     if (continuousInfo && msg) { continuousInfo.style.display='block'; continuousInfo.innerHTML=msg; }
     var ft=document.querySelector('.tab[data-view="floorplan"]'); if(ft) ft.click();
+    openPinSection();   // v3.198 U5：位置記録の段階に入ったら、ピンの欄を開く
     renderTracker();
   }
   var completeDoneBtn = $('complete-done-btn');
@@ -7400,6 +7495,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (f.included && f.value.trim()) parts.push(sanitize(f.value));
       });
       var baseName = parts.length > 0 ? parts.join('_') : 'untitled';
+
+      // v3.198 B1：付く名前（_1〜_n）のどれかが、同じ会社・事業所・棟にもうあれば、1枚も保存せずに止める
+      var bClient = sanitize(clientField ? clientField.value : '') || '未分類';
+      var bSite = sanitize(siteField ? siteField.value : '') || '未分類';
+      var bBuilding = sanitize(buildingField ? buildingField.value : '') || '未分類';
+      var dupNames = [];
+      for (var di = 1; di <= files.length; di++) {
+        if (existingPhotoNamed(bClient, bSite, bBuilding, baseName + '_' + di + '.jpg')) dupNames.push(baseName + '_' + di + '.jpg');
+      }
+      if (dupNames.length > 0) {
+        alert('次の名前の写真が、もうあります（' + dupNames.length + ' 枚）。\n' + dupNames.slice(0, 10).join('\n') + (dupNames.length > 10 ? '\n…' : '') +
+          '\n\n同じ名前で読み込むと、保存の ZIP の中で写真が上書きされてしまうため、読み込みをやめました（1枚も読み込んでいません）。\n番号を確かめてから、もう一度選んでください。');
+        try { bulkCamera.value = ''; } catch (e2) {}
+        return;
+      }
 
       // G.U.T評価値（一括読み込みでは全枚数に同じ値を付与）
       var guEditCheck = $('gu-edit-check');
@@ -7606,6 +7716,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   camera.addEventListener('change', async function(e) {
     var file = e.target.files[0];
     if (!file) return;
+    var shotRetake = retakeContext;   // v3.198 D1：この写真を受け取った瞬間の撮り直しの状態（位置情報を待つ間に変わっても、これを使う）
     
     var fields = getAllFields();
     var clientField = fields.find(function(f) { return f.key === 'client'; });
@@ -7634,6 +7745,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     
     var reader = new FileReader();
     reader.onload = async function(ev) {
+      var retakeContext = shotRetake;   // v3.198 D1：この中の retakeContext は、受け取った瞬間の控え（外の状態は finishRetake で解く）
       // G.U.T 評価値を取得（チェックOFFなら未入力扱い）
       var guEditCheck = $('gu-edit-check');
       var tCheck = $('t-check');
@@ -7739,8 +7851,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
         if (retakeContext) {
           // 差し替え撮影：連続モードは開始せず、差し替え完了を表示
+          var finishedOuter = finishRetake(retakeContext);   // v3.198 D1
           retakeContext = null;
-          hideRetakeBanner();   // v3-194：撮り直し中バナーを閉じる
+          if (finishedOuter) hideRetakeBanner();   // v3-194：撮り直し中バナーを閉じる
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
             continuousInfo.innerHTML = '🔄 <strong>' + photo.filename + '</strong> を撮り直して差し替えました。';
@@ -7849,6 +7962,74 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
   });
   
+  // v3.198 B2：保存の ZIP の中で、置き場所が重なる写真を、作る前に知らせて選ばせる
+  //   ZIP の中の置き場所（ZIP に書く行と同じ式。numberBucketFolder は呼ぶだけ）
+  function zipPathOf(p) {
+    var folderParts = [];
+    (p.fields || []).forEach(function(f) {
+      if (f.folder && f.value && String(f.value).trim()) folderParts.push(sanitize(String(f.value).trim()));
+    });
+    var folderPath = folderParts.length > 0 ? folderParts.join('/') : sanitize(numberBucketFolder(p.filename));
+    return (folderPath ? folderPath + '/' : '') + p.filename;
+  }
+  //   同じ ZIP に入れる写真のうち、置き場所が重なる組。JSZip は同じ名前を置き換えるので、
+  //   あとから書いた1枚だけが残り、先に書いた写真は ZIP に入らない（lost＝入らない写真の鍵）
+  function findZipOverlaps(list) {
+    var byPath = {}, order = [];
+    list.forEach(function(p) { var k = zipPathOf(p); if (!byPath[k]) { byPath[k] = []; order.push(k); } byPath[k].push(p); });
+    var groups = [], lost = {};
+    order.forEach(function(k) {
+      var g = byPath[k];
+      if (g.length > 1) { groups.push({ path: k, photos: g }); g.slice(0, -1).forEach(function(p) { lost[photoPathKey(p)] = true; }); }
+    });
+    return { groups: groups, lost: lost };
+  }
+  function mergeZipOverlaps(list) {   // 分けて作る ZIP（分割保存など）の組ごとの結果をまとめる
+    var all = { groups: [], lost: {} };
+    list.forEach(function(ov) { all.groups = all.groups.concat(ov.groups); Object.keys(ov.lost).forEach(function(k) { all.lost[k] = true; }); });
+    return all;
+  }
+  //   保存済みの印を付ける鍵から、ZIP に入らなかった写真を除く
+  function keysExceptLost(keys, ov) { return keys.filter(function(k) { return !ov.lost[k]; }); }
+  //   ZIP に入らなかった写真の印を外す（新しく撮った分：入れたのは未保存の写真だけなので、外せば元どおり未保存）
+  function forgetLostKeys(ov) {
+    try { Object.keys(ov.lost).forEach(function(k) { backedUpKeys.delete(k); }); persistBackedUpKeys(); } catch (e) {}
+  }
+  //   確認画面（自作）。「やめる」が初期。背景では閉じない。名前は文字として出す（地雷9）。結果は true＝このまま保存
+  function askZipOverlap(ov) {
+    return new Promise(function(resolve) {
+      var modal = $('zipOverlapModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'zipOverlapModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var lostCount = Object.keys(ov.lost).length;
+      var box = document.createElement('div'); box.className = 'delguard-content';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = 'ZIP の中で重なる写真があります';
+      var body = document.createElement('p'); body.className = 'delguard-body';
+      body.textContent = '同じ置き場所・同じ名前になる写真が ' + ov.groups.length + ' 組あります。このまま保存すると、各組の1枚だけが ZIP に入り、ほかの ' + lostCount + ' 枚は入りません（入らなかった写真は「未保存」のまま残ります）。';
+      var warn = document.createElement('div'); warn.className = 'delguard-warn'; warn.style.textAlign = 'left';
+      ov.groups.slice(0, 10).forEach(function(g) {
+        var line = document.createElement('div');
+        line.textContent = '・' + g.path + '：' + g.photos.map(function(p) { return p.building + ' の ' + p.filename; }).join('／');
+        warn.appendChild(line);
+      });
+      if (ov.groups.length > 10) { var more = document.createElement('div'); more.textContent = '…ほか ' + (ov.groups.length - 10) + ' 組'; warn.appendChild(more); }
+      var guide = document.createElement('p'); guide.className = 'delguard-body';
+      guide.textContent = 'たいていは、別の棟に同じ番号があるときに起きます。次から撮る写真は、⚙️ 設定タブで、会社・事業所・棟の3つに値を入れ、3つとも「このフォルダ名をフォルダ階層に利用する」に印を付けると重なりません（すでに撮った写真には効きません）。';
+      var cancel = document.createElement('button'); cancel.id = 'zipOverlapCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
+      cancel.textContent = 'やめる（保存しない）'; cancel.style.marginBottom = '8px';
+      var go = document.createElement('button'); go.id = 'zipOverlapGo'; go.type = 'button'; go.className = 'delguard-del';
+      go.textContent = 'このまま保存する（' + lostCount + ' 枚は入りません）';
+      box.appendChild(title); box.appendChild(body); box.appendChild(warn); box.appendChild(guide); box.appendChild(cancel); box.appendChild(go);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      cancel.addEventListener('click', function() { close(false); });
+      go.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { cancel.focus(); } catch (e) {}
+    });
+  }
+
   exportBtn.addEventListener('click', async function() {
     if (!navigator.onLine) {
       if (!confirm('⚠️ いまオフライン（ネット未接続）です。\n\n保存（ZIP作成）はこの端末の中だけで完結するので、このまま保存できます。\nただし、これまでのデータ消失はオフライン時に起きています。保存はこまめに行い、電波が戻ったら必ずバックアップ（ZIP）を安全な場所へ送ってください。\n\n保存を続けますか？')) {
@@ -7861,6 +8042,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       return;
     }
     
+    var zipOv = findZipOverlaps(photos);   // v3.198 B2
+    if (zipOv.groups.length > 0 && !(await askZipOverlap(zipOv))) return;
+
     exportBtn.disabled = true;
     exportBtn.textContent = 'ZIPを作成中...';
     progress.classList.add('show');
@@ -7924,6 +8108,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         progressBar.style.width = ((i + 1) / photos.length * 50) + '%';
         await new Promise(function(r) { setTimeout(r, 10); });
       }
+      writtenKeys = keysExceptLost(writtenKeys, zipOv);   // v3.198 B2：ZIP に入らなかった写真には印を付けない
       
       var blob = await zip.generateAsync({ 
         type: 'blob',
@@ -7978,6 +8163,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       alert('新しく撮った分はありません。\n\n前回バックアップしたあとに撮影した写真がありません。すべてを保存したいときは「② 区切りでまとめてバックアップ」をお使いください。');
       return;
     }
+
+    var zipOv = findZipOverlaps(list);   // v3.198 B2
+    if (zipOv.groups.length > 0 && !(await askZipOverlap(zipOv))) return;
 
     exportIncBtn.disabled = true;
     exportIncBtn.textContent = 'ZIPを作成中...';
@@ -8042,6 +8230,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         dismissedReminder = true;
         logIncBackup(list);   // この回の①バックアップ記録を残す（あとで選んでまとめ直せる）
         markBackupDone(list.map(photoPathKey));   // v3.197 A1：この回に入れた写真だけを保存済みにする
+        forgetLostKeys(zipOv);   // v3.198 B2：ZIP に入らなかった写真は未保存のまま
         try { renderIncBackupList(); } catch (e) {}
         updateUnsavedPill();
       }, true);
@@ -8098,7 +8287,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return;
       }
       var chunks = photos.length > 0 ? splitIntoChunks(photos, 40) : [[]];
+      var zipOv = mergeZipOverlaps(chunks.map(findZipOverlaps));   // v3.198 B2：組（ZIP）ごとに調べる
+      if (zipOv.groups.length > 0 && !(await askZipOverlap(zipOv))) return;
       splitKeys = [].concat.apply([], chunks).map(photoPathKey);
+      splitKeys = keysExceptLost(splitKeys, zipOv);   // v3.198 B2
       var setId = localStamp();
 
       if (splitLinks) splitLinks.innerHTML = '';
@@ -8248,9 +8440,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       var hasMap = !!(mapData && mapData.buildings && mapData.buildings.length > 0);
       var chunks = selected.length > 40 ? splitIntoChunks(selected, 40) : [selected];
+      var zipOv = mergeZipOverlaps(chunks.map(findZipOverlaps));   // v3.198 B2：組（ZIP）ごとに調べる
+      if (zipOv.groups.length > 0 && !(await askZipOverlap(zipOv))) return;
       var stampStr = localStamp();
       var setId = 'pick_' + stampStr;
       lastSelectedKeys = selected.map(photoPathKey);
+      lastSelectedKeys = keysExceptLost(lastSelectedKeys, zipOv);   // v3.198 B2
 
       if (linksBox) linksBox.innerHTML = '';
       if (doneBtn) doneBtn.style.display = 'none';
@@ -9031,7 +9226,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     applyClassificationGU(item);
     clsUpdateBreadcrumb();
   }
-  function clsUpdateBreadcrumb() {
+  // fromSaved：前に保存した評価を入れ直したとき（v3.198 L4）。このときは「自動入力しました」と言わない
+  function clsUpdateBreadcrumb(fromSaved) {
     var bc=$('cls-breadcrumb'), note=$('cls-gu-note'), rb=$('cls-reset');
     if (!selectedCls) {
       if(bc) bc.style.display='none';
@@ -9046,7 +9242,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var gLabel = gIsRange
         ? ('G:<span class="cls-range">' + selectedCls.g + '</span>（範囲＝未確定・基本このまま）')
         : ('G:' + selectedCls.g);
-      note.innerHTML = '初期値を自動入力しました → ' + gLabel + '　U:' + selectedCls.u + '（手で変更できます）';
+      if (fromSaved) {
+        // v3.198 L4：入力欄は前に保存した値。分類の初期値を事実どおりに示す（記録から来た値は escape：地雷9）
+        note.textContent = 'この分類の初期値は G:' + String(selectedCls.g || '') + '　U:' + String(selectedCls.u || '') + ' です（入力欄は前に保存した値）';
+      } else {
+        note.innerHTML = '初期値を自動入力しました → ' + gLabel + '　U:' + selectedCls.u + '（手で変更できます）';
+      }
     }
     if (rb) rb.style.display='block';
   }
