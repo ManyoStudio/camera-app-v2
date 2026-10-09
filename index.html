@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.198</title>
+<title>現場写真撮影アプリ v3.199</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -119,7 +119,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   button {
     width: 100%; padding: 14px; font-size: 16px;
     font-weight: 600; border: none; border-radius: 10px;
-    background: #007aff; color: white; cursor: pointer;
+    background: #0058c7; color: white; cursor: pointer;
     -webkit-appearance: none; appearance: none;
     transition: opacity 0.12s, transform 0.06s; margin-bottom: 10px;
   }
@@ -138,7 +138,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   #pin-undo-chip button:active { transform: scale(0.97); opacity: 0.9; }
   button.secondary { background: #e5e5ea; color: #1d1d1f; }
   button.danger { background: #ff3b30; color: white; }
-  button.success { background: #34c759; color: white; }
+  button.success { background: #0058c7; color: #fff; }
+  /* v3.199 S1：危ないボタン。何も消さない安全な操作を赤にしない。削除と安全な操作の間を 24px あける */
+  #digit-no-btn { background: #fff; color: #1d1d1f; border: 2px solid #1d1d1f; }
+  #pin-detail-delete { margin-top: 24px; }
+  #recoveryDeleteBtn { margin-top: 24px; }
+  #photo-picker-close { margin-top: 24px; }   /* v3.199 M8：「紐づけを外す」との押し間違いを防ぐ（色は S4a で変える） */
+  /* v3.199 S4a：色の決まり（押して進む＝濃い青 #0058c7／閉じる・スキップなどの補助＝灰／注意＝黄／済んだ印＝緑／削除＝赤） */
+  #pin-detail-close { background: #e5e5ea; color: #1d1d1f; }   /* M1：削除の下の「閉じる」は補助の灰 */
+  #photo-picker-close { background: #e5e5ea; color: #1d1d1f; }   /* M1 */
   input[type="file"] { display: none; }
   
   .photo-list { margin-top: 12px; }
@@ -182,16 +190,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .storage-estimate.warn { color: #c62828; font-weight: 600; }
   .map-add-blank {
     width: 100%; margin: 0 0 12px 0; padding: 11px;
-    background: #5856d6; color: #fff; border: none; border-radius: 10px;
+    background: #0058c7; color: #fff; border: none; border-radius: 10px;
     font-size: 14px; font-weight: 700; cursor: pointer;
   }
-  .map-add-blank:active { background: #4644b8; }
+  .map-add-blank:active { background: #00479e; }
   .map-add-read {
     width: 100%; margin: 0 0 10px 0; padding: 11px;
-    background: #34c759; color: #fff; border: none; border-radius: 10px;
+    background: #0058c7; color: #fff; border: none; border-radius: 10px;
     font-size: 14px; font-weight: 700; cursor: pointer;
   }
-  .map-add-read:active { background: #28a745; }
+  .map-add-read:active { background: #00479e; }
   /* 撮影後パネル（いま撮った1枚への入力） */
   #postshot-panel { border: 2px solid #34c759; border-radius: 14px; padding: 6px; margin-bottom: 16px; background: rgba(52,199,89,0.06); }
   .postshot-head { padding: 8px 10px 0; }
@@ -482,8 +490,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     z-index: 1;
   }
   .bulk-btn {
-    background: #5856d6;
-    color: white;
+    background: #0058c7;
+    color: #fff;
   }
   .bulk-help {
     font-size: 11.5px;
@@ -669,7 +677,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     border-radius:8px; font-size:15px; font-weight:600; color:#1d1d1f; background:#fff;
   }
   .map-item-rename-ok {
-    background:#34c759; color:#fff; border:none; border-radius:8px;
+    background:#0058c7; color:#fff; border:none; border-radius:8px;
     padding:8px 12px; font-size:13px; font-weight:700; margin:0; width:auto; cursor:pointer;
   }
   .map-item-rename-cancel {
@@ -733,10 +741,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .layer-tb-title { margin: 0 0 6px; font-size: 15px; font-weight: 800; color: #1c1c1e; }
   .layer-tb-hint { margin: 0 0 10px; font-size: 12px; line-height: 1.6; color: #6e6e73; }
   .layer-add-btn {
-    width: 100%; background: #007aff; color: #fff; border: none; border-radius: 10px;
+    width: 100%; background: #0058c7; color: #fff; border: none; border-radius: 10px;
     padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer; margin: 0 0 10px;
   }
-  .layer-add-btn:active { background: #4b49c0; }
+  .layer-add-btn:active { background: #00479e; }
   .layer-list { display: flex; flex-direction: column; gap: 8px; }
   .layer-row {
     border: 1px solid #e2e0f2; border-radius: 10px; padding: 10px; background: #fafaff;
@@ -766,7 +774,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .layer-base-note { margin-top: 10px; font-size: 12px; color: #8e8e93; text-align: center; }
   .layer-tb-foot { margin-top: 12px; }
   .layer-done-btn {
-    width: 100%; background: #34c759; color: #fff; border: none; border-radius: 10px;
+    width: 100%; background: #e5e5ea; color: #1d1d1f; border: none; border-radius: 10px;
     padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
   }
   /* v3-155：位置合わせオーバーレイ＆バー */
@@ -855,7 +863,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     padding: 13px; font-size: 14px; font-weight: 700; cursor: pointer;
   }
   .layer-align-done {
-    flex: 2; background: #34c759; color: #fff; border: none; border-radius: 10px;
+    flex: 2; background: #0058c7; color: #fff; border: none; border-radius: 10px;
     padding: 13px; font-size: 15px; font-weight: 700; cursor: pointer;
   }
   .layer-align-btn {
@@ -880,7 +888,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     margin: 0 0 4px 0;
   }
   .map-add-mini {
-    background: #007aff;
+    background: #0058c7;
     color: white;
     border: none;
     border-radius: 8px;
@@ -937,7 +945,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   .pin-open-btn {
     width: 100%;
-    background: #007aff;
+    background: #0058c7;
     color: white;
     border: none;
     border-radius: 10px;
@@ -1038,7 +1046,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .pin-zoom-level { color: white; font-size: 13px; min-width: 52px; text-align: center; }
   .pin-zoom-fit {
     width: auto; margin: 0; padding: 8px 14px;
-    background: #007aff; color: white; border: none;
+    background: #0058c7; color: white; border: none;
     border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
   }
   .pin-label-mode-bar {
@@ -1479,10 +1487,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .imp-chk { width:20px; height:20px; flex-shrink:0; }
   .pin-editor-done {
     width: 100%; margin-top: 12px; padding: 15px;
-    background: #34c759; color: #fff; border: none; border-radius: 12px;
+    background: #0058c7; color: #fff; border: none; border-radius: 12px;
     font-size: 17px; font-weight: 700; cursor: pointer;
   }
-  .pin-editor-done:active { background: #28a745; }
+  .pin-editor-done:active { background: #00479e; }
   /* ピン詳細・写真選択モーダル */
   .pin-detail-modal {
     position: fixed; inset: 0;
@@ -1573,7 +1581,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .cb-btn:active { opacity: 0.85; }
   .cb-shoot { background: #34c759; color: #fff; }
   .cb-retake { background: rgba(255,255,255,0.18); color: #fff; border: 1px solid rgba(255,255,255,0.6); }
-  .cb-eval { background: #fff; color: #1c7c34; }
+  .cb-eval { background: #fff; color: #0058c7; }
   .cb-end { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.55); }
   .eval-bar {
     position: sticky; top: 0; z-index: 50;
@@ -1584,7 +1592,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .eval-bar-title { color: #fff; font-size: 15px; font-weight: 700; margin: 0; text-align: center; }
   .eval-bar-title #eval-bar-name { color: #ffd54f; }
   .eval-bar-sub { color: rgba(255,255,255,0.9); font-size: 12px; margin: 0 0 2px; text-align: center; line-height: 1.5; }
-  .eval-bar .cb-eval { background: #ffd54f; color: #5d4037; }
+  .eval-bar .cb-eval { background: #fff; color: #0058c7; }
   /* v3-43：誘導バナー（撮影/評価）を画面下に固定（指で届く・スクロールで消えない） */
   #continuous-banner, #eval-bar {
     position: fixed; top: auto; bottom: 0; left: 0; right: 0; z-index: 60;
@@ -2070,11 +2078,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .backup-count .num { font-size: 30px; vertical-align: -2px; }
   .backup-sub { font-size: 13px; color: #6e6e73; line-height: 1.7; margin: 0 0 18px; }
   .backup-btn-go {
-    width: 100%; background: #ff9500; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 12px; padding: 16px; font-size: 17px; font-weight: 800;
     cursor: pointer; margin-bottom: 10px;
   }
-  .backup-btn-go:active { background: #e07f00; }
+  .backup-btn-go:active { background: #00479e; }
   .backup-btn-later {
     width: 100%; background: #f0f0f3; color: #555; border: none;
     border-radius: 12px; padding: 13px; font-size: 14px; font-weight: 600; cursor: pointer;
@@ -2087,6 +2095,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     margin: 10px 16px 0; justify-content: center;
   }
   .unsaved-pill.show { display: flex; }
+  /* v3.199 S5：同じ数を上の赤い帯（#unsavedBar）が同じ条件で出すので、黄色い札は出さない。
+     部品は消さない（updateUnsavedPill は札が無いと先で止まり、赤い帯と数の更新も止まる） */
+  #unsavedPill.show { display: none; }
 
   /* v3-136：保存リンク（オレンジ枠）をiPad/iPhoneで見逃せないように強調するパルス */
   @keyframes saveLinkPulse {
@@ -2135,11 +2146,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     flex: 0 0 auto; font-size: 18px; font-weight: 800; color: #ff9500;
   }
   .saveguide-go {
-    width: 100%; background: #34c759; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 14px; padding: 18px; font-size: 18px; font-weight: 800;
     cursor: pointer; margin: 0 0 4px;
   }
-  .saveguide-go:active { background: #28a347; }
+  .saveguide-go:active { background: #00479e; }
   .saveguide-dlinfo {
     font-size: 14px; font-weight: 700; color: #7a4d00;
     background: #fff7e6; border: 1px solid #f0a000; border-radius: 10px;
@@ -2152,12 +2163,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     text-decoration: none; word-break: break-all;
   }
   .saveguide-confirm {
-    width: 100%; background: #0a84ff; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
     cursor: pointer; margin: 0 0 4px;
   }
   .saveguide-done {
-    width: 100%; background: #34c759; color: #fff; border: none;
+    width: 100%; background: #e5e5ea; color: #1d1d1f; border: none;
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
     cursor: pointer; margin: 6px 0 0;
   }
@@ -2238,11 +2249,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .bulklink-list td.num { font-weight: 700; color: #0d47a1; white-space: nowrap; }
   .bulklink-list td.fn { color: #4a4a4f; word-break: break-all; }
   .bulklink-confirm {
-    width: 100%; background: #007aff; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
     cursor: pointer; margin: 0 0 8px;
   }
-  .bulklink-confirm:active { background: #0062cc; }
+  .bulklink-confirm:active { background: #00479e; }
   .bulklink-cancel {
     width: 100%; background: #f0f0f3; color: #1d1d1f; border: none;
     border-radius: 14px; padding: 16px; font-size: 16px; font-weight: 800;
@@ -2295,11 +2306,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   /* 写真から連続でピンを置く */
   .place-from-photo-btn {
-    width: 100%; background: #34c759; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700;
     cursor: pointer; margin-bottom: 10px;
   }
-  .place-from-photo-btn:active { background: #28a745; }
+  .place-from-photo-btn:active { background: #00479e; }
   .placement-banner {
     display: none; align-items: center; gap: 8px; flex-wrap: wrap;
     background: #0d47a1; color: #fff; padding: 10px 12px; font-size: 13px;
@@ -2310,8 +2321,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     flex: 1 1 auto; padding: 8px 10px; border: none; border-radius: 8px;
     font-size: 13px; font-weight: 700; cursor: pointer;
   }
-  .placement-skip { background: #ffcc00; color: #1d1d1f; }
-  .placement-finish { background: #ff3b30; color: #fff; }
+  .placement-skip { background: #e5e5ea; color: #1d1d1f; }
+  .placement-finish { background: #e5e5ea; color: #1d1d1f; }
 
   /* 手描きキャンバス */
   .draw-canvas {
@@ -2320,11 +2331,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     touch-action: none; z-index: 50;
   }
   .draw-mode-btn {
-    width: 100%; background: #5856d6; color: #fff; border: none;
+    width: 100%; background: #0058c7; color: #fff; border: none;
     border-radius: 10px; padding: 12px; font-size: 15px; font-weight: 700;
     cursor: pointer; margin-bottom: 10px;
   }
-  .draw-mode-btn:active { background: #4644b8; }
+  .draw-mode-btn:active { background: #00479e; }
   /* マップ作図：直線（ベクトル）レイヤー。CAD化の材料用 */
   .vector-svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; touch-action: none; pointer-events: all; z-index: 55; }
   .vector-toolbar { padding: 8px 10px; background: #f0f7f3; border-top: 1px solid #cfe6da; max-height: 46vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -2339,7 +2350,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .vector-tool-btn { padding: 9px 10px; font-size: 13px; font-weight: 700; border: 1px solid #c7c7cc; border-radius: 8px; background: #fff; color: #1d1d1f; }
   .vector-tool-btn.selected { background: #0a84ff; color: #fff; border-color: #0a84ff; }
   .vector-mini-btn { padding: 8px 10px; font-size: 13px; font-weight: 700; border: none; border-radius: 8px; background: #e5e5ea; color: #1d1d1f; }
-  .vector-done-btn { padding: 8px 12px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; background: #34c759; color: #fff; }
+  .vector-done-btn { padding: 8px 12px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; background: #0058c7; color: #fff; }
   .vector-cancel-btn { padding: 8px 12px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; background: #e5e5ea; color: #1d1d1f; }
   .draw-toolbar { padding: 8px 10px; background: #f5f5f7; border-top: 1px solid #e0e0e5; max-height: 46vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .draw-tool-row, .draw-width-row, .draw-done-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
@@ -2352,7 +2363,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .draw-width-label { font-size: 13px; color: #555; flex: 0 0 auto; }
   .draw-done-row { margin-bottom: 0; }
   .draw-cancel-btn { flex: 1 1 auto; padding: 12px; border: 1px solid #d0d0d5; background: #fff; color: #1d1d1f; border-radius: 10px; font-size: 14px; cursor: pointer; }
-  .draw-done-btn { flex: 2 1 auto; padding: 12px; border: none; background: #34c759; color: #fff; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .draw-done-btn { flex: 2 1 auto; padding: 12px; border: none; background: #0058c7; color: #fff; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; }
 
   /* 写真を選んでピン留め */
   .place-select-modal {
@@ -2393,7 +2404,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .place-select-visible { font-size: 12px; color: #6e6e73; padding: 0 16px 8px; }
   .place-select-footer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid #eee; }
   .place-select-cancel { flex: 1 1 auto; padding: 13px; border: 1px solid #d0d0d5; background: #fff; color: #1d1d1f; border-radius: 12px; font-size: 14px; cursor: pointer; }
-  .place-select-start { flex: 2 1 auto; padding: 13px; border: none; background: #34c759; color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
+  .place-select-start { flex: 2 1 auto; padding: 13px; border: none; background: #0058c7; color: #fff; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; }
   .place-select-start:disabled { background: #c7c7cc; }
   .more-info { margin:4px 0 2px; }
   .more-info > summary { font-size:12px; color:#007aff; cursor:pointer; list-style:none; display:inline-block; padding:2px 0; }
@@ -2477,7 +2488,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.198 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-06）</span></span>
+  <span>📷 現場写真撮影アプリ v3.199 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-09）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2488,7 +2499,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 <div id="continuous-banner" class="continuous-banner" style="display:none;">
   <span id="continuous-banner-name">次：_1</span>
-  <button id="continuous-shoot-btn" class="cb-btn cb-shoot">📷 続けて撮影</button>
+  <button id="continuous-shoot-btn" class="cb-btn cb-shoot">📷 続けて撮る</button>
   <button id="continuous-retake-btn" class="cb-btn cb-retake">🔄 今の1枚を撮り直す</button>
   <button id="continuous-eval-btn" class="cb-btn cb-eval">✅ 撮影を終了して G.U.T評価へ</button>
   <button id="continuous-end-btn" class="cb-btn cb-end">評価せず終了</button>
@@ -2503,7 +2514,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 <div id="complete-bar" class="eval-bar" style="display:none;">
   <p class="eval-bar-title">📍 <span id="complete-bar-name"></span> の位置記録（任意）</p>
-  <p class="eval-bar-sub">図面にピンを置けます。終わったら「この設備を完了」を押してください。位置記録が不要ならそのまま完了できます。</p>
+  <p class="eval-bar-sub">図面にピンを置けます。終わったら「✅ この設備を完了して次へ」を押してください。位置記録が不要ならそのまま完了できます。</p>
   <button id="complete-done-btn" class="cb-btn cb-eval">✅ この設備を完了して次へ</button>
 </div>
 
@@ -2612,11 +2623,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <strong>番号のつき方（枝番ルール）</strong><br>
         1枚目は番号のうしろに <strong>_1</strong> が付きます。例：<strong>0001</strong> と入力 → <strong>0001_1</strong> で保存。<br>
         同じ設備を続けて撮ると、2枚目は <strong>0001_2</strong>、3枚目は <strong>0001_3</strong> … と自動で枝番が増えます。<br>
-        <strong>同じ設備を連続で撮るときは：</strong> まず1枚撮ると画面上部に緑のバナーが出ます。その案内にそって「📷 続けて撮影」を押すだけで、同じ番号の枝番で次々撮れます。ピンぼけ等で撮り直すときは「🔄 今の1枚を撮り直す」を押せば、失敗分は残らず同じ番号で撮り直せます。
+        <strong>同じ設備を連続で撮るときは：</strong> まず1枚撮ると画面の下に緑の帯が出ます。その案内にそって「📷 続けて撮る」を押すだけで、同じ番号の枝番で次々撮れます。ピンぼけ等で撮り直すときは「🔄 今の1枚を撮り直す」を押せば、失敗分は残らず同じ番号で撮り直せます。
       </div>
-      <p class="shoot-help desc-collapsible" data-desc="shoot-help" data-desc-label="続けて撮影のしかた">
-        💡 撮影してこの画面に戻ると、画面上部に <strong>「📷 続けて撮影」</strong> ボタンが出ます。<br>
-        同じ設備を前方・左右・後方など複数アングルで撮るときは、これを押すと <strong>_2, _3…</strong> と枝番を付けて続けて撮影できます。撮り直しは <strong>「🔄 今の1枚を撮り直す」</strong> で失敗分を残さず差し替えできます。
+      <p class="shoot-help desc-collapsible" data-desc="shoot-help" data-desc-label="続けて撮るとき">
+        💡 撮影してこの画面に戻ると、画面の下の帯に <strong>「📷 続けて撮る」</strong> ボタンが出ます。<br>
+        同じ設備を前方・左右・後方など複数アングルで撮るときは、これを押すと <strong>_2, _3…</strong> と枝番を付けて続けて撮れます。撮り直しは <strong>「🔄 今の1枚を撮り直す」</strong> で失敗分を残さず差し替えできます。
       </p>
       <p id="continuous-info" class="continuous-info" style="display:none;"></p>
 
@@ -2639,17 +2650,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
 
     <div class="info-box">
-      撮影した写真は、Safari内（IndexedDB）に一時保存されます。<br>
-      Safariを閉じても次回起動時に復元されますが、Safariのキャッシュ消去・履歴削除等で失われる可能性があります。<br>
-      <strong>データ損失を防ぐため、こまめに「保存」タブからZIP保存を行い、外部へ保存してください。</strong><br>
-      ZIP保存時に <strong>撮影記録.csv</strong> も自動で含まれます。
+      撮影した写真はこの端末の中だけにあります。<strong>こまめに「💾 保存」タブでバックアップ</strong>してください（撮影記録.csv も入ります）。
     </div>
   </div>
 
   <div id="view-eval" class="view">
     <div class="card">
       <p class="card-title">📊 評価</p>
-      <p style="font-size:12px;color:#6e6e73;margin:0 0 4px 0;line-height:1.6;">この設備の分類・G.U.T評価・メモを入力します。終わったら下の固定ボタン「✅ 評価を保存して次の設備へ」を押してください。</p>
+      <p style="font-size:12px;color:#6e6e73;margin:0 0 4px 0;line-height:1.6;">この設備の分類・G.U.T評価・メモを入力します。終わったら下の固定ボタン「✅ 評価を保存して位置記録へ」を押してください。</p>
+      <!-- v3.199 S9：評価する設備が決まっていないときだけ出す（タブを開いたとき updateEvalNoTarget で出し入れ） -->
+      <div id="evalNoTarget" style="display:none; margin-top:8px; padding:10px 12px; background:#fff8e1; border:1px solid #f0c36d; border-radius:10px;">
+        <p style="margin:0; font-size:14px; font-weight:700; color:#5d4200; line-height:1.6;">撮影リストの「📊 評価」から設備を選んでください。この画面で入力しても保存されません。</p>
+        <button id="evalNoTargetListBtn" type="button" style="width:100%;margin:8px 0 0;padding:12px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">📋 撮影リストを開く</button>
+      </div>
     </div>
     <div class="card" id="cls-card">
       <p class="card-title">🏷 分類（任意）</p>
@@ -2755,7 +2768,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <strong>使い方：</strong>📷撮影タブで番号を入れ、この評価タブで「📊 G.U.T評価」「📝 メモ」を入力してから、最後にこのボタンを押してください。写真なしでその設備を登録できます。登録後はそのまま「📍 位置記録」でピンも置けます。<br>
         あとで写真担当のZIPを「📥 データを読み込む」で合流すると、<strong>同じ番号の写真が自動で入ります</strong>（足りない情報を補い合います）。
       </p>
-      <button id="nophoto-btn" class="secondary" style="background:#5856d6;color:#fff;">🧾 入力した内容で写真なし登録</button>
+      <button id="nophoto-btn" class="secondary" style="background:#0058c7;color:#fff;">🧾 入力した内容で写真なし登録</button>
     </div>
 
   </div>
@@ -2906,7 +2919,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     <div class="card">
       <p style="font-size:12px;color:#6e6e73;margin:0 0 8px 0;line-height:1.6;">写真も含めて安全に残すには <strong>💾 保存（バックアップ）</strong> で ZIP 保存してください。（下の「撮影記録（CSV）」は<strong>記録だけ</strong>で<strong>写真は入りません</strong>）</p>
-      <button id="goto-save-btn">💾 すべて保存（写真も含む）を開く</button>
+      <button id="goto-save-btn">💾 保存タブを開く（写真も含めて全部をバックアップ）</button>
       <button id="exportCsvBtn" class="secondary">📄 撮影記録（CSV）だけ書き出す（写真は入りません）</button>
       <button id="clearAllBtn" class="danger">🗑 すべて削除（撮り直し）</button>
     </div>
@@ -2982,7 +2995,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <div class="progress-bar" id="progressBar"></div>
       </div>
       <div class="info-box" style="background:#eef5ff; border-color:#cfe0ff;">
-        <strong>バックアップは3種類。</strong>作業の合間は <strong>①</strong>、区切り（午前後・昼前・午後・退勤前など）に全データをまとめて残すなら <strong>②（おすすめ）</strong>。写真がとても多くて ② が重いときは <strong>③</strong> で小分けにします。
+        <strong>バックアップは3種類。</strong>使い分けの目安：作業の合間や毎日の終わりに、新しく撮った分を残すなら <strong>①</strong>。区切り（午前後・昼前・午後・退勤前など）や現場の終わりに、全データを1つのファイルで残すなら <strong>②</strong>。写真がとても多いときや、② が途中で止まるときは、全データをいくつかのファイルに分けて残す <strong>③</strong>。
         <details class="more-info"><summary>同じ写真が重複して保存されることについて</summary>
           <div class="more-body">① と ②（または ③）では同じ写真が両方のZIPに入ることがあります（安全のための重複です。読み込みのときに自動で重複を整理するので、二重になる心配はありません）。</div>
         </details>
@@ -2994,25 +3007,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <details class="more-info"><summary>①だけで保管するときの大切な注意</summary>
           <div class="more-body">① で作るファイルには、<strong>前回より後に撮った写真だけ</strong>が入ります。たとえば3回 ① をすると、ファイルが3つできて、写真は3つに分かれて入っています。<br>そのため、写真を全部もどすには、<strong>これまでの ① のファイルを1つも欠かさず、全部とっておく</strong>必要があります。1つでも消したり見失ったりすると、その分の写真はもどせません。<br>これを防ぐために、区切りのタイミングで ②（これまでの写真がまるごと入る保存）も残しておくと安心です。</div>
         </details>
-        <button id="exportIncBtn" class="success" style="background:#0a84ff;">🆕 新しく撮った分だけバックアップ（未保存 <span id="exportIncCount">0</span> 枚）</button>
+        <button id="exportIncBtn" class="success" style="background:#0058c7;">🆕 新しく撮った分だけバックアップ（未保存 <span id="exportIncCount">0</span> 枚）</button>
         <div id="incLinks"></div>
       </div>
 
       <div style="margin-top:16px; border-top:1px solid #eee; padding-top:14px;">
-        <p style="font-weight:700; margin:0 0 4px;"><span style="display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background:#34c759; color:#fff; border-radius:50%; font-size:13px; margin-right:6px;">②</span>すべてを1つのZIPにまとめてバックアップ（おすすめ）</p>
-        <p class="desc-collapsible" data-desc="exp-backup" data-desc-label="②すべてを1つにまとめて保存" style="font-size:12px; color:#6e6e73; margin:0 0 4px; line-height:1.6;">これまでの<strong>全データ（写真ぜんぶ＋撮影記録＋位置記録）を1つのファイル</strong>にまとめて保存します。区切り（午前後・昼前・午後・退勤前など）の完全版づくりに。ふだんはこれが本命です。</p>
+        <p style="font-weight:700; margin:0 0 4px;"><span style="display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background:#34c759; color:#fff; border-radius:50%; font-size:13px; margin-right:6px;">②</span>すべてを1つのZIPにまとめてバックアップ</p>
+        <p class="desc-collapsible" data-desc="exp-backup" data-desc-label="②すべてを1つにまとめて保存" style="font-size:12px; color:#6e6e73; margin:0 0 4px; line-height:1.6;">これまでの<strong>全データ（写真ぜんぶ＋撮影記録＋位置記録）を1つのファイル</strong>にまとめて保存します。区切り（午前後・昼前・午後・退勤前など）や現場の終わりに、全部を1つのファイルで残したいときに。</p>
         <details class="more-info"><summary>写真がとても多いときは</summary>
-          <div class="more-body">写真が非常に多いと1つのファイルが大きくなり、作成に時間がかかったり途中で止まったりすることがあります。そのときは下の <strong>③区切りで小分け</strong>（落ちにくい形式）をお使いください。</div>
+          <div class="more-body">写真が非常に多いと1つのファイルが大きくなり、作成に時間がかかったり途中で止まったりすることがあります。そのときは下の <strong>③区切りで小分け</strong>（全データをいくつかのファイルに分ける形）をお使いください。</div>
         </details>
-        <button id="exportBtn" class="success" style="background:#34c759;">📦 すべてを1つのZIPにまとめてバックアップ</button>
+        <button id="exportBtn" class="success" style="background:#0058c7;">📦 すべてを1つのZIPにまとめてバックアップ</button>
         <div id="exportLinks"></div>
-        <button id="exportClearBtn" class="danger" style="display:none;">✅ 保存済み。アプリ内データを削除</button>
+        <button id="exportClearBtn" class="danger" style="display:none;">🗑 アプリ内データを削除（ZIPの保存を確かめたあと）</button>
       </div>
 
       <div style="margin-top:16px; border-top:1px solid #eee; padding-top:14px;">
         <p style="font-weight:700; margin:0 0 4px; color:#6e6e73; font-size:14px;"><span style="display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background:#8e8e93; color:#fff; border-radius:50%; font-size:13px; margin-right:6px;">③</span>区切りで小分けにしてバックアップ</p>
-        <p class="desc-collapsible" data-desc="exp-split" data-desc-label="③区切りで小分けにして保存" style="font-size:12px; color:#6e6e73; margin:0 0 6px; line-height:1.6;">区切り（午前後・昼前・午後・退勤前など）で、保存したいものを選んで保存します。<strong>写真が多いときは自動で小分け</strong>（落ちにくい安全な形式）になります。② が重いときはこちら。</p>
-        <button id="splitToggleBtn" class="success" style="background:#34c759;">🏁 区切りで小分けにしてバックアップ（押して選ぶ）</button>
+        <p class="desc-collapsible" data-desc="exp-split" data-desc-label="③区切りで小分けにして保存" style="font-size:12px; color:#6e6e73; margin:0 0 6px; line-height:1.6;">区切り（午前後・昼前・午後・退勤前など）で、保存したいものを選んで保存します。<strong>写真が多いときは自動で小分け</strong>（いくつかのファイルに分かれる形）になります。② が重いときはこちら。</p>
+        <button id="splitToggleBtn" class="success" style="background:#0058c7;">🏁 区切りで小分けにしてバックアップ（押して選ぶ）</button>
 
         <div id="splitPanel" style="display:none; margin-top:10px; background:#f7f7fa; border:1px solid #e5e5ea; border-radius:10px; padding:12px;">
           <p style="font-size:12px; color:#6e6e73; margin:0 0 8px; line-height:1.6;">保存したいものにチェックを入れて、下の「選んだ分をバックアップ」を押してください。</p>
@@ -3025,13 +3038,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <p style="font-size:12px; color:#6e6e73; margin:8px 0 4px;">これまでの「①新しく撮った分だけのバックアップ」の記録：</p>
           <div id="incLogList"></div>
 
-          <button id="incRebuildBtn" class="success" style="background:#34c759; margin-top:6px;">🏁 選んだ分をバックアップ</button>
+          <button id="incRebuildBtn" class="success" style="background:#0058c7; margin-top:6px;">🏁 選んだ分をバックアップ</button>
           <div id="incRebuildLinks"></div>
           <button id="incRebuildDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ すべてファイルに保存しました（未保存の表示をリセット）</button>
 
           <div style="border-top:1px dashed #d0d0d5; margin-top:14px; padding-top:12px;">
             <p style="font-size:12px; color:#6e6e73; margin:0 0 6px; line-height:1.6;">または、<strong>これまでの全データ</strong>を一度にまとめて保存：</p>
-            <button id="exportSplitBtn" class="success" style="background:#34c759; font-size:13px; padding:11px;">📦 すべて（全データ）をまとめて保存</button>
+            <button id="exportSplitBtn" class="success" style="background:#0058c7; font-size:13px; padding:11px;">📦 全データを小分けにしてバックアップ</button>
             <div id="splitLinks"></div>
             <button id="splitDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ すべてのZIPをファイルに保存しました（未保存の表示をリセット）</button>
           </div>
@@ -3045,19 +3058,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <p class="card-title">📍 位置記録データの保存</p>
       <div class="info-box">
         「📍 位置記録」タブで登録した棟・区分・マップ・ピンを、<strong>ZIPファイル</strong>にして持ち出せます（<strong>読み込み（復元）は「📥 読込」タブ</strong>から）。<br>
-        <strong>写真がなくてもOK。</strong>前日の事前準備、別端末への移動、控え（バックアップ）、担当者への受け渡しに使えます。<br>
+        <strong>写真がなくてもOK。</strong>前日の事前準備、別端末への移動、控え（バックアップ）に使えます。社内で渡すときは、中に全部の客先の位置記録とメモが入ることに注意してください。<br>
         PCで位置記録だけ用意して、この保存ZIPを端末に移して読み込めば、現場ですぐ使えます。<br>
-        <span style="color:#c62828;">※撮影写真は含まれません（写真は「📦 すべて保存」で一緒に保存できます）。</span>
+        <span style="color:#c62828;">※撮影写真は含まれません（写真も残すときは、上の②か③で全部をバックアップしてください）。</span><br>
+        全部のバックアップのZIPにも、位置記録が入っています（棟が1つ以上あるとき）。
       </div>
 
       <div class="stat-bar" style="margin-bottom:14px;">
-        <span>今のデータ：棟 <strong id="mapExportBuildings">0</strong> ・ マップ <strong id="mapExportSheets">0</strong> ・ マーカー <strong id="mapExportPins">0</strong></span>
+        <span>今のデータ：棟 <strong id="mapExportBuildings">0</strong> ・ マップ <strong id="mapExportSheets">0</strong> ・ ピン <strong id="mapExportPins">0</strong></span>
       </div>
 
       <div class="port-block">
         <p class="port-block-title">📤 保存する（ZIP）　<span class="port-dir">この端末 → ファイル</span></p>
         <p class="port-block-desc">今の位置記録を1つのZIPにします。別の端末・PCの「📥 データを読み込む」から読み込めます。写真がなくても保存できます。</p>
         <button id="mapExportBtn" class="success">📤 位置記録を保存（ZIP）</button>
+        <div id="mapZipSave"></div>
         <button id="mapExportPngBtn" class="secondary" style="margin-top:8px;">🖼 ピン入り図面を画像で書き出す（印刷・配布用）</button>
         <label style="display:block;margin-top:8px;font-size:13px;color:#4a4a4f;">ピンの大きさ
           <select id="mapPngPinSize" style="margin-left:6px;padding:6px 8px;border:1px solid #c7c7cc;border-radius:8px;font-size:13px;">
@@ -3066,7 +3081,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <option value="2.4">大（番号を大きく）</option>
           </select>
         </label>
-        <p class="port-block-desc" style="margin-top:6px;">棟のマップを全部まとめてPNG画像にします。ピンは図面に焼き込まれるので<strong>印刷してもズレません</strong>。画像に写るのは<strong>いま画面に見えているもの</strong>だけで、メモ本文・分類・レイヤーの元データは含まれません。<strong>重ねたレイヤーが表示されたままだと画像にも写り込みます</strong>（書き出し前に確認します）。</p>
+        <p class="port-block-desc" style="margin-top:6px;">棟のマップを全部まとめてPNG画像にします。ピンは図面に焼き込まれるので<strong>印刷してもズレません</strong>。画像には<strong>絞り込みで隠したピンも含めて、全部のピン</strong>が写ります（作図の線は写りません。番号ラベルを非表示にしていると番号も写りません）。メモ本文・分類・レイヤーの元データは含まれません。社内で渡すときは、全部の棟の図面が入ることに注意してください。<strong>重ねたレイヤーが表示されたままだと画像にも写り込みます</strong>（書き出し前に確認します）。</p>
         <div id="mapPngSave"></div>
       </div>
 
@@ -3115,6 +3130,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
       <button id="photoImportBtn" class="secondary">📥 データを読み込む</button>
       <input type="file" id="photoImportInput" accept=".zip,application/zip" style="display:none;" />
+      <p class="import-replace-note" style="font-size:13px; color:#b00020; font-weight:700; margin:4px 0 8px; line-height:1.6;">※ 読み込みの確認で［OK］を押すと、今の写真が全部消えて置き換わります。今の写真に足すときは［キャンセル］を押してください。</p>
       <p id="photoImportStatus" class="floorplan-status" style="display:none;"></p>
     </div>
 
@@ -3132,7 +3148,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       <div style="margin-top:14px;border-top:1px dashed #d1d1d6;padding-top:12px;">
         <p style="font-size:13px;font-weight:600;color:#1d1d1f;margin:0 0 4px 0;">🖼 図面・写真からマップを作る</p>
-        <p style="font-size:12px;color:#6e6e73;margin:0 0 8px 0;line-height:1.6;">平面図・立面図・配置図・現場写真などの<strong>画像</strong>から、ピンを打つための<strong>マップ（台紙）</strong>を作ります。<strong>複数選択・ZIP</strong>でまとめて取り込めます。取り込み先の<strong>棟</strong>を選ぶ（または新しく作る）と、その棟にマップが追加され、「📍 位置記録」タブでピンを打てます。<br><span style="color:#8a8a8e;">※棟の中でさらに区分（フロア等）に分けたいときは、「📍 位置記録」タブの各棟・区分にある「＋ マップを追加」もご利用ください。</span></p>
+        <p style="font-size:12px;color:#6e6e73;margin:0 0 8px 0;line-height:1.6;">平面図・立面図・配置図・現場写真などの<strong>画像</strong>から、ピンを打つための<strong>マップ</strong>を作ります。<strong>複数選択・ZIP</strong>でまとめて取り込めます。取り込み先の<strong>棟</strong>を選ぶ（または新しく作る）と、その棟にマップが追加され、「📍 位置記録」タブでピンを打てます。<br><span style="color:#8a8a8e;">※棟の中でさらに区分（フロア等）に分けたいときは、「📍 位置記録」タブの各棟・区分にある「＋ マップを追加」もご利用ください。</span></p>
         <input type="file" id="mapImgImportInput" accept="image/*,.jpg,.jpeg,.png,.gif,.webp,.bmp,.zip,application/zip" multiple style="display:none;" />
         <button id="mapImgImportBtn" class="pin-open-btn" style="margin:0;">🖼 図面・写真を選んでマップを作る（複数・ZIP可）</button>
         <p id="mapImgImportStatus" class="floorplan-status"></p>
@@ -3328,7 +3344,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <button type="button" class="qa-trouble-sym" data-q="未保存">「未保存」が消えない・保存できているか不安</button>
             <button type="button" class="qa-trouble-sym" data-q="機種変更">機種変更・別の端末へ移したい</button>
           </div>
-          <p class="qa-trouble-rule">どの場合も合言葉は <strong>「① 取り出す → ② 消してリセット → ③ 📥 読込で戻す」</strong>。<strong>消す前に必ず取り出す</strong>（💾 全保存／開けないなら救出ページ）。</p>
+          <p class="qa-trouble-rule">どの場合も合言葉は <strong>「① 取り出す → ② 消してリセット → ③ 📥 読込で戻す」</strong>。<strong>消す前に必ず取り出す</strong>（💾 保存タブで全部をバックアップ／開けないなら救出ページ）。</p>
           <p class="qa-trouble-cant"><strong>⚠ アプリが「まったく開かない」ときは、この画面も見られません。</strong> その場合は<strong>救出ページ「diag.html」</strong>を開いてデータを取り出してください。<strong>いざという時のために、今のうちに diag.html もブックマーク</strong>しておくと安心です。</p>
         </div>
       </div>
@@ -3368,7 +3384,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div id="view-floorplan" class="view">
     <div class="card">
       <button id="pin-section-toggle" class="pin-section-toggle">
-        <span>📍 撮影位置を図面に記録（マッピング）</span>
+        <span>📍 撮影位置を図面に記録</span>
         <span class="pin-section-arrow" id="pin-section-arrow">▼</span>
       </button>
       <div id="pin-section-body" class="pin-section-body" style="display:none;">
@@ -3442,7 +3458,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="card" id="map-sheet-card" style="display:none;">
       <button id="map-sheet-back-btn" class="secondary" style="margin-bottom:12px;">← 戻る</button>
       <p id="map-sheet-title" class="card-title"></p>
-      <p class="map-section-hint">このマップにピンを打ったり、打ったピンを確認・編集できます。ピンを打つ画面では拡大して細かく置けます。</p>
+      <p class="map-section-hint">このマップにピンを打ったり、打ったピンを確認・編集できます。ピンを打つ画面では「＋」「－」で拡大して細かく置けます。</p>
       <button id="map-sheet-pin-btn" class="pin-open-btn" style="margin-bottom:12px;">📍 このマップでピンを打つ・編集する</button>
       <p class="map-section-hint" style="margin-bottom:6px;">下地の差し替え（仮の図面でピンを打ってから、正式な図面に入れ替えられます。ピンはそのまま残ります）</p>
       <button id="map-swap-base-btn" class="map-swap-base">🖼 下地（図面）を差し替える</button>
@@ -3472,7 +3488,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="map-howto desc-collapsible" data-desc="map-save" data-desc-label="保存・持ち運び・PC事前準備" style="background:#e7f3ff;border-color:#b8d8ff;">
         <p class="map-howto-title">💾 保存・持ち運び・PCでの事前準備</p>
         <p style="font-size:12px;color:#1d1d1f;margin:0;line-height:1.7;">
-          ここで登録した棟・マップ・ピンは、<strong>「📤 保存」タブ → 「📍 位置記録データの保存（ZIP）」</strong>でZIPファイルにできます。<strong>写真がなくても保存できます。</strong><br>
+          ここで登録した棟・マップ・ピンは、<strong>「💾 保存」タブ → 「📍 位置記録データの保存（ZIP）」</strong>でZIPファイルにできます。<strong>写真がなくても保存できます。</strong><br>
           PCやほかの端末で位置記録だけ用意しておき、そのZIPをこの端末の<strong>「📥 データを読み込む」</strong>で読み込めば、現場ですぐ使えます。<br>
           PCで見るだけ・印刷したいときは「🖼 ピン入り図面を画像で書き出す」が使えます（ピンが焼き込まれるので印刷してもズレません）。
         </p>
@@ -3585,8 +3601,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </div>
   <div class="pin-editor-tools">
     <button id="draw-mode-btn" class="draw-mode-btn">✏️ マップに手描きする</button>
-    <button id="vector-mode-btn" class="draw-mode-btn" style="background:#0a7d4b;">📐 直線で作図（CAD用）</button>
-    <button id="layer-mode-btn" class="draw-mode-btn" style="background:#5856d6;">🗂 レイヤー（下地の重ね合わせ）</button>
+    <button id="vector-mode-btn" class="draw-mode-btn" style="background:#0058c7;">📐 直線で作図（CAD用）</button>
+    <button id="layer-mode-btn" class="draw-mode-btn" style="background:#0058c7;">🗂 レイヤー（下地の重ね合わせ）</button>
     <button id="place-from-photo-btn" class="place-from-photo-btn">📷 写真を選んでピンを置く</button>
     <div class="marker-type-row" id="marker-type-row">
       <button class="marker-type-btn selected" data-type="pin">📍 ピン</button>
@@ -3685,8 +3701,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="vector-style-btn" data-style="dotted">点線</button>
     </div>
     <div class="vector-row">
-      <button class="vector-mini-btn" id="vector-poly-done" style="display:none;background:#0a7d4b;color:#fff;padding:11px 16px;font-size:14px;">✓ 連続線を確定</button>
-      <button class="vector-mini-btn" id="vector-measure-btn" style="display:none;background:#0a84ff;color:#fff;">📏 実測mmを入力</button>
+      <button class="vector-mini-btn" id="vector-poly-done" style="display:none;background:#0058c7;color:#fff;padding:11px 16px;font-size:14px;">✓ 連続線を確定</button>
+      <button class="vector-mini-btn" id="vector-measure-btn" style="display:none;background:#0058c7;color:#fff;">📏 実測mmを入力</button>
       <button class="vector-mini-btn" id="vector-sel-delete" style="display:none;background:#ff3b30;color:#fff;">🗑 選択した線を削除</button>
       <button class="vector-mini-btn" id="vector-undo-btn">↩︎ 1つ戻す</button>
       <button class="vector-mini-btn" id="vector-clear-btn">🗑 全消し</button>
@@ -3694,7 +3710,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="vector-done-btn" id="vector-done-btn">✅ 保存して閉じる</button>
     </div>
     <div class="vector-row" style="border-top:1px solid #cfe6da; padding-top:8px; margin-top:2px;">
-      <button class="vector-mini-btn" id="vector-export-btn" style="background:#5856d6;color:#fff;">⬇ CAD用に書き出し</button>
+      <button class="vector-mini-btn" id="vector-export-btn" style="background:#0058c7;color:#fff;">⬇ CAD用に書き出し</button>
       <span style="font-size:11px;color:#6e6e73;">図面つきSVG／線だけSVG／座標JSON</span>
     </div>
     <div id="vector-export-links"></div>
@@ -3806,7 +3822,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </label>
       <button type="button" id="imp-tidy" class="imp-tidy-btn" style="display:none;"></button>
       <div id="imp-list" class="pin-photo-list" style="max-height:42vh;"></div>
-      <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#34c759;text-align:center;">この内容で取り込む</button>
+      <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#0058c7;text-align:center;">この内容で取り込む</button>
       <button type="button" class="pin-sheet-cancel" id="imp-cancel">キャンセル</button>
     </div>
   </div>
@@ -3870,8 +3886,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="pin-thick-btn" data-thick="6">中</button>
       <button class="pin-thick-btn" data-thick="10">太</button>
     </div>
-    <button id="pin-detail-delete" class="danger">🗑 このマーカーを削除</button>
     <button id="pin-detail-close" class="success">閉じる</button>
+    <button id="pin-detail-delete" class="danger">🗑 削除する</button>
   </div>
 </div>
 
@@ -3916,7 +3932,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <p class="recovery-title">🔢 番号の確認</p>
     <p id="digit-modal-text" style="font-size: 14px; color: #1d1d1f; margin: 0 0 16px 0; line-height: 1.6; white-space: pre-wrap;"></p>
     <button id="digit-yes-btn" class="success">はい、これで撮影する</button>
-    <button id="digit-no-btn" class="danger">いいえ、入力し直す</button>
+    <button id="digit-no-btn" class="secondary">いいえ、入力し直す</button>
   </div>
 </div>
 
@@ -3926,8 +3942,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <p class="backup-title">写真を保存しましょう</p>
     <div class="backup-count">未保存の写真が <span class="num" id="backupModalNum">0</span> 枚あります</div>
     <p class="backup-sub" id="backupModalSub">この写真はまだこの端末の中だけにあります。ZIPで保存して、安全な場所（クラウド等）に保存してください。</p>
-    <button id="backupModalIncBtn" class="backup-btn-go" style="background:#0a84ff;">🆕 新しく撮った分だけバックアップ（おすすめ）</button>
-    <button id="backupModalGoBtn" class="backup-btn-go">🏁 区切りでまとめてバックアップ</button>
+    <button id="backupModalIncBtn" class="backup-btn-go" style="background:#0058c7;">🆕 ① 新しく撮った分だけバックアップ</button>
+    <button id="backupModalGoBtn" class="backup-btn-go">🏁 ③ 全データを小分けにしてバックアップ</button>
     <button id="backupModalLaterBtn" class="backup-btn-later">あとで（10分後にまた知らせる）</button>
   </div>
 </div>
@@ -4078,6 +4094,63 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var ua = navigator.userAgent || '';
     return /iPad|iPhone|iPod/.test(ua) || ((navigator.maxTouchPoints || 0) > 1 && /Macintosh/.test(ua));
   }
+  // v3.199 M12：位置記録の ZIP・ピン入り画像の ZIP 専用の保存のボタン（全部保存の appendSaveLinkApp・showSaveGuide は変えない）
+  //   利用者が押して保存する（待ったあとにプログラムで保存を始めない：地雷1）。名前は文字として出す（地雷9）
+  //   「ファイルに保存しました」は本当に保存したときだけ：iPad＝共有が成功したとき・「✅ ファイルに保存できた（確認した）」を押したとき／PC＝オレンジの枠を押したとき
+  //   iPad でオレンジの枠（ダウンロード）を押しただけのときは、保存できたか分からないので onUnsure で伝える
+  function appendConfirmedSaveApp(holder, blob, filename, onSaved, onUnsure) {
+    if (!holder) return null;
+    var ios = isWebKitIOS();
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.style.cssText = 'display:block; padding:14px; margin:8px 0; background:#fff7e6; border:2px solid #f0a000; border-radius:12px; color:#7a4d00; font-weight:700; text-decoration:none; word-break:break-all;';
+    a.textContent = (ios ? '⬇ ダウンロードで保存する：' : '⬇ タップして保存：') + filename;
+    var saved = false, okBtn = null;
+    function markSaved() {
+      if (saved) return;
+      saved = true;
+      a.textContent = '✅ ファイルに保存しました：' + filename + '（もう一度タップで再保存できます）';
+      a.style.background = '#e9f8ef'; a.style.borderColor = '#34c759'; a.style.color = '#1b7f3b';
+      if (okBtn) okBtn.style.display = 'none';
+      if (typeof onSaved === 'function') { try { onSaved(); } catch (e) {} }
+      showToast('✅ ファイルに保存しました');
+    }
+    a.addEventListener('click', function() {
+      if (!ios) { markSaved(); return; }
+      if (!saved && typeof onUnsure === 'function') { try { onUnsure(); } catch (e) {} }   // iPad：ダウンロードは保存できたか分からない
+    });
+    if (ios) {
+      try {
+        var f = new File([blob], filename, { type: blob.type || 'application/zip' });
+        if (navigator.canShare && navigator.canShare({ files: [f] })) {
+          var sb = document.createElement('button');
+          sb.type = 'button';
+          sb.textContent = '📤 ファイルに保存（共有・おすすめ）';
+          sb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:16px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:16px; cursor:pointer;';
+          sb.addEventListener('click', function() {
+            try {
+              navigator.share({ files: [f], title: filename })
+                .then(function() { markSaved(); })   // 共有が成功＝保存できた
+                .catch(function() { /* やめたとき・失敗したときは「ファイルに保存しました」にしない */ });
+            } catch (e) {}
+          });
+          holder.appendChild(sb);
+        }
+      } catch (e) {}
+      holder.appendChild(a);
+      okBtn = document.createElement('button');
+      okBtn.type = 'button';
+      okBtn.textContent = '✅ ファイルに保存できた（確認した）';
+      okBtn.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:14px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer;';
+      okBtn.addEventListener('click', markSaved);
+      holder.appendChild(okBtn);
+    } else {
+      holder.appendChild(a);
+    }
+    return a;
+  }
   function appendSaveLinkApp(holder, blob, filename, onFirstTap, autoDl) {
     if (!holder) return null;
     var url = URL.createObjectURL(blob);
@@ -4128,7 +4201,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             var sb = document.createElement('button');
             sb.type = 'button';
             sb.textContent = '📤 ファイルに保存（共有・1タップ・おすすめ）';
-            sb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:16px; background:#34c759; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:16px;';
+            sb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:16px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:16px;';
             sb.classList.add('save-link-pulse');
             sb.addEventListener('click', function(){
               try {
@@ -4147,7 +4220,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           var cb = document.createElement('button');
           cb.type = 'button';
           cb.textContent = '✅ ファイルに保存できた（未保存の数字を消す）';
-          cb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:14px; background:#0a84ff; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:15px;';
+          cb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:14px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:15px;';
           cb.addEventListener('click', function(){ markSavedState(); cb.style.display = 'none'; });
           holder.appendChild(cb);
         }
@@ -4289,8 +4362,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // ===== 説明文の折りたたみ（UX：動線短縮） =====
   // グレーの説明文（.desc-collapsible）だけを個別に開閉できるようにする。入力欄や警告は対象外。
-  // 初期は開いた状態。たたんだ状態は端末に記憶（localStorage 'descCollapsed' = {キー:true/false}）。
+  // 初期は開いた状態（v3.199 からは、DESC_DEFAULT_CLOSED に挙げた説明だけ閉じた状態）。たたんだ状態は端末に記憶（localStorage 'descCollapsed' = {キー:true/false}）。
   var DESC_KEY = 'descCollapsed';
+  // v3.199 S10：安全に関わらない長い説明は、初めは閉じる（記録が無いときだけ。一度でも開け閉めした人は、覚えている状態のまま）。
+  //   保存の①②③・知らせの枚数・G・U・T の基準と除外の但し書き・位置記録の保存・CSV の列になる項目の説明は、ここに入れない（開いたまま）。
+  //   台帳に渡る値や判断に関わる注意を含む説明（分類で G・U の初期値が入る・評価は CSV に記録・写真なし登録は評価とメモのあとに・ダミー番号は通常の番号と重ねない）も開いたまま
+  var DESC_DEFAULT_CLOSED = { 'shoot-target':1, 'shoot-dummy':1, 'shoot-branch':1, 'shoot-help':1, 'shoot-bulk':1,
+    'set-survey':1, 'set-numbers':1, 'set-digit':1, 'link-status':1, 'map-building':1, 'map-intro':1, 'map-howto':1 };
   function loadDescState() {
     try { return JSON.parse(localStorage.getItem(DESC_KEY) || '{}') || {}; } catch (e) { return {}; }
   }
@@ -4318,7 +4396,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // すでにトグルを付けていれば二重に付けない（多重実行の保険）
       var prev = p.previousElementSibling;
       if (prev && prev.classList && prev.classList.contains('desc-toggle') && prev.getAttribute('data-for') === key) return;
-      var collapsed = !!state[key];
+      var collapsed = Object.prototype.hasOwnProperty.call(state, key) ? !!state[key] : !!DESC_DEFAULT_CLOSED[key];   // v3.199 S10
       if (collapsed) p.classList.add('collapsed'); else p.classList.remove('collapsed');
       var t = document.createElement('div');
       t.className = 'desc-toggle';
@@ -4356,10 +4434,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.198）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.199）。' },
 
     // ── 2. 撮影（📸撮影） ──
-    { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、上部に<strong>「📷 続けて撮影」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
+    { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
     { cat:'撮影', q:'番号が決まっていない設備を撮るには？', a:'撮影画面の「🔢 不明設備（ダミー番号）」を使うと、設定した開始番号から自動で番号をつけて撮影できます（開始番号は ⚙️ 設定タブで登録）。' },
     { cat:'撮影', q:'撮った写真を撮り直したい／番号を変えたい', a:'<strong>📋 撮影リスト</strong>タブで設備を選ぶと、「この番号で撮り直す」「番号を変更」ができます。撮り直しのカメラを写真なしで閉じたときは、画面の上の<strong>帯の「📷 撮り直す」</strong>で撮り直せます（青い撮影ボタンで撮ると、撮り直しをやめて新しい写真になります）。<strong>番号を変えても、図面のピンは張り替え不要</strong>です（自動でつながったままになります）。' },
     { cat:'撮影', q:'ファイル名の番号に先頭ゼロの確認が出るのはなぜ？', a:'ファイル名が数字だけのとき、<strong>先頭のゼロ（例 0001）を補う確認</strong>が出ます。意図した桁になっているか確かめて進めてください（⚙️ 設定の桁チェックで調整できます）。' },
@@ -4393,7 +4471,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・図面', q:'しぼり込みのボタンが出ない／空に見える', a:'チップは<strong>そのマップに「違い」があるときだけ</strong>自動で出ます（例：色が2色以上、写真があり・なし両方など）。全部おなじだと出ません。<strong>色を変えて置く・写真や分類をつける</strong>とボタンが増えます。出ていなくても、<strong>番号やことばで検索</strong>できます（例 3 ／ 1-5）。' },
     { cat:'位置記録・図面', q:'しぼり込みのボタンが多くて長いときは？', a:'各グループ（🧷種類・📷写真・🎨色・🏷分類・🔖項目）は<strong>折りたたみ式</strong>です。<strong>6種類以上は最初から畳まれ</strong>、見出しに「<strong>選択数 / 総数</strong>」（例 2 / 15）が出るので、畳んだままでも何を選んでいるか分かります。見出しをタップで開閉できます。' },
     { cat:'位置記録・図面', q:'図面に線を引いて作図したい（CAD用）', a:'マップ編集の <strong>📐 直線で作図</strong> から、🖊線・📐連続線・✋選択/移動・🧽消しゴム の4つの道具で線が引けます。端点は近くの線に吸着してつながります。<strong>📏 実測mm</strong>をメモでき、<strong>SVG・座標JSON で書き出し</strong>てCAD化の材料にできます。' },
-    { cat:'位置記録・図面', q:'PCで位置記録を見る・印刷したい', a:'💾 保存タブの位置記録の保存にある <strong>🖼 ピン入り図面を画像で書き出す</strong> で、棟のマップを全部まとめてPNG画像（ZIP）にできます。ピンは図面に<strong>焼き込まれる</strong>ので、印刷や拡大縮小をしても<strong>配置がズレません</strong>。画像に写るのは<strong>いま画面に見えているもの</strong>だけで、メモ本文・分類・レイヤーの元データは含まれません。ただし<strong>重ねたレイヤーを表示したままだと、その図面も写り込みます</strong>。人に渡す画像は、先にそのレイヤーを非表示または削除してください（書き出し前に警告が出ます）。' },
+    { cat:'位置記録・図面', q:'PCで位置記録を見る・印刷したい', a:'💾 保存タブの位置記録の保存にある <strong>🖼 ピン入り図面を画像で書き出す</strong> で、棟のマップを全部まとめてPNG画像（ZIP）にできます。ピンは図面に<strong>焼き込まれる</strong>ので、印刷や拡大縮小をしても<strong>配置がズレません</strong>。画像には<strong>絞り込みで隠したピンも含めて、全部のピン</strong>が写ります（作図の線は写りません。番号ラベルを非表示にしていると番号も写りません）。メモ本文・分類・レイヤーの元データは含まれません。社内で渡すときは、全部の棟の図面が入ることに注意してください。また、<strong>重ねたレイヤーを表示したままだと、その図面も写り込みます</strong>。人に渡す画像は、先にそのレイヤーを非表示または削除してください（書き出し前に警告が出ます）。' },
     { cat:'位置記録・図面', q:'位置記録だけを別端末・PCで用意したい', a:'位置記録（棟・マップ・ピン）は写真がなくても保存できます。💾 保存タブで位置記録をZIP保存し、相手の端末の <strong>📥 読込</strong> タブで読み込めば、現場ですぐ使えます。あとで写真担当のデータと合流もできます。' },
     { cat:'位置記録・図面', q:'ピンを置く場所を間違えた／直前の置きを取り消したい', a:'ピン・写真・メモ・矢印を置いた直後に<strong>「↩ 直前の配置を取り消す」</strong>のボタンが出ます（数秒で消えます）。これを押すと<strong>直前に置いた1件だけ</strong>を取り消せます。<strong>連続配置中は出ません</strong>（その場合は置いたピンを選んで消してください）。' },
     { cat:'位置記録・図面', q:'先にピンを置いておき、後から撮影や評価をしたい', a:'PCなどで<strong>先に撮影場所のピンを置いておき</strong>、現場では各ピンの<strong>詳細</strong>を開いて作業できます。ピンの詳細に <strong>📷 この位置で撮影</strong> ボタンが出ます。<strong>まだ写真がないピン</strong>でこれを押すと撮影画面が開き、上部に<strong>「📍 このピン用に撮影中」</strong>の帯が出ます。<strong>そのまま撮ると、撮った写真がそのピンに自動でつながります</strong>（やめるときは帯の「解除」）。<strong>すでに写真があるピン</strong>では、同じ設備番号が入った状態で開くので枝番でつながり、<strong>🟢 GUT評価</strong> も使えます。' },
@@ -4409,16 +4487,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・図面', q:'ピンに出る番号は設備番号ですか？', a:'写真を紐づけたピンは、原則<strong>写真の設備番号</strong>で表示されます。書き出した<strong>ピン入り図面の画像</strong>でも、アプリと<strong>同じ角丸のフラッグ</strong>で表示され、桁の多い番号（例「07550」）もはみ出さずに収まります。手で名前を変えたピンはその名前が出ます。' },
 
     // ── 5. 保存（バックアップ）（💾保存） ──
-    { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>新しく撮った分だけバックアップ</strong>、または<strong>区切りでまとめてバックアップ</strong>を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。タップして保存すると、右上の未保存の数字が0に戻ります。' },
-    { cat:'保存（バックアップ）', q:'「新しく撮った分」「区切りでまとめて」「1つのZIP」の違いは？', a:'<strong>新しく撮った分だけ</strong>＝前回保存のあとに撮った分だけ（軽い・こまめ用）。<br><strong>区切りでまとめて</strong>＝これまでの全データを小分けで保存（落ちにくい・ふだんはこれが本命）。<br><strong>1つのZIP</strong>＝全データを1ファイルにまとめる予備（少ない枚数向け）。' },
-    { cat:'保存（バックアップ）', q:'いつ保存すればいいですか？', a:'<strong>こまめに「新しく撮った分」</strong>を保存し、<strong>区切り（午前・昼・午後・退勤前など）で「区切りでまとめて」</strong>を保存して完全版を確保するのがおすすめです。電波が悪くても<strong>保存自体はオフラインでできます</strong>。' },
+    { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>① 新しく撮った分だけバックアップ</strong>、または全データのバックアップ（<strong>② 1つのZIP</strong> か <strong>③ 小分け</strong>）を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、右上の未保存の数字が減ります（iPad では、共有で「ファイル」に保存するか、「ファイルに保存できた」を押したときに減ります。③ では、全部のZIPを保存したあとに「✅ すべてのZIPをファイルに保存しました」を押したときに減ります）。' },
+    { cat:'保存（バックアップ）', q:'「新しく撮った分」「区切りでまとめて」「1つのZIP」の違いは？', a:'<strong>① 新しく撮った分だけ</strong>＝前回保存のあとに撮った分だけ（軽い。作業の合間や毎日の終わりに）。<br><strong>② 1つのZIP</strong>＝これまでの全データを1つのファイルにまとめる（区切りや現場の終わりに、全部を1つで残したいときに）。<br><strong>③ 全データを小分け</strong>＝これまでの全データを、いくつかのファイルに分けて保存（写真がとても多いときや、② が途中で止まるときに）。' },
+    { cat:'保存（バックアップ）', q:'いつ保存すればいいですか？', a:'<strong>こまめに「① 新しく撮った分」</strong>を保存し、<strong>区切り（午前・昼・午後・退勤前など）や現場の終わりには、全データ（② か ③）</strong>も保存しておくと、全部がそろった控えが手元に残ります。電波が悪くても<strong>保存自体はオフラインでできます</strong>。' },
     { cat:'保存（バックアップ）', q:'保存したファイルはどこに入りますか？', a:'タップして保存するとき、「ファイル」アプリの保存先を選べます。SharePointなどの共有フォルダにも保存できます。' },
     { cat:'保存（バックアップ）', q:'右上の赤い数字（未保存）は何ですか？', a:'<strong>まだ保存（バックアップ）していない写真の枚数</strong>です。新しく撮った写真のほか、評価やメモを直した写真、消したあとに同じ番号で撮った写真も数えます。保存のリンクをタップすると減ります。<strong>0になっても、消す前には「ファイル」アプリでZIPがあるかを目で確かめてください。</strong>' },
     { cat:'保存（バックアップ）', q:'同じ写真が重複して入っても大丈夫？', a:'大丈夫です。安全のためにわざと重複して保存しており、読み込み（復元）のときに自動で整理（補い合い）されます。' },
     { cat:'保存（バックアップ）', q:'CSV（撮影記録）に設備分類は出ますか？', a:'はい。撮影記録CSVに <strong>分類コード・大分類・中分類・小分類・分類G初期・分類U初期</strong> の列が出ます。ZIPを読み込んで復元すると分類もそのまま戻ります。' },
 
     // ── データ保全・PCクラッシュ対策（💾保存→📥読込） ──
-    { cat:'データ保全・PCクラッシュ対策', q:'パソコンが壊れたら／データが消えたら、全部もとに戻せますか？', a:'<strong>外部に書き出したバックアップ（ZIP）さえあれば戻せます</strong>。アプリのデータはブラウザの中にあり、<strong>PC故障・再インストール・サイトデータ削除などで一瞬で消えることがあります</strong>。区切りごとに <strong>「区切りでまとめてバックアップ（全データ＝写真＋位置記録）」</strong> を取り、<strong>PCのフォルダ＋クラウドなど2か所以上</strong>に保管してください。戻すときは健全な端末で <strong>📥 読込</strong> から取り込みます。' },
+    { cat:'データ保全・PCクラッシュ対策', q:'パソコンが壊れたら／データが消えたら、全部もとに戻せますか？', a:'<strong>外部に書き出したバックアップ（ZIP）さえあれば戻せます</strong>。アプリのデータはブラウザの中にあり、<strong>PC故障・再インストール・サイトデータ削除などで一瞬で消えることがあります</strong>。区切りごとに <strong>全データのバックアップ（② か ③。写真＋位置記録）</strong> を取り、<strong>PCのフォルダ＋クラウドなど2か所以上</strong>に保管してください。戻すときは健全な端末で <strong>📥 読込</strong> から取り込みます。' },
     { cat:'データ保全・PCクラッシュ対策', q:'ブラウザの「Cookieとサイトデータ」を消すとどうなりますか？', a:'<strong>アプリのデータも一緒に消えます</strong>。「閲覧データの削除」で<strong>「Cookieとその他のサイトデータ」を一括クリア</strong>すると、このアプリの保存内容も失われます。掃除したいときは<strong>“特定のサイトのみ”削除</strong>を使い、アプリのサイトは残してください。<strong>消す前には必ず外部バックアップ（ZIP）</strong>を取りましょう。' },
     { cat:'データ保全・PCクラッシュ対策', q:'Safariは7日でデータが消えると聞きました（どのブラウザがよい？）', a:'<strong>Safariは、そのサイトを7日間ひらかないとローカルデータを自動で消す仕様</strong>です（長期保存に不向き）。<strong>PCでの作業やデータ保持は Edge か Chrome を推奨</strong>します（自動削除がありません）。どうしてもSafariを使う場合は、<strong>毎日ひらく＋毎回かならず外部バックアップ</strong>を徹底してください（ZIPさえあれば消えても戻せます）。' },
     { cat:'データ保全・PCクラッシュ対策', q:'別のブラウザやURLだとデータが見えないのはなぜ？', a:'データは <strong>「URL × ブラウザ × プロファイル」ごとに別の保管庫</strong>に入るためです。<strong>消えたのではなく、別の場所を見ている</strong>だけのことが多いです。いつも<strong>同じURL・同じブラウザ・同じプロファイル</strong>で開いてください（ブックマーク推奨）。<strong>ゲスト／プライベート窓では保存されません</strong>。' },
@@ -4427,15 +4505,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'読み込み・復元', q:'保存したデータを元に戻す（復元）には？', a:'「📥 読込」タブの<strong>データを読み込む</strong>から、保存したZIPを読み込みます。小分けで保存した場合は、その<strong>すべてのZIPを順に読み込む</strong>と、足りない情報を補い合って元どおりに復元できます。' },
     { cat:'読み込み・復元', q:'「保存」と「読込」のタブが分かれていますが？', a:'保存（バックアップ作成）は <strong>💾 保存</strong> タブ、読み込み（復元・合流）は <strong>📥 読込</strong> タブです。位置記録だけを読み込みたいときは、📥 読込タブの <strong>「📍 位置記録だけを読み込む」</strong> から行えます。' },
     { cat:'読み込み・復元', q:'別の人が撮ったデータと合流できますか？', a:'できます。読み込みのとき <strong>「追加（マージ）」</strong> を選ぶと、<strong>同じ番号どうしは補い合って合流</strong>します（先に「写真なしで登録」した設備に、あとから写真担当のZIPを読み込むと写真が自動で入ります）。<strong>「置き換え」は今のデータをすべて消して入れ替える</strong>ので、合流したいときは必ず <strong>「追加」</strong> を選んでください。' },
-    { cat:'読み込み・復元', q:'小分け保存を全部読み込めたか確認したい', a:'区切りでまとめて（分割）保存したZIPを読み込むと、<strong>「全◯個中◯個」</strong>と表示され、<strong>全部そろうと「完全復元」</strong>と出ます。足りないときは残りのZIPも読み込んでください。' },
+    { cat:'読み込み・復元', q:'小分け保存を全部読み込めたか確認したい', a:'③で小分けにして保存したZIPを読み込むと、<strong>「全◯個中◯個」</strong>と表示され、<strong>全部そろうと「完全復元」</strong>と出ます。足りないときは残りのZIPも読み込んでください。' },
     { cat:'読み込み・復元', q:'救出・バックアップしたZIPを別の端末やPCへ渡すには？', a:'オレンジの枠を<strong>タップ</strong>して「ファイル」アプリに保存し、<strong>SharePointなどの共有フォルダ</strong>に置けば、別の端末・PCから取り出せます。受け取った側は <strong>📥 読込</strong> タブの「データを読み込む」から取り込みます。小分けのZIPは<strong>すべて</strong>読み込むと補い合って復元できます。' },
 
     { cat:'読み込み・復元', q:'iPhoneのHEIC写真やZIPを取り込めますか？', a:'取り込み方は2つあります。<strong>「📷 写真ファイルを取り込む」</strong>では、写真ファイル（JPEG・PNG など。1枚でも複数でも）か、写真をまとめた<strong>ZIPファイル</strong>を取り込めます。ZIPの中に <strong>HEIC／HEIF（iPhoneの写真形式）</strong> が入っていても取り込めます。取り込み前の確認画面で枚数・内容を確かめられます。一方、<strong>「📥 データを読み込む」（バックアップの復元）では、ZIPの中の JPG・PNG だけが戻り、HEIC／HEIF の写真は戻りません</strong>（このアプリで撮った写真は名前が .jpg なので、ふだんの復元には影響しません）。' },
     { cat:'読み込み・復元', q:'取り込みで赤字の注意が出る／同名やHEIC・JPGの重複をまとめたい', a:'取り込みの確認画面では、<strong>同じ名前（拡張子だけ違う）や重複しそうな写真</strong>を見つけると<strong>赤字で注意</strong>します。<strong>「同名（拡張子違い）を1枚に整理」</strong>を押すと、同じ名前の写真（HEICとJPGなど）を1枚にまとめ、<strong>残した枚数・外した枚数</strong>を表示します。さらに <strong>「HEIC等を自動でオフ」</strong> にチェックを入れておくと、取り込みのたびに自動で同名を1枚へ整理します（<strong>初期はオフ＝今までどおり</strong>）。' },
-    { cat:'読み込み・復元', q:'PCで棟ごとにマッピングしています。終わった棟は削除してよい？', a:'すぐ削除しないでください。<strong>①「区切りでまとめて」で全データを保存→②ZIPをひらいて中身を確認→③2か所以上に複製→④それから削除</strong>の順だと安全です。あとで棟を戻すときは <strong>📥 読込</strong> の <strong>「追加（マージ）」</strong> で合流できます（<strong>「置き換え」は既存を消す</strong>ので注意）。' },
+    { cat:'読み込み・復元', q:'PCで棟ごとにマッピングしています。終わった棟は削除してよい？', a:'すぐ削除しないでください。<strong>全データのバックアップ（💾 保存タブの②か③）を作る→ZIPをひらいて中身を確認→2か所以上に複製→それから削除</strong>の順だと安全です。あとで棟を戻すときは <strong>📥 読込</strong> の <strong>「追加（マージ）」</strong> で合流できます（<strong>「置き換え」は既存を消す</strong>ので注意）。' },
     { cat:'読み込み・復元', q:'位置記録を取り込むとピンが設備番号でなく通し番号で出る', a:'写真の無い端末で取り込むと起こることがあります。<strong>元のZIP／位置記録HTMLを、📥 読込で「置き換え」取り込み</strong>すると、ファイル名から設備番号を読み取って<strong>ピンが設備番号で表示</strong>されます。<strong>今の通し番号の状態から書き出し直しても元の番号は戻りません</strong>。写真も一緒に取り込めば、番号・紐づけまでそろいます。' },
     // ── 7. 一覧・見直し（📋一覧） ──
-    { cat:'一覧・見直し', q:'撮った写真の一覧を見たい', a:'<strong>📋 撮影リスト</strong>タブで、撮影した設備の一覧を確認できます。番号で検索でき、各項目から<strong>「続きを撮る」「この番号で撮り直す」「番号変更」</strong>が行えます。' },
+    { cat:'一覧・見直し', q:'撮った写真の一覧を見たい', a:'<strong>📋 撮影リスト</strong>タブで、撮影した設備の一覧を確認できます。番号で検索でき、各項目から<strong>「📷 続けて撮る」「この番号で撮り直す」「番号変更」</strong>が行えます。' },
     { cat:'一覧・見直し', q:'一覧が急に空になった／消えたように見える', a:'多くの場合<strong>データは消えていません</strong>（枚数が表示されていれば写真は残っています）。<strong>検索（絞り込み）の文字を消す・撮影リストタブを開き直す</strong>と戻ることがあります。それでも不安なときは、先に救出ページでZIP保存してから確認してください。' },
 
     // ── 8. こまったとき（救出・復旧） ──
@@ -4453,7 +4531,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     // ── 10. その他 ──
     { cat:'その他', q:'「保存したつもり」で消えてしまうことはない？', a:'オレンジの枠を<strong>タップするまで</strong>、未保存の数字は0になりません。ただし、数字は「タップした」印で、本当に保存できたかまでは分かりません。<strong>消す前には、「ファイル」アプリでZIPがあるかを目で確かめてください。</strong>' },
-    { cat:'その他', q:'「✅ この端末に記録しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・図面へのマーカー設置などが、<strong>この端末の中に記録された</strong>合図です。安心して次の操作に進めます。ただし、<strong>まだ端末の外（ファイル）には保存されていません。</strong>外に残すには「💾 保存」タブでバックアップします（そのときは「✅ ファイルに保存しました」と出ます）。' },
+    { cat:'その他', q:'「✅ この端末に記録しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・図面へのピン設置などが、<strong>この端末の中に記録された</strong>合図です。安心して次の操作に進めます。ただし、<strong>まだ端末の外（ファイル）には保存されていません。</strong>外に残すには「💾 保存」タブでバックアップします（そのときは「✅ ファイルに保存しました」と出ます）。' },
     { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、未保存の赤い数字が減ります（iPad では、共有で「ファイル」に保存するか、「ファイルに保存できた」を押したときに減ります）。' },
 
     // ===== v3-143 追加Q&A（全12カテゴリを網羅拡充・実機FB反映） =====
@@ -4464,7 +4542,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'複数人で使うとき、設定はそろえるべき？', a:'番号の読み取り（先頭／末尾）や撮る番号のルールは、<strong>担当どうしでそろえておく</strong>と、あとで写真とピンを合流したときにズレません。データの合流自体は、各自が保存したZIPを<strong>📥 読込</strong>で取り込めばできます。' },
     // ── 撮影（追加） ──
     { cat:'撮影', q:'写真がぶれる／暗くて読めない', a:'<strong>両手で構えて一呼吸おいてから</strong>撮るとぶれにくくなります。暗い場所は端末の<strong>ライト</strong>を使うか、明るい角度から撮ってください。銘板（番号プレート）は<strong>正面から近づいて</strong>撮ると、あとで番号が読みやすくなります。撮り直しは一覧からできます。' },
-    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_2, _3）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_2・_3…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。続けて撮るときは、<strong>「📷 続けて撮影」</strong>か、撮影リストの<strong>「📷 続きを撮る」</strong>を使います。<strong>同じ番号を入れ直して撮影ボタンを押すと</strong>、写真が重なるのを防ぐため止まり、「続きを撮る」を案内します。番号を分けたいときは別番号で撮ってください。' },
+    { cat:'撮影', q:'同じ番号で前面・側面・銘板を撮ると枝番（_2, _3）になるのはなぜ？', a:'<strong>1つの設備を複数枚</strong>撮ると、同じ設備番号のまま<strong>枝番（_2・_3…）</strong>がつき、<strong>1グループ</strong>としてまとまります。一覧やマップでは代表の1枚で表示され、開くと他の面も見られます。同じ設備を続けて撮るときは、撮影の帯か撮影リストの<strong>「📷 続けて撮る」</strong>を使います。<strong>同じ番号を入れ直して撮影ボタンを押すと</strong>、写真が重なるのを防ぐため止まり、「📷 続けて撮る」を案内します。番号を分けたいときは別番号で撮ってください。' },
     { cat:'撮影', q:'撮影した場所（GPS・位置情報）は記録されますか？', a:'このアプリの「位置記録」は、<strong>図面（マップ）のどこにピンを置いたか</strong>を記録するもので、<strong>あなたの現在地（GPS）を追跡するものではありません</strong>。ただし、撮影のときに<strong>「📍 位置情報（GPS座標）を記録する」に印が付いていると</strong>、その写真の撮影地点（緯度・経度）が写真の記録と撮影記録（CSV）に入ります。初期は印が付いていて、アプリを開くたびに付いた状態に戻ります。記録したくないときは、撮影の前に印を外してください。データは端末の中だけにあり、インターネットにも送られません（オフラインで動きます）。' },
     { cat:'撮影', q:'手袋をしているとボタンが押しにくい', a:'撮影や保存の主要ボタンは<strong>大きめのタップ式</strong>にしてあります。反応が鈍いときは、手袋の指先が乾いているか確認し、<strong>ゆっくり一度だけタップ</strong>してください（連打は誤作動のもとです）。保存の枠（オレンジ）の長押しは機種によって効かないため、保存は<strong>タップ</strong>で行います。図面の<strong>ピンは、長押し（約0.35秒）</strong>でつかんで動かせます。' },
     // ── 評価・分類（追加） ──
@@ -4478,8 +4556,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 位置記録・図面（追加） ──
     { cat:'位置記録・図面', q:'マップに使う図面（平面図）の写真はどう用意すればいい？', a:'紙の図面を<strong>正面から明るく撮る</strong>か、PDF・画像を用意します。<strong>📥 読込</strong>タブの「🖼 図面・写真からマップを作る」でまとめて取り込めます。文字や記号が読める程度の解像度があれば十分です（大きすぎる画像は動作が重くなることがあります）。' },
     { cat:'位置記録・図面', q:'ピンの色は何の意味ですか？使い分けたいです', a:'色に決まった意味はなく、<strong>自由に使い分け</strong>られます（例：済＝緑、要確認＝赤 など）。ピンの詳細の<strong>🎨 色を変える</strong>で変更でき、色でしぼり込みもできます。チームで<strong>色のルールをそろえておく</strong>と見やすくなります。' },
-    { cat:'位置記録・図面', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 このマーカーを削除</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
-    { cat:'位置記録・図面', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>「写真も含む全保存」</strong>をしておくと安心です。' },
+    { cat:'位置記録・図面', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 削除する</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
+    { cat:'位置記録・図面', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>全部のバックアップ（💾 保存タブの②か③）</strong>をしておくと安心です。' },
     { cat:'位置記録・図面', q:'写真がないピンに設備番号（ID）だけ付けたい', a:'マップ編集で <strong>「ピンを置く（写真なし）」</strong> を選ぶと、<strong>設備ID（番号）を入力</strong>してからピンを置けます（空欄のままなら通し番号が入ります）。あとで写真を撮って紐づけることもできます。' },
     { cat:'位置記録・図面', q:'移動ツールを選ばずにピンを動かしたい', a:'ピンを<strong>長押し（約0.35秒）</strong>すると、移動ツールを選んでいなくてもそのまま<strong>ドラッグで移動</strong>できます。<strong>サッとタップ</strong>したときは詳細が開きます。' },
     { cat:'図面を重ねる・位置合わせ', q:'図面を重ねて位置を合わせたい（レイヤーとは）', a:'ピン編集画面で<strong>下地の図面を複数重ねて</strong>表示できます（レイヤー）。<strong>濃さ（不透明度）・表示の切替・並べ替え・追加／削除</strong>ができ、<strong>ピンは常に残ります</strong>。使い方の例：客先の配置図でピンを打つ→その上に平面図を重ねて外形を合わせる→不要になった配置図の下地を🗑で消す、で仕上がります。' },
@@ -4490,24 +4568,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'図面を重ねる・位置合わせ', q:'図面を大きくしたいのにハンドルが画面の端で止まる', a:'位置合わせの<strong>「🔍➖ 図面を小さく表示」</strong>を押すと図面全体が小さく表示され、<strong>枠の外までハンドルを引ける</strong>ようになります（もう一度押すと元の表示に戻ります）。全体を等倍のまま大きくしたいだけなら、<strong>「大きさ」に数値（例：250）</strong>を入れても届きます。' },
     { cat:'図面を重ねる・位置合わせ', q:'重ねた図面は保存後も残りますか？（書き出し・再読込）', a:'はい。重ねた結果は図面画像に<strong>焼き込まれて保存</strong>され、書き出した画像やバックアップにもそのまま反映されます。バックアップから読み込み直しても、<strong>ピンの番号や紐づけはそのまま</strong>引き継がれます。' },
     // ── 保存（バックアップ）（追加） ──
-    { cat:'保存（バックアップ）', q:'保存に時間がかかる／止まったように見えます', a:'写真が多いと<strong>ZIPを作るのに時間</strong>がかかります（数百枚で数十秒かかることも）。画面はそのまま<strong>待って</strong>ください。どうしても重いときは、<strong>区切りでまとめて</strong>小分け保存に切り替えると軽くなります。保存が終わると共有・ダウンロードの案内が出ます。' },
+    { cat:'保存（バックアップ）', q:'保存に時間がかかる／止まったように見えます', a:'写真が多いと<strong>ZIPを作るのに時間</strong>がかかります（数百枚で数十秒かかることも）。画面はそのまま<strong>待って</strong>ください。どうしても重いときは、<strong>③ 全データを小分け</strong>に切り替えると、1つずつのファイルが小さくなります。保存が終わると共有・ダウンロードの案内が出ます。' },
     { cat:'保存（バックアップ）', q:'どのくらいの頻度で保存すればいい？目安は？', a:'目安は<strong>30〜50枚ごと</strong>、または<strong>休憩・移動・帰社の前</strong>です。未保存の<strong>赤い数字</strong>がたまってきたら保存の合図。こまめに保存しておくほど、万一のときに失う範囲が小さくなります。' },
-    { cat:'保存（バックアップ）', q:'保存したZIPの名前の見分け方を教えてください', a:'ファイル名には<strong>日付・時刻</strong>が入るので、<strong>新しいものほど後の時刻</strong>です。種類（全保存／区切り）も名前で見分けられます。迷ったら<strong>いちばん新しい「写真も含む全保存」</strong>を残しておけば確実です。' },
+    { cat:'保存（バックアップ）', q:'保存したZIPの名前の見分け方を教えてください', a:'ファイル名には<strong>日付・時刻</strong>が入るので、<strong>新しいものほど後の時刻</strong>です。種類（全部／区切り）も名前で見分けられます。迷ったら<strong>いちばん新しい全部のバックアップ（💾 保存タブの②か③）</strong>を残しておけば確実です。' },
     { cat:'保存（バックアップ）', q:'保存したZIPは開かずにそのまま保管していい？', a:'はい。<strong>開かず・名前を変えず</strong>にそのまま保管してください（中身を取り出して並べ替えると、戻すとき混乱します）。戻すときは<strong>📥 読込</strong>からZIPごと取り込みます。中身を確認したいだけならPCでコピーを取ってから開いてください。' },
     // ── データ保全・PCクラッシュ対策（追加） ──
-    { cat:'データ保全・PCクラッシュ対策', q:'いちばん安全なデータの守り方を一言で', a:'<strong>「写真も含む全保存ZIPを、こまめに作って、消えない場所（ファイルアプリやPC）に置く」</strong>——これが基本です。端末の中だけに置いておくのは万一に弱いので、<strong>外に1本コピー</strong>がある状態を保ってください。' },
-    { cat:'データ保全・PCクラッシュ対策', q:'端末を機種変更する前にやることは？', a:'必ず<strong>「写真も含む全保存」ZIP</strong>を作り、<strong>消えない場所（クラウド・PCなど）に保存</strong>してから機種変更してください。新しい端末ではアプリを開き、<strong>📥 読込</strong>でそのZIPを取り込めば、写真もマップも評価も戻ります。' },
+    { cat:'データ保全・PCクラッシュ対策', q:'いちばん安全なデータの守り方を一言で', a:'<strong>「全部のバックアップZIP（💾 保存タブの②か③）を、こまめに作って、消えない場所（ファイルアプリやPC）に置く」</strong>——これが基本です。端末の中だけに置いておくのは万一に弱いので、<strong>外に1本コピー</strong>がある状態を保ってください。' },
+    { cat:'データ保全・PCクラッシュ対策', q:'端末を機種変更する前にやることは？', a:'必ず<strong>全部のバックアップZIP（💾 保存タブの②か③）</strong>を作り、<strong>消えない場所（クラウド・PCなど）に保存</strong>してから機種変更してください。新しい端末ではアプリを開き、<strong>📥 読込</strong>でそのZIPを取り込めば、写真もマップも評価も戻ります。' },
     // ── 読み込み・復元（追加） ──
     { cat:'読み込み・復元', q:'読み込んだのに写真がピンに繋がっていない', a:'別端末で<strong>位置記録だけ先に取り込む</strong>と起きやすい状態です。<strong>📋 撮影リスト</strong>の<strong>「🔗 マップへの紐づけ状況」</strong>を開き、点滅している<strong>「🔗 番号一致の写真を一括で紐づける」</strong>を押してください。表記ゆれ（0001と1 など）は<strong>「ゆるく一致」</strong>に切り替えると拾えます。' },
     { cat:'読み込み・復元', q:'複数のZIPを一度に読み込めますか？順番は？', a:'はい、<strong>複数のZIPをまとめて</strong>取り込めます。順番は気にしなくて大丈夫です（同じ写真は<strong>重複せず1枚にまとまります</strong>）。棟ごと・担当ごとに分かれたZIPも、続けて読み込めば1つに合流します。' },
-    { cat:'読み込み・復元', q:'読み込むと古いデータに上書きされそうで心配です', a:'読み込みは基本<strong>「足し合わせ（マージ）」</strong>で、同じものは重複しないように合流します。心配なときは、念のため<strong>取り込み前に今のデータを「全保存」</strong>しておけば、いつでも元に戻せます。' },
+    { cat:'読み込み・復元', q:'読み込むと古いデータに上書きされそうで心配です', a:'読み込みは基本<strong>「足し合わせ（マージ）」</strong>で、同じものは重複しないように合流します。心配なときは、念のため<strong>取り込み前に今のデータを全部バックアップ</strong>しておけば、いつでも元に戻せます。' },
     // ── 一覧・見直し（追加） ──
     { cat:'一覧・見直し', q:'撮った枚数と紐づけ件数が合わないのはなぜ？', a:'枚数と件数は<strong>数え方が違う</strong>ため、ふつうに起こります。①1つの設備を複数枚撮ると<strong>枝番でまとまる</strong>ので「枚数＞設備数」になります。②紐づけは<strong>設備番号（グループ）単位</strong>で数えます。③まだマップのピンに繋いでいない写真は<strong>未紐づけ</strong>です。気になるときは<strong>紐づけ状況</strong>で「未」をしぼって確認してください。' },
     { cat:'一覧・見直し', q:'特定の番号の写真をすばやく探したい', a:'<strong>📋 撮影リスト</strong>や写真を選ぶ画面の<strong>検索（🔍）に番号の一部</strong>を入れるとしぼり込めます（例「755」で「07550」もヒット）。マップ側でも番号でピンをしぼれます。' },
     { cat:'一覧・見直し', q:'一覧から要らない写真を消したい', a:'一覧で対象の写真を開き、<strong>削除</strong>を選びます。消す前に、その写真が<strong>マップのピンに紐づいていないか</strong>を確認してください（紐づけ済みを消すとピンの写真も外れます）。<strong>消す前に必ず保存</strong>しておくと、間違えても戻せます。' },
     // ── こまったとき（救出・復旧）（追加） ──
     { cat:'こまったとき（救出・復旧）', q:'画面が真っ白になった／固まった', a:'まず<strong>あわてて閉じない</strong>でください。少し待つ→<strong>ページを再読み込み</strong>（更新）してみます。それでも直らないときは、同じ場所からもう一度開き直します。データはブラウザに残っているので、<strong>サイトデータを消さない</strong>限り、開き直せば見えます。直らないときは救出ページ（diag.html）を使います。' },
-    { cat:'こまったとき（救出・復旧）', q:'新しい版（アップデート）への入れ替え方は？', a:'新しいHTMLを<strong>同じ場所（同じURL／同じ入口）で開けば</strong>、これまでの撮影データはそのまま残ります（データはブラウザ側に保管されているため）。念のため<strong>入れ替え前に「写真も含む全保存」</strong>をしておくと安心です。上のバーの<strong>バージョン表示</strong>で新しい版になったか確認できます。' },
+    { cat:'こまったとき（救出・復旧）', q:'新しい版（アップデート）への入れ替え方は？', a:'新しいHTMLを<strong>同じ場所（同じURL／同じ入口）で開けば</strong>、これまでの撮影データはそのまま残ります（データはブラウザ側に保管されているため）。念のため<strong>入れ替え前に全部のバックアップ（💾 保存タブの②か③）</strong>をしておくと安心です。上のバーの<strong>バージョン表示</strong>で新しい版になったか確認できます。' },
     // ── ネット・テザリング（追加） ──
     { cat:'ネット・テザリング', q:'通信量（ギガ）は使いますか？', a:'<strong>ほとんど使いません。</strong>最初にアプリを開くときだけ通信することがありますが、撮影・保存・マップ・評価は<strong>すべて端末の中だけ（オフライン）</strong>で動きます。写真がインターネットに送られることもありません。' },
     { cat:'ネット・テザリング', q:'機内モードでも使えますか？', a:'はい、<strong>機内モードでも使えます</strong>（オフライン動作）。電波の弱い現場でも撮影・保存・マップ操作ができます。むしろ保存中は通信が不安定だと不具合のもとになるため、<strong>通信を切って作業</strong>するのも一つの方法です。' },
@@ -4517,12 +4595,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'まず何から始めればいい？基本の流れを知りたい', a:'この<strong>❓ Q&A のいちばん上</strong>にある <strong>「🌱 はじめての方へ（基本の流れ）」</strong> をご覧ください。<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong> の3ステップと、各タブ（📸撮影・📊評価・📋撮影リスト・📍位置記録・📖評価参考・💾保存・📥読込・⚙️設定）の役割をまとめています。タップで開閉でき、いちばん大事なのは<strong>こまめな保存</strong>です。' },
 
     // ── v3-145→v3-146：ブラウザ別「このアプリ（サイト）のデータだけ削除」手順（タブレット／PC × Safari／Chrome／Edge を網羅・早見表つき） ──
-    { cat:'こまったとき（救出・復旧）', q:'アプリが使えない・開かない・動かない・真っ白になった（直し方＝データを守ってリセット→復元）', a:'アプリが<strong>クラッシュする・固まる・開かない・動作がおかしい</strong>とき、多くは<strong>ブラウザ内にたまった保存データの不調</strong>が原因です。<strong>このアプリのデータを消して初期状態に戻すと直り、また使えるようになります</strong>。大切なのは<strong>消す前に必ず取り出しておく</strong>ことです。<br><strong>① 取り出す</strong>：開けるなら 💾「写真も含む全保存」でZIPを作る。<strong>開けない・固まって保存できないときは救出ページ diag.html</strong> から取り出す。<br><strong>② 確認</strong>：そのZIPが「ファイル」アプリ・PC・クラウドに<strong>実際にある</strong>ことを確かめる。<br><strong>③ 消す（リセット）</strong>：自分の端末・ブラウザを「早見表」で確認。<strong>1サイトだけ消せるなら</strong>そのブラウザ別手順（Safari／Chrome／Edge）で。<strong>1サイトだけ消せない（❌：iPadのChrome・Edge／AndroidのEdge）ときは、そのブラウザの「閲覧データをクリア（Cookieとサイトデータ）」で消します</strong>。これで<strong>アプリは初期状態に戻り、また使えるようになります</strong>（そのブラウザの他サイトはログアウトされますが、<strong>他のアプリ・他のブラウザには影響しません</strong>）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で①のZIPを取り込んで復元</strong>。写真もマップも評価も戻ります。<br><strong>いちばんの注意</strong>：<strong>取り出せないまま全消しすると、そのブラウザ内のデータは戻りません</strong>（外部に残したバックアップだけが頼りになります）。だから<strong>①の取り出しを最優先</strong>に。どうしても開けず救出もできない場合は、全消しでアプリは使えるようになりますが、<strong>復元は過去に保存しておいたZIPから</strong>になります。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリのデータを消す（リセット）と、なぜ直るの？何が消えるの？（＝消す前に必ず保存）', a:'<strong>こんなとき</strong>：アプリが重い・固まる・表示がおかしい・直したい。<br><strong>なぜ消すと直るの？</strong>：このアプリは写真やマップを<strong>ブラウザの中（端末内）</strong>に保存しています。そこに溜まったデータが<strong>古くなったり壊れたり</strong>すると不調が出ます。<strong>このアプリのデータを一度消して初期状態に戻す（リセット）</strong>と、不調が取れて直ることが多いのです。<br><strong>何が消えるの？</strong>：リセットすると<strong>アプリ内の写真・マップ・評価も消えます</strong>（だから順番が大切）。<br><strong>だから、この順番で</strong>：<strong>① 取り出す</strong>（💾 全保存／開けないなら救出ページ diag.html）→ <strong>② 保存できたか確認</strong>（<strong>端末の外に保存できたことを目で確かめてから</strong>：「ファイル」アプリなどでZIPがあるかを見る。赤い数字が0でも、外に保存できたとは限りません）→ <strong>③ リセット（消す）</strong>（下の「自分の端末でできる？早見表」とブラウザ別の手順へ）→ <strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で戻す</strong>。<br><strong>※ 取り出さずに消すと戻せません。</strong>必ず「保存→確認」してから消してください。' },
-    { cat:'こまったとき（救出・復旧）', q:'自分の端末で“アプリのリセット（このアプリだけ消去）”はできる？【早見表】', a:'<strong>「リセット」とは</strong>：アプリの調子が悪いときに<strong>このアプリの保存データだけを消して</strong>初期状態に戻し、直すための操作です。ただし<strong>「このアプリ1つだけ」消せる端末・ブラウザは限られます</strong>。自分の組み合わせを下で確認してください。<br>消すのは<strong>「いつもアプリを開いているブラウザ」</strong>です（各ブラウザは別保存）。「このアプリ1サイトだけ」消せるかは次のとおり。<br><strong>● PC（Windows）</strong>：Edge ✅／Chrome ✅／Safari ＝（Windowsには無し）<br><strong>● PC（Mac）</strong>：Safari ✅／Chrome ✅／Edge ✅<br><strong>● タブレット（iPad）</strong>：Safari ✅／Chrome ❌／Edge ❌ … <strong>iPadで1サイトだけ消せるのは Safari だけ</strong><br><strong>● タブレット（Android）</strong>：Chrome ✅／Edge ❌／Safari ＝（Androidには無し）<br><strong>❌（1サイトだけ消せない）ときの対処</strong>：(a) <strong>消せるブラウザでアプリを開き直して使う</strong>のがおすすめ（iPad→Safari、Android→Chrome）。(b) どうしても今のブラウザで消すなら「<strong>閲覧データをクリア（Cookieとサイトデータ）</strong>」を使う＝<strong>他のサイトもログアウト</strong>されますが、<strong>それでもアプリは初期状態に戻って再び使えるようになり、あとから📥 読込で元に戻せます</strong>（クラッシュ時の最終手段）。<br>※ いずれも<strong>先に「全保存→保存確認」</strong>を済ませてから。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Safari：iPad・iPhone／Mac】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>Safariは<strong>Apple製品（iPad・iPhone・Mac）専用</strong>です（WindowsやAndroidにはありません）。必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ タブレット（iPad）・iPhone</strong>：「設定」アプリ →（iOS／iPadOS 18は「<strong>アプリ</strong>」→）<strong>Safari</strong> →「<strong>詳細</strong>」→「<strong>Webサイトデータ</strong>」→ 一覧から<strong>このアプリのサイト名（URLの一部）</strong>を探し、<strong>左にスワイプして「削除」</strong>（または右上「編集」から削除）。他のサイトは残ります。ボタンが灰色のときは「設定→スクリーンタイム→コンテンツとプライバシーの制限」を確認。<br><strong>■ PC（Mac）</strong>：Safariメニュー →「設定」→「<strong>プライバシー</strong>」→「<strong>Webサイトデータを管理</strong>」→ 検索にサイト名 → 選んで「<strong>削除</strong>」→「完了」。<br>このあと<strong>アプリを開き直し、📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Google Chrome：PC・Androidタブレット／iPadの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）</strong>：このアプリを開いた状態で、<strong>アドレスバー左端のアイコン（鍵や調整マーク）</strong>をクリック →「<strong>Cookieとサイトデータ</strong>」→「<strong>デバイス上のサイトデータを管理</strong>」→ <strong>ゴミ箱</strong>で削除 →「完了」→ <strong>再読み込み</strong>。（別ルート：右上「⋮」→「設定」→「プライバシーとセキュリティ」→「サードパーティCookie」→「<strong>すべてのサイトデータと権限を表示</strong>」→ 検索 → ゴミ箱）。<br><strong>■ タブレット（Android）</strong>：アプリを開く → アドレスバー左の<strong>ページ情報アイコン</strong> →「<strong>Cookieとサイトデータ</strong>」→ 保存データの<strong>削除</strong>。<br><strong>■ タブレット（iPad）・iPhone の Chrome は「1サイトだけ」削除できません</strong>。→ iPadでは<strong>Safariの手順</strong>で消す（普段からこのアプリを Safari で開いておくのが確実）か、Chromeで使い続けたい場合は「設定→プライバシー→閲覧履歴データの削除→Cookie・サイトデータ（全期間）」で消す＝<strong>他サイトもログアウト</strong>。<br>削除後は<strong>開き直して📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Microsoft Edge：PC／タブレットの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全保存」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）＝1サイトだけ削除できます</strong>。かんたん：このアプリを開いた状態で<strong>アドレスバー左端の鍵／情報アイコン</strong>→ 表示された<strong>このサイトのCookie・サイトデータ</strong>を<strong>ゴミ箱</strong>で削除。設定から：右上「…」→「設定」→「<strong>Cookieとサイトのアクセス許可</strong>」→「<strong>Cookieとサイトデータの管理と削除</strong>」→「<strong>すべてのCookieとサイトデータを表示する</strong>」→ 検索にサイト名 → 右端の「<strong>…</strong>（その他の操作）→ 削除」（または「∨」で展開しゴミ箱）。（アドレスバーに <strong>edge://settings/siteData</strong> でも可）。<br><strong>■ タブレット（Android／iPad）の Edge は「1サイトだけ」削除する画面がありません</strong>。→ <strong>iPadは Safari の手順</strong>、<strong>Androidは Chrome の手順</strong>で消すのが確実です（普段からその対応ブラウザでアプリを開いておくのがおすすめ）。どうしても Edge のまま消す場合は「設定→プライバシー、検索、サービス→閲覧データをクリア→Cookieとサイトデータ」＝<strong>他サイトもログアウト</strong>。<br><strong>※ Ctrl+Shift+Delete や「すべてクリア」は他サイトまで消える</strong>ので、PCでは上の「1サイトだけ」の手順を使ってください。削除後は<strong>開き直して📥 読込で復元</strong>します。' }
+    { cat:'こまったとき（救出・復旧）', q:'アプリが使えない・開かない・動かない・真っ白になった（直し方＝データを守ってリセット→復元）', a:'アプリが<strong>クラッシュする・固まる・開かない・動作がおかしい</strong>とき、多くは<strong>ブラウザ内にたまった保存データの不調</strong>が原因です。<strong>このアプリのデータを消して初期状態に戻すと直り、また使えるようになります</strong>。大切なのは<strong>消す前に必ず取り出しておく</strong>ことです。<br><strong>① 取り出す</strong>：開けるなら 💾 保存タブの②か③で全部のバックアップZIPを作る。<strong>開けない・固まって保存できないときは救出ページ diag.html</strong> から取り出す。<br><strong>② 確認</strong>：そのZIPが「ファイル」アプリ・PC・クラウドに<strong>実際にある</strong>ことを確かめる。<br><strong>③ 消す（リセット）</strong>：自分の端末・ブラウザを「早見表」で確認。<strong>1サイトだけ消せるなら</strong>そのブラウザ別手順（Safari／Chrome／Edge）で。<strong>1サイトだけ消せない（❌：iPadのChrome・Edge／AndroidのEdge）ときは、そのブラウザの「閲覧データをクリア（Cookieとサイトデータ）」で消します</strong>。これで<strong>アプリは初期状態に戻り、また使えるようになります</strong>（そのブラウザの他サイトはログアウトされますが、<strong>他のアプリ・他のブラウザには影響しません</strong>）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で①のZIPを取り込んで復元</strong>。写真もマップも評価も戻ります。<br><strong>いちばんの注意</strong>：<strong>取り出せないまま全消しすると、そのブラウザ内のデータは戻りません</strong>（外部に残したバックアップだけが頼りになります）。だから<strong>①の取り出しを最優先</strong>に。どうしても開けず救出もできない場合は、全消しでアプリは使えるようになりますが、<strong>復元は過去に保存しておいたZIPから</strong>になります。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリのデータを消す（リセット）と、なぜ直るの？何が消えるの？（＝消す前に必ず保存）', a:'<strong>こんなとき</strong>：アプリが重い・固まる・表示がおかしい・直したい。<br><strong>なぜ消すと直るの？</strong>：このアプリは写真やマップを<strong>ブラウザの中（端末内）</strong>に保存しています。そこに溜まったデータが<strong>古くなったり壊れたり</strong>すると不調が出ます。<strong>このアプリのデータを一度消して初期状態に戻す（リセット）</strong>と、不調が取れて直ることが多いのです。<br><strong>何が消えるの？</strong>：リセットすると<strong>アプリ内の写真・マップ・評価も消えます</strong>（だから順番が大切）。<br><strong>だから、この順番で</strong>：<strong>① 取り出す</strong>（💾 全部のバックアップ／開けないなら救出ページ diag.html）→ <strong>② 保存できたか確認</strong>（<strong>端末の外に保存できたことを目で確かめてから</strong>：「ファイル」アプリなどでZIPがあるかを見る。赤い数字が0でも、外に保存できたとは限りません）→ <strong>③ リセット（消す）</strong>（下の「自分の端末でできる？早見表」とブラウザ別の手順へ）→ <strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で戻す</strong>。<br><strong>※ 取り出さずに消すと戻せません。</strong>必ず「保存→確認」してから消してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'自分の端末で“アプリのリセット（このアプリだけ消去）”はできる？【早見表】', a:'<strong>「リセット」とは</strong>：アプリの調子が悪いときに<strong>このアプリの保存データだけを消して</strong>初期状態に戻し、直すための操作です。ただし<strong>「このアプリ1つだけ」消せる端末・ブラウザは限られます</strong>。自分の組み合わせを下で確認してください。<br>消すのは<strong>「いつもアプリを開いているブラウザ」</strong>です（各ブラウザは別保存）。「このアプリ1サイトだけ」消せるかは次のとおり。<br><strong>● PC（Windows）</strong>：Edge ✅／Chrome ✅／Safari ＝（Windowsには無し）<br><strong>● PC（Mac）</strong>：Safari ✅／Chrome ✅／Edge ✅<br><strong>● タブレット（iPad）</strong>：Safari ✅／Chrome ❌／Edge ❌ … <strong>iPadで1サイトだけ消せるのは Safari だけ</strong><br><strong>● タブレット（Android）</strong>：Chrome ✅／Edge ❌／Safari ＝（Androidには無し）<br><strong>❌（1サイトだけ消せない）ときの対処</strong>：(a) <strong>消せるブラウザでアプリを開き直して使う</strong>のがおすすめ（iPad→Safari、Android→Chrome）。(b) どうしても今のブラウザで消すなら「<strong>閲覧データをクリア（Cookieとサイトデータ）</strong>」を使う＝<strong>他のサイトもログアウト</strong>されますが、<strong>それでもアプリは初期状態に戻って再び使えるようになり、あとから📥 読込で元に戻せます</strong>（クラッシュ時の最終手段）。<br>※ いずれも<strong>先に「全部のバックアップ→保存確認」</strong>を済ませてから。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Safari：iPad・iPhone／Mac】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>Safariは<strong>Apple製品（iPad・iPhone・Mac）専用</strong>です（WindowsやAndroidにはありません）。必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ タブレット（iPad）・iPhone</strong>：「設定」アプリ →（iOS／iPadOS 18は「<strong>アプリ</strong>」→）<strong>Safari</strong> →「<strong>詳細</strong>」→「<strong>Webサイトデータ</strong>」→ 一覧から<strong>このアプリのサイト名（URLの一部）</strong>を探し、<strong>左にスワイプして「削除」</strong>（または右上「編集」から削除）。他のサイトは残ります。ボタンが灰色のときは「設定→スクリーンタイム→コンテンツとプライバシーの制限」を確認。<br><strong>■ PC（Mac）</strong>：Safariメニュー →「設定」→「<strong>プライバシー</strong>」→「<strong>Webサイトデータを管理</strong>」→ 検索にサイト名 → 選んで「<strong>削除</strong>」→「完了」。<br>このあと<strong>アプリを開き直し、📥 読込で復元</strong>します。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Google Chrome：PC・Androidタブレット／iPadの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）</strong>：このアプリを開いた状態で、<strong>アドレスバー左端のアイコン（鍵や調整マーク）</strong>をクリック →「<strong>Cookieとサイトデータ</strong>」→「<strong>デバイス上のサイトデータを管理</strong>」→ <strong>ゴミ箱</strong>で削除 →「完了」→ <strong>再読み込み</strong>。（別ルート：右上「⋮」→「設定」→「プライバシーとセキュリティ」→「サードパーティCookie」→「<strong>すべてのサイトデータと権限を表示</strong>」→ 検索 → ゴミ箱）。<br><strong>■ タブレット（Android）</strong>：アプリを開く → アドレスバー左の<strong>ページ情報アイコン</strong> →「<strong>Cookieとサイトデータ</strong>」→ 保存データの<strong>削除</strong>。<br><strong>■ タブレット（iPad）・iPhone の Chrome は「1サイトだけ」削除できません</strong>。→ iPadでは<strong>Safariの手順</strong>で消す（普段からこのアプリを Safari で開いておくのが確実）か、Chromeで使い続けたい場合は「設定→プライバシー→閲覧履歴データの削除→Cookie・サイトデータ（全期間）」で消す＝<strong>他サイトもログアウト</strong>。<br>削除後は<strong>開き直して📥 読込で復元</strong>します。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Microsoft Edge：PC／タブレットの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）＝1サイトだけ削除できます</strong>。かんたん：このアプリを開いた状態で<strong>アドレスバー左端の鍵／情報アイコン</strong>→ 表示された<strong>このサイトのCookie・サイトデータ</strong>を<strong>ゴミ箱</strong>で削除。設定から：右上「…」→「設定」→「<strong>Cookieとサイトのアクセス許可</strong>」→「<strong>Cookieとサイトデータの管理と削除</strong>」→「<strong>すべてのCookieとサイトデータを表示する</strong>」→ 検索にサイト名 → 右端の「<strong>…</strong>（その他の操作）→ 削除」（または「∨」で展開しゴミ箱）。（アドレスバーに <strong>edge://settings/siteData</strong> でも可）。<br><strong>■ タブレット（Android／iPad）の Edge は「1サイトだけ」削除する画面がありません</strong>。→ <strong>iPadは Safari の手順</strong>、<strong>Androidは Chrome の手順</strong>で消すのが確実です（普段からその対応ブラウザでアプリを開いておくのがおすすめ）。どうしても Edge のまま消す場合は「設定→プライバシー、検索、サービス→閲覧データをクリア→Cookieとサイトデータ」＝<strong>他サイトもログアウト</strong>。<br><strong>※ Ctrl+Shift+Delete や「すべてクリア」は他サイトまで消える</strong>ので、PCでは上の「1サイトだけ」の手順を使ってください。削除後は<strong>開き直して📥 読込で復元</strong>します。' }
   ];
 
   // v3-148：「アプリが使えないときは」トラブルパネル＝開閉＋症状タップで該当Q&Aを検索表示。
@@ -5814,7 +5892,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var n = nextDummyNumber(sv);
       var btn = document.createElement('button');
       btn.type = 'button';
-      btn.style.cssText = 'width:100%;margin:0 0 8px 0;padding:12px;border:none;border-radius:10px;background:#5856d6;color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
+      btn.style.cssText = 'width:100%;margin:0 0 8px 0;padding:12px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:14px;font-weight:600;cursor:pointer;';
       btn.textContent = '🔢 ' + sv + '〜 で撮る（次：' + n + '）';
       btn.addEventListener('click', function(){ assignDummyNumber(sv); });
       box.appendChild(btn);
@@ -6592,20 +6670,26 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var isRep = grp && grp.repId === p.id;
       if (isRep) {
         var contBtn = document.createElement('button');
-        contBtn.textContent = '📷 続きを撮る';
-        contBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#34c759;color:#fff;';
+        contBtn.textContent = '📷 続けて撮る';
+        contBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
         contBtn.onclick = function(ev){ ev.stopPropagation(); resumeContinuousFromList(grp, p); };
         actions.appendChild(contBtn);
+        // v3.199 S8：撮影リストから、この設備（代表の写真）の評価を開く。保存しても評価せずに戻っても、撮影リストへ戻る
+        var evalBtn = document.createElement('button');
+        evalBtn.textContent = '📊 評価';
+        evalBtn.style.cssText = 'width:100%;margin:0;border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
+        evalBtn.onclick = function(ev){ ev.stopPropagation(); enterEvalMode(grp.repId, { fromList: true }); };
+        actions.appendChild(evalBtn);
       }
       actions.appendChild(retake);
       var renameBtn = document.createElement('button');
       renameBtn.textContent = '✏️ 番号変更';
-      renameBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#007aff;color:#fff;';
+      renameBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
       renameBtn.onclick = function(ev){ ev.stopPropagation(); renameFromList(p); };
       actions.appendChild(renameBtn);
       var placeBtn = document.createElement('button');
       placeBtn.textContent = '📍 マップに配置';
-      placeBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#ff9500;color:#fff;';
+      placeBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
       placeBtn.onclick = function(ev){ ev.stopPropagation(); openMapPickForPhoto(p); };
       actions.appendChild(placeBtn);
       info.appendChild(actions);
@@ -6760,9 +6844,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         updateStorageInfo();
         if (typeof updateMapPortCounts === 'function') updateMapPortCounts();
       }
+      if (tab.dataset.view === 'eval') updateEvalNoTarget();   // v3.199 S9
       if (typeof renderTracker === 'function') renderTracker();
     });
   });
+  // v3.199 S9：評価タブを直接開いて、評価する設備が決まっていないときは、知らせと「撮影リストを開く」を出す（決まっていれば出さない）
+  function updateEvalNoTarget() {
+    var b = $('evalNoTarget'); if (!b) return;
+    b.style.display = (evalModeBaseId == null) ? 'block' : 'none';
+  }
+  (function setupEvalNoTarget() {
+    var lb = $('evalNoTargetListBtn');
+    if (lb) lb.addEventListener('click', function() { var lt = document.querySelector('.tab[data-view="list"]'); if (lt) lt.click(); });
+  })();
 
   // 下部固定バナー（撮影/評価）が出ている間だけ、本文の下に余白を確保（重なり防止）
   (function watchBottomBars(){
@@ -6985,7 +7079,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var plan = plannedShotName();
       var first = plan.base + '_1.jpg';
       if (existingPhotoNamed(plan.client, plan.site, plan.building, first)) {
-        alert('「' + first + '」は、もう撮ってあります。\n同じ名前で撮ると、保存の ZIP の中で写真が上書きされてしまいます。\n\n同じ設備を続けて撮るときは、撮影リストの「📷 続きを撮る」を使ってください。\n別の設備なら、番号を確かめてください。');
+        alert('「' + first + '」は、もう撮ってあります。\n同じ名前で撮ると、保存の ZIP の中で写真が上書きされてしまいます。\n\n同じ設備の写真を足すときは、撮影リストの「📷 続けて撮る」を使ってください。\n別の設備なら、番号を確かめてください。');
         return;
       }
     }
@@ -7060,6 +7154,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var evalSaveBtn = $('eval-save-btn');
   var evalSkipBtn = $('eval-skip-btn');
   var evalModeBaseId = null; // 評価モードで評価対象になっている代表写真のid
+  var evalFromList = false;   // v3.199 S8：撮影リストの「📊 評価」から入ったか（入ったときは、終わったら撮影リストへ戻す）
 
   // v3.198 L4：評価の画面を開くとき、その写真の前の評価（G・U・T・T の対象・2つの印・メモ・分類）を入力欄に入れ直す。
   //   前は入れ直さず、空や別の設備の値のまま保存して、前の評価を上書きしていた（CAM-RISK 3-1）。
@@ -7093,10 +7188,17 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (memo) memo.value = p.memo || '';
   }
 
-  function enterEvalMode(baseId) {
+  function setEvalBarForList(fromList) {   // v3.199 S8：下の帯のボタンの名前（撮影リストから入ったときだけ「撮影リストへ戻る」）
+    var sb = $('eval-save-btn'), kb = $('eval-skip-btn');
+    if (sb) sb.textContent = fromList ? '✅ 評価を保存して撮影リストへ戻る' : '✅ 評価を保存して位置記録へ';
+    if (kb) kb.textContent = fromList ? '評価せずに撮影リストへ戻る' : '評価せずに位置記録へ';
+  }
+  function enterEvalMode(baseId, opts) {
     var ph0 = photos.find(function(p){ return p.id === baseId; });
     if (!ph0) return;
     evalModeBaseId = baseId;
+    evalFromList = !!(opts && opts.fromList);   // v3.199 S8：ほかの入口（撮影のあと・ピンの詳細）は、今までどおり位置記録へ進む
+    setEvalBarForList(evalFromList);
     loadEvalIntoForm(ph0);   // v3.198 L4（T の根拠は、すぐ下で前のまま入れ直す）
     tHelperBasis = ph0.tBasis || ''; // v3-117：段階B＝既存の根拠を引き継ぐ（手で再保存しても消えない）
     updateTBasisDisplay(tHelperBasis); // v3-119：評価タブの表示窓に反映
@@ -7371,6 +7473,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       try { refreshPinBuildingSelect(); } catch (e) {}
     }
   }
+  function returnToListAfterEval(msg) {   // v3.199 S8
+    if (evalBar) evalBar.style.display = 'none';
+    evalModeBaseId = null;
+    evalFromList = false;
+    setEvalBarForList(false);
+    var lt = document.querySelector('.tab[data-view="list"]'); if (lt) lt.click();
+    renderTracker();
+    if (msg) showToast(msg);
+  }
   function enterLocatePhase(msg){
     if (evalBar) evalBar.style.display = 'none';
     var cbar=$('complete-bar'); if(cbar) cbar.style.display='flex';
@@ -7387,7 +7498,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var st=currentStages(); var nm=st?st.name:'';
       if (st && (!st.shoot || !st.eval || !st.pin)) {
         var miss=[]; if(!st.shoot)miss.push('撮影'); if(!st.eval)miss.push('評価'); if(!st.pin)miss.push('位置記録');
-        if(!confirm('まだ「'+miss.join('・')+'」が未完了です。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとから追記もできます）')) return;
+        // v3.199 S2：位置記録（任意）だけが抜けているときは「未完了」と言わない
+        var onlyPin = (miss.length === 1 && miss[0] === '位置記録');
+        var doneMsg = onlyPin
+          ? 'ピンはまだ置いていません（位置記録は任意です）。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとからピンを置くこともできます）'
+          : 'まだ「'+miss.join('・')+'」が未完了です。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとから追記もできます）';
+        if(!confirm(doneMsg)) return;
       }
       advanceToNextEquipment('✅ ' + (nm||'設備') + ' を完了しました。次の設備の番号を入力して撮影してください。');
     });
@@ -7426,12 +7542,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         renderList();
         showToast('✅ この端末に記録しました'); // 評価保存の確定（v3-49）
       }
-      enterLocatePhase('✅ ' + (ph0 ? ph0.filename : '') + ' の評価をこの端末に記録しました。図面にピンを置くか、「この設備を完了」を押してください。');
+      if (evalFromList) { returnToListAfterEval(); return; }   // v3.199 S8：撮影リストから入ったときは、位置記録へ進まない
+      enterLocatePhase('✅ ' + (ph0 ? ph0.filename : '') + ' の評価をこの端末に記録しました。図面にピンを置くか、「✅ この設備を完了して次へ」を押してください。');
     });
   }
   if (evalSkipBtn) {
     evalSkipBtn.addEventListener('click', function() {
-      enterLocatePhase('評価をスキップしました。図面にピンを置くか、「この設備を完了」を押してください。');
+      if (evalFromList) { returnToListAfterEval('評価をしないで撮影リストへ戻りました'); return; }   // v3.199 S8
+      enterLocatePhase('評価をスキップしました。図面にピンを置くか、「✅ この設備を完了して次へ」を押してください。');
     });
   }
   // 連続撮影中：今の1枚を撮り直す（v3-194：同じレコードを更新＝同じ枝番のまま写真だけ差し替え。失敗分が溜まらない）
@@ -7867,7 +7985,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             continuousInfo.style.display = 'block';
             // v3-194：_1 始まりでは「枝番 N ＝ N枚目」なので counter がそのまま枚数。
             //   旧 _0 始まりの名残で counter+1 のままだと、2枚目を「3枚目」と誤表示していた。
-            continuousInfo.innerHTML = '🔗 連続撮影中：<strong>' + photo.filename + '</strong> をこの端末に記録しました（' + continuousMode.counter + '枚目）。<br>ピンぼけ等で撮り直すときは、上部バナーの「🔄 今の1枚を撮り直す」を押してください（同じ番号のまま写真だけ差し替わります）。';
+            continuousInfo.innerHTML = '🔗 連続撮影中：<strong>' + photo.filename + '</strong> をこの端末に記録しました（' + continuousMode.counter + '枚目）。<br>ピンぼけ等で撮り直すときは、画面の下の帯の「🔄 今の1枚を撮り直す」を押してください（同じ番号のまま写真だけ差し替わります）。';
           }
           showContinuousBanner();
           shootBtn.textContent = '✓ 連続撮影でこの端末に記録しました';
@@ -7882,7 +8000,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
-            continuousInfo.innerHTML = '🔗 <strong>' + photo.filename + '</strong> をこの端末に記録しました。<br>同じ設備を続けて撮るなら、画面上部の緑のバナー「📷 続けて撮影」を押してください（_2, _3… と枝番が付きます）。';
+            continuousInfo.innerHTML = '🔗 <strong>' + photo.filename + '</strong> をこの端末に記録しました。<br>同じ設備をもう1枚撮るなら、画面の下の緑の帯の「📷 続けて撮る」を押してください（_2, _3… と枝番が付きます）。';
           }
           showContinuousBanner();
 
@@ -8160,7 +8278,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var list = getUnsavedPhotos();
     var hasMap = !!(mapData && mapData.buildings && mapData.buildings.length > 0);
     if (list.length === 0) {
-      alert('新しく撮った分はありません。\n\n前回バックアップしたあとに撮影した写真がありません。すべてを保存したいときは「② 区切りでまとめてバックアップ」をお使いください。');
+      alert('新しく撮った分はありません。\n\n前回バックアップしたあとに撮影した写真がありません。すべてを保存したいときは「② すべてを1つのZIPにまとめてバックアップ」か「③ 全データを小分けにしてバックアップ」をお使いください。');
       return;
     }
 
@@ -8272,7 +8390,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (splitDoneBtn) splitDoneBtn.addEventListener('click', function(){
       markBackupDone(splitKeys || []);
       splitDoneBtn.style.display = 'none';
-      splitBtn.disabled = false; splitBtn.textContent = '🏁 区切りでまとめてバックアップ';
+      splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにしてバックアップ';
       if (splitLinks) splitLinks.innerHTML = '<p style="color:#1b7f3b; font-weight:700; font-size:13px; margin:8px 0 0;">保存済みにしました。お疲れさまでした。</p>';
       showToast('✅ ファイルに保存しました');
     });
@@ -8361,12 +8479,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           note.textContent = '全 ' + chunks.length + ' 個できました。上のオレンジの枠を1つずつタップして、必ず全部保存してください。復元するときは、この ' + chunks.length + ' 個を全部読み込みます。';
           splitLinks.appendChild(note);
         }
-        splitBtn.disabled = false; splitBtn.textContent = '🏁 もう一度まとめてバックアップ';
+        splitBtn.disabled = false; splitBtn.textContent = '📦 もう一度、全データを小分けにしてバックアップ';
         if (splitDoneBtn) splitDoneBtn.style.display = 'block';
         progress.classList.remove('show');
       } catch (err) {
         alert('保存エラー: ' + err.message);
-        splitBtn.disabled = false; splitBtn.textContent = '🏁 区切りでまとめてバックアップ';
+        splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにしてバックアップ';
         progress.classList.remove('show');
       }
     });
@@ -8879,10 +8997,49 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return Promise.resolve().then(function(){ return importBackupZip(f); })
       .then(restore, function(err){ restore(); throw err; });
   }
+  // v3.199 S7：取り込み（importBackupZip）の確認の窓は［OK］＝置き換え。位置記録だけの読み込みは［OK］＝追加で、意味が逆。
+  //   取り違えて写真を消さないよう、写真が1枚以上あるときだけ、呼ぶ前に自作の小窓で知らせる（確認の窓そのものは変えない）。
+  //   小窓は「やめる」が初期。ファイルはもう選んであるので、このあと .click() は呼ばない（地雷1）。数は文字として出す（地雷9）
+  function askImportReplaceNotice(n) {
+    return new Promise(function(resolve) {
+      var modal = $('importNoticeModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'importNoticeModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = '読み込みの前に確かめてください';
+      var body = document.createElement('p'); body.className = 'delguard-body';
+      body.textContent = '次の確認で［OK］を押すと、今の写真 ' + n + ' 枚が全部消えて置き換わります。追加なら［キャンセル］を押してください。';
+      var cancel = document.createElement('button'); cancel.id = 'importNoticeCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
+      cancel.textContent = 'やめる'; cancel.style.marginBottom = '8px';
+      var go = document.createElement('button'); go.id = 'importNoticeGo'; go.type = 'button';
+      go.textContent = '分かった、続ける';
+      go.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      box.appendChild(title); box.appendChild(body); box.appendChild(cancel); box.appendChild(go);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      cancel.addEventListener('click', function() { close(false); });
+      go.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { cancel.focus(); } catch (e) {}
+    });
+  }
+  function onPhotoImportChosen(f) {
+    if (!f) return Promise.resolve(false);
+    if (photos.length > 0) {
+      return askImportReplaceNotice(photos.length).then(function(goOn) {
+        if (!goOn) return false;
+        importBackupZipKeepingUnsaved(f);
+        return true;
+      });
+    }
+    importBackupZipKeepingUnsaved(f);
+    return Promise.resolve(true);
+  }
   if (photoImportInput) photoImportInput.addEventListener('change', function(e) {
     var f = e.target.files[0];
     photoImportInput.value = '';
-    if (f) importBackupZipKeepingUnsaved(f);
+    onPhotoImportChosen(f);   // v3.199 S7
   });
 
   // v3-139：破壊的操作（アプリ内データ削除）は専用確認モーダルの後ろに置く。背景タップでは閉じない。
@@ -10996,7 +11153,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!loc) { alert('対象のマップが見つかりませんでした。'); return; }
     var sheet = loc.sheet;
     var pinCount = (sheet.pins || []).length;
-    if (!confirm('このマップの「下地（図面）」を、選んだ画像に差し替えます。\n\n・ピン' + pinCount + '個はそのまま残ります（位置は枠に対する割合で保持）。\n・仮の図面と正式な図面は「切り取り範囲・縦横比」を揃えると、ぴったり重なります。\n・差し替え後も「↩ 下地を元に戻す」で戻せます。\n\n差し替えますか？')) return;
+    if (!confirm('このマップの「下地（図面）」を、選んだ画像に差し替えます。\n\n・ピン' + pinCount + '個はそのまま残ります（位置は枠に対する割合で保持）。\n・仮の図面と正式な図面は「切り取り範囲・縦横比」を揃えると、ぴったり重なります。\n・差し替え後も、アプリを開き直すまでは「↩ 下地を元に戻す」で戻せます（開き直したあとは戻せません）。\n\n差し替えますか？')) return;
     var newUrl;
     try { newUrl = await readFileAsDataURL(file); }
     catch (e) { alert('画像を読み取れませんでした。'); return; }
@@ -11177,7 +11334,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (selectedMarkerType === 'pin') note.textContent = '色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます。置いたピンは長押しでそのまま移動できます';
         else if (selectedMarkerType === 'memo') note.textContent = '色を選んでマップをタップ → メモ文字を入力できます';
         else if (selectedMarkerType === 'arrow') note.textContent = '色を選んでマップをタップ → 矢印を置き、先端をドラッグで長さ・向きを調整';
-        else note.textContent = '✋ 移動モード：1本指でマーカーを動かす／2本指でつまむと、ピン・メモは大きさ変更、矢印は拡大・回転ができます';
+        else note.textContent = '✋ 移動モード：1本指でピン・メモ・矢印を動かす／2本指でつまむと、ピン・メモは大きさ変更、矢印は拡大・回転ができます';
       }
       // 手モードのときは色パレットを隠す
       var colorRow = $('pin-color-row');
@@ -11352,6 +11509,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   function enterDrawMode() {
+    clearLastCreatedPin();   // v3.199 M7：詳細・手描き・作図・レイヤーを開いたら、取り消しの帯を隠す（別のピンを確認なしで消さないため）
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return;
     if (!pinEditorImg.naturalWidth) { alert('マップ画像の読み込み後に描けます。少し待ってからもう一度お試しください。'); return; }
@@ -12236,7 +12394,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (li > 0) { var t2 = sheet.layers[li]; sheet.layers[li] = sheet.layers[li - 1]; sheet.layers[li - 1] = t2; }
     } else if (act === 'del') {
       if (sheet.layers.length <= 1) { alert('レイヤーは最低1枚必要です。差し替えたいときは、先に新しいレイヤーを追加してから削除してください。'); return; }
-      var pinNote = (sheet.pins && sheet.pins.length) ? '\n（ピン' + sheet.pins.length + '個はそのまま残ります）' : '';
+      // v3.199 M5：言い切らない。いちばん下（図面の大きさの元）を消すと、ピンの位置がずれることがある
+      var pinNote = (sheet.pins && sheet.pins.length)
+        ? (li === 0 ? '\n（ピン' + sheet.pins.length + '個は消えません。いちばん下の図面を消すと、次の図面が全体の大きさの元になります。ピンは全体の大きさに対する割合で置かれているので、消したあとにピンの位置を確かめてください）'
+                      : '\n（ピン' + sheet.pins.length + '個は消えません）')
+        : '';
       if (!confirm('このレイヤー「' + (L.name || '') + '」を削除します。' + pinNote)) return;
       sheet.layers.splice(li, 1);
     }
@@ -12257,6 +12419,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   var layerMode = false;
   function enterLayerMode() {
+    clearLastCreatedPin();   // v3.199 M7：詳細・手描き・作図・レイヤーを開いたら、取り消しの帯を隠す（別のピンを確認なしで消さないため）
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return;
     ensureSheetLayers(sheet);
@@ -12561,6 +12724,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   function enterVectorMode() {
+    clearLastCreatedPin();   // v3.199 M7：詳細・手描き・作図・レイヤーを開いたら、取り消しの帯を隠す（別のピンを確認なしで消さないため）
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return;
     if (!pinEditorImg.naturalWidth) { alert('マップ画像の読み込み後に作図できます。少し待ってからもう一度お試しください。'); return; }
@@ -13457,7 +13621,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         renderPinMarker(pin);
       }
     });
-    if (pinEditorCount) pinEditorCount.textContent = 'マーカー' + (sheet.pins||[]).length;
+    if (pinEditorCount) pinEditorCount.textContent = 'ピン' + (sheet.pins||[]).length;
     updatePinFilterStatus(sheet);
     if (!vectorMode) showVectorOverlayReadonly();   // 作図線を重ねて表示（常に見える）
   }
@@ -13866,6 +14030,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     placeQueue = ids.slice();
     placeIdx = 0;
     placementActive = true;
+    pendingAutoPhotoId = null;   // v3.199 M9：連続で置き始めたら、自動で付ける写真を空にする（終わったあとのタップで、同じ写真のピンが黙ってもう1本付くのを防ぐ）
     selectedMarkerType = 'pin';
     document.querySelectorAll('.marker-type-btn').forEach(function(b){ b.classList.toggle('selected', b.dataset.type === 'pin'); });
     var stage = $('pin-editor-stage');
@@ -14108,8 +14273,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var vEl = $('place-select-visible');
     if (vEl) {
       vEl.textContent = q
-        ? ('「' + q + '」に一致：' + visible + ' 枚 ／ 未配置 全 ' + total + ' 枚')
-        : ('未配置の写真：' + total + ' 枚（番号で絞り込めます）');
+        ? ('「' + q + '」に一致：' + visible + ' 枚 ／ この図面に置いていない写真 全 ' + total + ' 枚')
+        : ('この図面に置いていない写真：' + total + ' 枚（ほかの棟の写真も含みます。番号で絞り込めます）');   // v3.199 M10：数えている範囲どおりに書く
     }
   }
 
@@ -14178,6 +14343,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     placementActive = false;
     placeQueue = [];
     placeIdx = 0;
+    pendingAutoPhotoId = null;   // v3.199 M9：終わるときも空にする
     var banner = $('placement-banner');
     if (banner) banner.style.display = 'none';
     var hint = $('pin-editor-hint');
@@ -14282,7 +14448,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
         movingPinId = null;
         var hint0 = $('pin-editor-hint');
-        if (hint0) hint0.textContent = 'マップをタップするとマーカーを置けます';
+        if (hint0) hint0.textContent = 'マップをタップするとピンを置けます';
         await saveMapData(mapData);
         renderPins();
         return;
@@ -14329,7 +14495,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       sheet.pins.push(newPin);
       var hint1 = $('pin-editor-hint');
-      if (hint1) hint1.textContent = 'マップをタップするとマーカーを置けます';
+      if (hint1) hint1.textContent = 'マップをタップするとピンを置けます';
       await saveMapData(mapData);
       renderPins();
       showToast('✅ この端末に記録しました'); // ピン設置の確定（v3-49）
@@ -14353,7 +14519,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       try { ensurePinNumRuleDecided(photos.find(function(p){ return p.id === newPin.photoId; })); } catch (e) {}
     }
     sheet.pins.push(newPin);
-    var h = $('pin-editor-hint'); if (h) h.textContent = 'マップをタップするとマーカーを置けます';
+    var h = $('pin-editor-hint'); if (h) h.textContent = 'マップをタップするとピンを置けます';
     await saveMapData(mapData);
     renderPins();
     showToast('✅ この端末に記録しました');
@@ -14803,12 +14969,49 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
 
-  if (pinEditorClose) pinEditorClose.addEventListener('click', closePinEditor);
+  // v3.199 M11：手描きの途中の「← 戻る」。手描きを開いてから描いた（消した）ものがあれば、捨てるかを聞く（手描きのときだけ）
+  //   取り消しの記録（undoStack）が残っていれば、保存していない手描きがある。何も描いていなければ、今までどおりすぐ戻る
+  //   M8 と同じ自作の小窓で「やめる」が初め。小窓のあとに .click() は呼ばない（地雷1）
+  function drawHasUnsaved() {
+    return !!drawMode && undoStack.length > 0;
+  }
+  function askDrawDiscard() {
+    return new Promise(function(resolve) {
+      var modal = $('drawDiscardModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'drawDiscardModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = '描いたものを捨てますか？';
+      var body = document.createElement('p'); body.className = 'delguard-body';
+      body.textContent = 'このまま戻ると、保存していない手描きは消えます。残すときは「やめる」を押し、「✅ 描き終わり（保存）」を押してください。';
+      var cancel = document.createElement('button'); cancel.id = 'drawDiscardCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
+      cancel.textContent = 'やめる'; cancel.style.marginBottom = '8px';
+      var go = document.createElement('button'); go.id = 'drawDiscardGo'; go.type = 'button';
+      go.textContent = '捨てる';
+      go.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#ff3b30;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      box.appendChild(title); box.appendChild(body); box.appendChild(cancel); box.appendChild(go);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      cancel.addEventListener('click', function() { close(false); });
+      go.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { cancel.focus(); } catch (e) {}
+    });
+  }
+  async function onPinEditorBack() {
+    if (drawHasUnsaved()) {
+      if (!(await askDrawDiscard())) return;   // 「やめる」：手描きの画面に残る（描いたものはそのまま）
+    }
+    closePinEditor();
+  }
+  if (pinEditorClose) pinEditorClose.addEventListener('click', onPinEditorBack);
   var pinEditorDone = $('pin-editor-done');
   if (pinEditorDone) pinEditorDone.addEventListener('click', closePinEditor);
 
   // マーカー詳細モーダル（種類別に表示を変える）
   function openPinDetail(pinId) {
+    clearLastCreatedPin();   // v3.199 M7：詳細・手描き・作図・レイヤーを開いたら、取り消しの帯を隠す（別のピンを確認なしで消さないため）
     var sheet = resolveSheet(editSheetRef);
     if (!sheet) return;
     var pin = sheet.pins.find(function(p){ return p.id === pinId; });
@@ -15007,7 +15210,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (!sheet || !editingPinId) return;
       var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
       if (!pin) return;
-      if (!confirm('ピン ' + pin.no + ' を削除しますか？')) return;
+      // v3.199 M3：図面に出ている番号で聞く。メモ・矢印はその名前で聞く
+      var delWhat = (pin.type === 'memo') ? 'このメモ' : (pin.type === 'arrow') ? 'この矢印' : 'このピン（' + pinLabel(pin) + '）';
+      if (!confirm(delWhat + 'を削除しますか？')) return;
       sheet.pins = sheet.pins.filter(function(p){ return p.id !== editingPinId; });
       await saveMapData(mapData);
       closePinDetail();
@@ -15221,18 +15426,49 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (photoPickerSearch) {
     photoPickerSearch.addEventListener('input', function(){ renderPhotoPicker(photoPickerSearch.value); });
   }
-  if (photoPickerNone) {
-    photoPickerNone.addEventListener('click', async function() {
-      var sheet = resolveSheet(editSheetRef);
-      if (!sheet || !editingPinId) return;
-      var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
-      if (!pin) return;
-      pin.photoId = null;
-      await saveMapData(mapData);
-      closePhotoPicker();
-      renderPins();
-      openPinDetail(editingPinId);
+  // v3.199 M8：「紐づけを外す」は、すぐ外さずに確認を出す。どの写真との紐づけかを文字で出す（地雷9）
+  //   confirm() では「やめる」を初めに選べないので、自作の小窓にする（「やめる」が初め）。確認のあとに .click() は呼ばない（地雷1）
+  function askUnlinkConfirm(name) {
+    return new Promise(function(resolve) {
+      var modal = $('unlinkConfirmModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'unlinkConfirmModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = '紐づけを外しますか？';
+      var body = document.createElement('p'); body.className = 'delguard-body';
+      body.textContent = (name ? 'このピンと写真「' + name + '」の紐づけを外しますか？' : 'このピンと写真の紐づけを外しますか？') + ' ピンは残ります。写真も消えません。';
+      var cancel = document.createElement('button'); cancel.id = 'unlinkConfirmCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
+      cancel.textContent = 'やめる'; cancel.style.marginBottom = '8px';
+      var go = document.createElement('button'); go.id = 'unlinkConfirmGo'; go.type = 'button';
+      go.textContent = '外す';
+      go.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#ff3b30;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      box.appendChild(title); box.appendChild(body); box.appendChild(cancel); box.appendChild(go);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      cancel.addEventListener('click', function() { close(false); });
+      go.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { cancel.focus(); } catch (e) {}
     });
+  }
+  async function unlinkPinPhoto() {
+    var sheet = resolveSheet(editSheetRef);
+    if (!sheet || !editingPinId) return;
+    var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
+    if (!pin) return;
+    if (pin.photoId != null) {   // 紐づいているときだけ確認する（紐づいていなければ、今までどおり）
+      var linked = photos.find(function(ph){ return ph.id === pin.photoId; });
+      if (!(await askUnlinkConfirm(linked ? linked.filename : ''))) return;
+    }
+    pin.photoId = null;
+    await saveMapData(mapData);
+    closePhotoPicker();
+    renderPins();
+    openPinDetail(editingPinId);
+  }
+  if (photoPickerNone) {
+    photoPickerNone.addEventListener('click', unlinkPinPhoto);
   }
   if (photoPickerClose) photoPickerClose.addEventListener('click', closePhotoPicker);
 
@@ -15408,7 +15644,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (pinOpenBtn) {
     pinOpenBtn.addEventListener('click', function() {
       if (!pinSheetSelect.value) {
-        alert('ピンを打つマップを選択してください。\nマップがない場合は「📍 位置記録」タブで先に登録してください。');
+        alert('ピンを打つマップを選択してください。\nマップがない場合は、下の棟の一覧で棟を「開く」を押し、「＋ マップを追加」から追加してください（棟が無いときは、先に「＋ 棟（建物）の情報を登録する」）。');
         return;
       }
       // 選択中の棟/区分/マップでピン編集を開く。直前に撮影した写真があれば自動紐づけ
@@ -15417,7 +15653,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         areaId: pinAreaSelect.value || null,
         sheetId: pinSheetSelect.value
       };
-      openPinEditor(ref, lastShotPhotoId);
+      // v3.199 M9：直前に撮った写真が、もうこの図面にピンを持っていたら自動では付けない（同じ写真のピンが黙ってもう1本付くのを防ぐ）
+      var sheetForAuto = resolveSheet(ref);
+      var autoAlreadyPlaced = lastShotPhotoId != null && !!sheetForAuto && (sheetForAuto.pins || []).some(function(p){ return p.photoId === lastShotPhotoId; });
+      openPinEditor(ref, autoAlreadyPlaced ? null : lastShotPhotoId);
       // 未配置の写真があれば「写真から連続でピンを置く」を提案（撮った流れの入口）
       var sheetForCount = resolveSheet(ref);
       if (sheetForCount) {
@@ -15425,7 +15664,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         (sheetForCount.pins || []).forEach(function(p){ if (p.photoId != null) placedSet[p.photoId] = true; });
         var unplaced = photos.filter(function(p){ return !placedSet[p.id]; }).length;
         if (unplaced > 0) {
-          if (confirm('この図面に置いていない写真が ' + unplaced + ' 枚あります。\n\n［OK］写真を選んでピンを置く（番号付き）\n［キャンセル］自分でタップして置く')) {
+          if (confirm('ふつうは［キャンセル］を押して、自分でタップして置きます。\n\nこの図面に置いていない写真が ' + unplaced + ' 枚あります（ほかの棟の写真も含めて数えています）。\n\n［OK］写真を選んでピンを置く（番号付き）\n［キャンセル］自分でタップして置く')) {
             startPhotoPlacement();
           }
         }
@@ -15594,6 +15833,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 保存：mapData全体をJSONにしてダウンロード
   if (mapExportBtn) {
     // 📤 位置記録の保存（ZIP）：移動・復元用。中身は _backup/mapdata.json（v3-190で閲覧用HTMLの同梱は廃止）
+    function mapSaveUnsure(fname) {   // v3.199 M12：iPad でダウンロードを押しただけのとき（保存できたか分からない）
+      if (!mapPortStatus) return;
+      mapPortStatus.className = 'floorplan-status';
+      mapPortStatus.textContent = 'ダウンロードを始めました（' + fname + '）。保存できたかは、この画面では分かりません。「ファイル」アプリに残ったか確かめ、残っていたら「✅ ファイルに保存できた（確認した）」を押してください。';
+    }
     mapExportBtn.addEventListener('click', async function() {
       try {
         if (mapData.buildings.length === 0) {
@@ -15610,15 +15854,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         // v3-190：閲覧用HTMLの同梱は廃止（情報漏洩リスク：JSON・メモ本文・レイヤー元データが平文で同梱されるため）。
         //   ピン入り図面の配布は「🖼 ピン入り図面を画像で書き出す」を使う。取り込み側は旧ZIPの位置記録.htmlを引き続き読める。
         var blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
-        var url = URL.createObjectURL(blob);
         var fname = localStamp() + '_位置記録のみ_all.zip';
-        var aEl = document.createElement('a');
-        aEl.href = url; aEl.download = fname;
-        document.body.appendChild(aEl); aEl.click(); document.body.removeChild(aEl);
-        setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+        // v3.199 M12：待ったあとにプログラムで保存を始めない（地雷1）。保存のボタンを出し、利用者が押して保存する。
+        //   「ファイルに保存しました」は本当に保存したときだけ出す（appendConfirmedSaveApp）。ZIP の中身は変えない
+        var zipHolder = $('mapZipSave'); if (zipHolder) zipHolder.innerHTML = '';
+        appendConfirmedSaveApp(zipHolder, blob, fname, function() {
+          if (mapPortStatus) { mapPortStatus.className = 'floorplan-status ok'; mapPortStatus.textContent = '✅ 位置記録のZIPをファイルに保存しました（' + fname + '）。別の端末・PCの「📥 データを読み込む」から読み込めます。写真は入っていません。社内で渡すときは、中に全部の客先の位置記録とメモが入ることに注意してください。'; }
+        }, function() { mapSaveUnsure(fname); });
         if (mapPortStatus) {
-          mapPortStatus.className = 'floorplan-status ok';
-          mapPortStatus.innerHTML = '✅ 位置記録をZIPで保存しました（' + fname + '）。<br>このZIPは、別の端末・PCの「📥 データを読み込む」から読み込めます。写真がなくても、位置記録だけの受け渡し・移動に使えます。';
+          mapPortStatus.className = 'floorplan-status';
+          mapPortStatus.textContent = '位置記録のZIPを作りました（' + fname + '）。下のボタンから保存してください。';
         }
       } catch(err) {
         if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '⚠️ 保存に失敗しました：' + err.message; }
@@ -15677,7 +15922,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var out = await zip.generateAsync({ type: 'blob' });
         var fname = localStamp() + '_ピン入り図面_画像.zip';
         var holder = $('mapPngSave'); if (holder) holder.innerHTML = '';
-        if (holder) appendSaveLinkApp(holder, out, fname, function(){ /* 読み取り専用＝未保存リセット不要 */ });
+        if (holder) appendConfirmedSaveApp(holder, out, fname, function() {   // v3.199 M12：本当に保存したときだけ「ファイルに保存しました」
+          if (mapPortStatus) { mapPortStatus.className = 'floorplan-status ok'; mapPortStatus.textContent = '✅ ピン入り図面の画像（ZIP）をファイルに保存しました（' + fname + '）。'; }
+        }, function() { mapSaveUnsure(fname); });
         mapExportPngBtn.disabled = false;
         if (mapPortStatus) {
           mapPortStatus.className = 'floorplan-status ok';
@@ -15756,13 +16003,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                 var sc = 0, pc = 0;
                 mapData.buildings.forEach(function(b){ sc += countSheetsInBuilding(b); pc += countPinsInBuilding(b); });
                 if (mode === 'merge') {
-                  mapPortStatus.textContent = '✅ 追加しました（棟' + added.b + '・マップ' + added.s + '・マーカー' + added.p + ' を追加）。合計：棟' + mapData.buildings.length + '・マップ' + sc + '・マーカー' + pc + '。「📍 位置記録」タブで確認できます。';
+                  mapPortStatus.textContent = '✅ 追加しました（棟' + added.b + '・マップ' + added.s + '・ピン' + added.p + ' を追加）。合計：棟' + mapData.buildings.length + '・マップ' + sc + '・ピン' + pc + '。「📍 位置記録」タブで確認できます。';
                 } else {
-                  mapPortStatus.textContent = '✅ 読み込みました（棟' + mapData.buildings.length + ' ・ マップ' + sc + ' ・ マーカー' + pc + '）。「📍 位置記録」タブで確認できます。';
+                  mapPortStatus.textContent = '✅ 読み込みました（棟' + mapData.buildings.length + ' ・ マップ' + sc + ' ・ ピン' + pc + '）。「📍 位置記録」タブで確認できます。';
                 }
               }
               alert(mode === 'merge'
-                ? '✅ 追加が完了しました\n\n追加：棟' + added.b + '・マップ' + added.s + '・マーカー' + added.p
+                ? '✅ 追加が完了しました\n\n追加：棟' + added.b + '・マップ' + added.s + '・ピン' + added.p
                 : '✅ 読み込みが完了しました\n\n棟' + mapData.buildings.length);
             } catch(serr) {
               if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '⚠️ 読み込みに失敗しました：' + serr.message; }
