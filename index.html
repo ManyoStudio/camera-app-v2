@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.202</title>
+<title>現場写真撮影アプリ v3.203</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2488,7 +2488,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.202 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-13）</span></span>
+  <span>📷 現場写真撮影アプリ v3.203 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-13）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4434,7 +4434,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.202）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.203）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -5610,6 +5610,109 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 前回の起動が最後まで終わっていないとき：写真を読む前に案内を出し、「もう一度アプリを開いてみる」が押されるまで待つ
   function askBootResume(hint) {
     return new Promise(function(resolve) { showBootGuide('resume', hint, function() { resolve(); }); });
+  }
+
+  // ===== v3.203：2つのタブ（2つの開き方）で開いたときの知らせ =====
+  //   ・起動のたびに、このタブの印（localStorage の activeTab）を書く。最後に開いたタブが「新しいタブ」
+  //   ・ほかのタブで新しく開かれたら（印が自分のものでなくなったら）、小窓で知らせる。書き込みは止めない（止めるのは次の版）
+  //   ・カメラを開く前だけ確かめ、古いタブならカメラを開かない（確かめるのは小さな控えを読むだけで待たない＝地雷1）
+  //   ・印が無い・空・壊れている・読めないとき、起動のときにこのタブの印を書けなかったときは、知らせず今までどおり動く
+  //   ・「すべて削除」などの確認画面で、保存場所の写真の数（件数だけを数える。写真の中身は読まない）が画面より多ければ、削除を押せなくする
+  var TAB_KEY = 'activeTab';
+  var myTabId = null;   // このタブの印（書けなかったときは null＝見張りを使わない）
+  function claimActiveTab() {
+    // 印の値は Math.random を使わずに作る（アプリのほかの所が使う乱数の並びを変えないため。試験で同じ結果を出せるように）
+    var rnd = '';
+    try { var a = new Uint32Array(2); crypto.getRandomValues(a); rnd = a[0].toString(36) + a[1].toString(36); }
+    catch (_) { try { rnd = Math.floor(performance.now() * 1000).toString(36); } catch (__) { rnd = '0'; } }
+    var id = 't' + Date.now().toString(36) + rnd;
+    try { localStorage.setItem(TAB_KEY, JSON.stringify({ id: id, at: new Date().toISOString() })); myTabId = id; }
+    catch (_) { myTabId = null; }
+  }
+  // ほかのタブで新しく開かれたか。分からないとき（印が無い・空・壊れている・読めない・このタブの印を書けなかった）は false
+  function isOtherTabNewer() {
+    if (!myTabId) return false;
+    var raw = null;
+    try { raw = localStorage.getItem(TAB_KEY); } catch (_) { return false; }
+    if (!raw) return false;
+    try { var o = JSON.parse(raw); return !!(o && typeof o.id === 'string' && o.id && o.id !== myTabId); } catch (_) { return false; }
+  }
+  function showOtherTabNotice() {
+    try {
+      var modal = $('otherTabModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'otherTabModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content'; box.style.textAlign = 'left';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = '⚠️ このアプリは、ほかのタブでも開かれています';
+      box.appendChild(title);
+      [
+        'ほかのタブ（またはホーム画面のアプリ）で、このアプリが新しく開かれました。',
+        '2つのタブで使うと、削除や評価の保存で、もう片方の写真や記録が消えることがあります。',
+        'どちらか1つのタブだけで使ってください。このタブでは、カメラを開かないようにしています。',
+        'このタブで続けるときは「このタブで開き直す」を押してください（ほかのタブは閉じてください）。',
+        'サイトデータは消さないでください。'
+      ].forEach(function(t) { var p = document.createElement('p'); p.className = 'delguard-body'; p.style.margin = '0 0 8px'; p.textContent = t; box.appendChild(p); });
+      var re = document.createElement('button');
+      re.id = 'otherTabReload'; re.type = 'button';
+      re.textContent = 'このタブで開き直す';
+      re.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin:12px 0 8px;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      re.addEventListener('click', function() { try { location.reload(); } catch (_) {} });
+      var close = document.createElement('button');
+      close.id = 'otherTabClose'; close.type = 'button'; close.className = 'delguard-cancel';
+      close.textContent = '閉じる';
+      close.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:15px;font-weight:700;cursor:pointer;';
+      close.addEventListener('click', function() { modal.classList.remove('show'); });
+      box.appendChild(re); box.appendChild(close);
+      modal.appendChild(box);
+      modal.classList.add('show');
+    } catch (_) {}
+  }
+  function checkOtherTab() { if (isOtherTabNewer()) showOtherTabNotice(); }
+  // カメラを開く前に呼ぶ。古いタブなら知らせて true（カメラを開かない）
+  function cameraBlockedByOtherTab() {
+    if (isOtherTabNewer()) { showOtherTabNotice(); return true; }
+    return false;
+  }
+  // 保存場所の写真の数（件数だけを数える。写真の中身は読まない）。数えられない・3 秒で返らないときは null（今までどおり）
+  function countPhotosInDB() {
+    var counted;
+    try {
+      counted = runTx('photos', 'readonly', function(store, setOut) {
+        var r = store.count();
+        r.onsuccess = function() { setOut(r.result); };
+      });
+    } catch (_) { return Promise.resolve(null); }
+    var late = new Promise(function(resolve) { setTimeout(function() { resolve(null); }, 3000); });
+    return Promise.race([counted, late]).then(function(n) { return (typeof n === 'number') ? n : null; }, function() { return null; });
+  }
+  // 削除の確認画面：保存場所の数が画面の数より多ければ、知らせて［削除する］を押せなくする（それ以外は今までどおり）
+  function applyDeleteGuardDbNote(dbCount, shown) {
+    try {
+      var warn = $('deleteGuardWarn'), btn = $('deleteGuardConfirm'), note = $('deleteGuardDbNote');
+      if (!note && warn && warn.parentNode) {
+        note = document.createElement('p'); note.id = 'deleteGuardDbNote'; note.className = 'delguard-warn';
+        warn.parentNode.insertBefore(note, warn.nextSibling);
+      }
+      var over = typeof dbCount === 'number' && typeof shown === 'number' && dbCount > shown;
+      if (note) {
+        note.style.display = over ? 'block' : 'none';
+        note.textContent = over ? ('⚠️ 保存場所には ' + dbCount + ' 枚あります（この画面では ' + shown + ' 枚）。ほかのタブで撮った写真があるかもしれません。このタブを開き直してから削除してください。') : '';
+      }
+      if (btn) { btn.disabled = over; btn.style.opacity = over ? '0.4' : ''; }
+    } catch (_) {}
+  }
+  // 確認画面を開いたときに呼ぶ。選んだ写真の削除（selected）では数えない。全部を消す経路（すべて削除・起動のときの削除・保存後の削除）では、
+  //   数え終わるまで［削除する］を押せなくし、数え終わったら、多いときだけ押せないままにする（数えられないときは今までどおり押せる）
+  var guardCountSeq = 0;
+  function guardCheckDbCount(opts) {
+    var seq = ++guardCountSeq;
+    applyDeleteGuardDbNote(null, 0);
+    if (opts && opts.selected) return;
+    var shown = (opts && typeof opts.count === 'number') ? opts.count : photos.length;
+    var btn = $('deleteGuardConfirm');
+    if (btn) { btn.disabled = true; btn.style.opacity = '0.4'; }
+    countPhotosInDB().then(function(n) { if (seq === guardCountSeq) applyDeleteGuardDbNote(n, shown); });
   }
   
   async function updateStorageInfo() {
@@ -6834,6 +6937,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       retake.textContent = '🔄 この番号で撮り直す';
       retake.onclick = function(ev) {
         ev.stopPropagation();
+        if (cameraBlockedByOtherTab()) return;   // v3.203
         if (!confirm('「' + p.filename + '」を撮り直します。\n\n同じ番号・同じ情報のまま、写真だけを新しく差し替えます。\n（新しい写真を保存するまで、今の写真は消えません）\n\nカメラが起動します。よろしいですか？')) return;
         // 元情報を引き継ぐ（v3-194：id を持たせて「同じレコードの更新」にする）
         retakeContext = {
@@ -7135,6 +7239,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   (function setupRetakeBanner() {
     var again = $('retake-banner-shoot');   // v3.198 D1
     if (again) again.addEventListener('click', function() {
+      if (cameraBlockedByOtherTab()) return;   // v3.203
       if (!retakeContext) { hideRetakeBanner(); return; }
       isContinuousShot = false;
       camera.click();
@@ -7264,6 +7369,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     };
   }
   function startSingleShot() {
+    if (cameraBlockedByOtherTab()) return;   // v3.203：古いタブならカメラを開かない
     abandonRetakeForNewShot();   // v3.198 D1：撮り直しの途中なら、撮り直しをやめて新しく撮る
     // v3.198 B1：1枚目は必ず「_1」になるので、同じ名前がもうあれば、カメラを開かずに止める。
     //   ここに await を挟まない（カメラを開くときは、すぐ開く：地雷1）。撮り直しの途中は対象外（撮り直しの名前を使うため）。
@@ -7329,6 +7435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (continuousShootBtn) {
     continuousShootBtn.addEventListener('click', function() {
       if (!continuousMode.active) return;
+      if (cameraBlockedByOtherTab()) return;   // v3.203
       abandonRetakeForNewShot();   // v3.198 D1
       isContinuousShot = true;
       camera.click();
@@ -7749,6 +7856,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (continuousRetakeBtn) {
     continuousRetakeBtn.addEventListener('click', function() {
       if (!continuousMode.active) return;
+      if (cameraBlockedByOtherTab()) return;   // v3.203
       if (lastShotPhotoId == null) { alert('撮り直せる写真がありません。'); return; }
       var last = photos.find(function(p){ return p.id === lastShotPhotoId; });
       if (!last) { alert('撮り直せる写真がありません。'); return; }
@@ -9252,6 +9360,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function openDeleteGuard(opts) {
     var modal = $('deleteGuardModal'); if (!modal) { /* 念のためのフォールバック */ return; }
     deleteGuardAction = (opts && typeof opts.onConfirm === 'function') ? opts.onConfirm : null;
+    guardCheckDbCount(opts);   // v3.203：全部を消す経路では、保存場所の数（件数だけ）を数え、画面より多ければ押せなくする
     if (opts) { fillDeleteGuard(opts); modal.classList.add('show'); return; }
     var body = $('deleteGuardBody');
     if (body) body.innerHTML = '撮影済みデータ <strong>' + photos.length + '</strong> 枚をこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。';
@@ -9288,6 +9397,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var confirmBtn = $('deleteGuardConfirm');
     if (cancel) cancel.addEventListener('click', function(){ deleteGuardAction = null; modal.classList.remove('show'); });
     if (confirmBtn) confirmBtn.addEventListener('click', async function(){
+      if (confirmBtn.disabled) return;   // v3.203：保存場所の数が多くて押せないとき
       modal.classList.remove('show');
       var act = deleteGuardAction; deleteGuardAction = null;
       if (act) { await act(); return; }   // v3.197 L7：経路ごとの削除
@@ -16745,6 +16855,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   async function init() {
+    // v3.203：このタブの印を書く（最後に開いたタブが新しいタブ）。ほかのタブで新しく開かれたら知らせる
+    claimActiveTab();
+    try {
+      window.addEventListener('storage', function(e) { if (!e || e.key === TAB_KEY || e.key === null) checkOtherTab(); });
+      document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') checkOtherTab(); });
+      window.addEventListener('pageshow', function() { checkOtherTab(); });
+      // 撮影リストの「📷 続けて撮る」（無改変関数 resumeContinuousFromList を呼ぶボタン）は、ボタンより先に撮影リスト全体で受け取り、
+      //   古いタブならボタンまで届かせない（ボタンの行は変えない。待たないので、届くときはそのままカメラが開く＝地雷1）
+      if (photoList) photoList.addEventListener('click', function(ev) {
+        var b = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+        if (b && b.textContent === '📷 続けて撮る' && cameraBlockedByOtherTab()) { ev.stopPropagation(); ev.preventDefault(); }
+      }, true);
+    } catch (_) {}
     if (!loadState()) {
       initFields();
     }
