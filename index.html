@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.204</title>
+<title>現場写真撮影アプリ v3.205</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2488,7 +2488,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.204 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-13）</span></span>
+  <span>📷 現場写真撮影アプリ v3.205 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-14）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4434,7 +4434,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.204）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.205）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -5550,9 +5550,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (kind === 'resume') lines.push('写真の読み込みの途中で画面を閉じた場合も、この表示が出ます。');
       lines.push('写真は、この端末に残っている可能性があります' + bootHintText(hint) + '。');
       lines.push('サイトデータ（履歴・Webサイトデータ）は、絶対に消さないでください。消すと写真も消えます。');
+      var homeApp = (kind !== 'resume') && isStandaloneApp();   // v3.205：ホーム画面のアプリのときは、Safari の新しいタブでは写真が見えない
       if (kind === 'resume') {
         lines.push('下のボタンで救出ページを開き、写真の取り出しを試してください。');
         lines.push('ほかのタブでもこのアプリを開いているときは、そのタブを閉じてください。');
+      } else if (homeApp) {
+        lines.push('次の順で、救出ページで写真の取り出しを試してください。');
+        lines.push('① このアプリを閉じる（画面の下から上にスワイプして、アプリの一覧で上に払う）');
+        lines.push('② ホーム画面のアイコンから、もう一度開く');
+        lines.push('③ 写真を読む前に出る案内で「救出ページを開く」を押す');
       } else {
         lines.push('次の順で、救出ページで写真の取り出しを試してください。');
         lines.push('① 下の「救出ページの住所をコピー」を押す');
@@ -5565,14 +5571,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       addr.id = 'bootGuideAddr'; addr.className = 'delguard-body';
       addr.style.cssText = 'margin:0 0 8px;padding:8px 10px;border-radius:8px;background:#f0f0f3;color:#1d1d1f;font-size:13px;word-break:break-all;-webkit-user-select:text;user-select:text;';
       addr.textContent = '救出ページの住所：' + DIAG_URL;
-      box.appendChild(addr);
+      if (!homeApp) box.appendChild(addr);   // v3.205：ホーム画面のアプリでは、Safari で開く住所を出さない
       var go;
       if (kind === 'resume') {
         go = document.createElement('a');
         go.id = 'bootGuideRescue'; go.href = DIAG_URL; go.target = '_self';
         go.textContent = '🆘 救出ページを開く（写真の取り出しを試す）';
         go.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin:12px 0 8px;padding:14px;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;text-align:center;text-decoration:none;';
-      } else {
+      } else if (!homeApp) {
         go = document.createElement('button');
         go.id = 'bootGuideCopy'; go.type = 'button';
         go.textContent = '📋 救出ページの住所をコピー';
@@ -5592,7 +5598,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       other.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:15px;font-weight:700;cursor:pointer;';
       other.textContent = kind === 'resume' ? 'もう一度アプリを開いてみる' : 'もう少し待つ';
       other.addEventListener('click', function() { modal.classList.remove('show'); if (typeof onOther === 'function') onOther(); });
-      box.appendChild(go); box.appendChild(other);
+      if (go) box.appendChild(go);
+      box.appendChild(other);
       modal.appendChild(box);
       modal.classList.add('show');
       bootShown = true;
@@ -5778,6 +5785,42 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       re.style.cssText = 'display:block;width:100%;box-sizing:border-box;margin:12px 0 0;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
       re.addEventListener('click', function() { try { location.reload(); } catch (_) {} });
       box.appendChild(re);
+      modal.appendChild(box);
+      modal.classList.add('show');
+    } catch (_) {}
+  }
+  // ===== v3.205：ホーム画面に追加したアプリで開いたときの知らせ =====
+  //   ・ホーム画面に追加したアプリと Safari は、写真の置き場所が別（2026-10-13 に実機で確認。開発ルール 4-6）
+  //   ・ホーム画面のアプリで開いたときだけ、起動のときに知らせる（使うのは止めない。［閉じる］で閉じる）。Safari のふつうのタブでは出さない
+  //   ・見分けに失敗したときは出さない（使えなくしない）。apple-mobile-web-app-capable の行は消さない（すでにホーム画面のアプリで撮った写真に届かなくなるおそれ）
+  //   ・v3.202 の60秒の案内は、ホーム画面のアプリのときだけ手順を変える（Safari の新しいタブでは、このアプリの写真が見えないため）
+  function isStandaloneApp() {
+    try {
+      if (window.navigator && window.navigator.standalone === true) return true;
+      if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) return true;
+    } catch (_) {}
+    return false;
+  }
+  function showHomeAppNotice() {
+    try {
+      var modal = $('homeAppModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'homeAppModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content'; box.style.textAlign = 'left';
+      var title = document.createElement('p'); title.className = 'delguard-title';
+      title.textContent = '📱 ホーム画面のアプリで開いています';
+      box.appendChild(title);
+      [
+        'Safari で撮った写真とは、置き場所が別です。',
+        'ふだんは Safari で開いてください。',
+        'このアプリで撮った写真があるときは、アイコンを消さずに、このアプリの中で保存（ZIP）を取ってから連絡してください。'
+      ].forEach(function(t) { var p = document.createElement('p'); p.className = 'delguard-body'; p.style.margin = '0 0 8px'; p.textContent = t; box.appendChild(p); });
+      var close = document.createElement('button');
+      close.id = 'homeAppClose'; close.type = 'button'; close.className = 'delguard-cancel';
+      close.textContent = '閉じる';
+      close.style.cssText = 'width:100%;margin:12px 0 0;padding:14px;border:none;border-radius:10px;background:#e5e5ea;color:#1d1d1f;font-size:15px;font-weight:700;cursor:pointer;';
+      close.addEventListener('click', function() { modal.classList.remove('show'); });
+      box.appendChild(close);
       modal.appendChild(box);
       modal.classList.add('show');
     } catch (_) {}
@@ -17022,6 +17065,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   async function init() {
     // v3.203：このタブの印を書く（最後に開いたタブが新しいタブ）。ほかのタブで新しく開かれたら知らせる
     claimActiveTab();
+    try { if (isStandaloneApp()) showHomeAppNotice(); } catch (_) {}   // v3.205：ホーム画面のアプリで開いたときだけ知らせる
     try {
       window.addEventListener('storage', function(e) { if (!e || e.key === TAB_KEY || e.key === TAB_DONE_KEY || e.key === null) checkOtherTab(); });
       document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') checkOtherTab(); });
