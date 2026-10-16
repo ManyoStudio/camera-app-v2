@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.205</title>
+<title>現場写真撮影アプリ v3.206</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2488,7 +2488,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.205 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-14）</span></span>
+  <span>📷 現場写真撮影アプリ v3.206 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-16）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4434,7 +4434,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.205）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.206）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -6924,9 +6924,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var cl = sanitize(clientField ? clientField.value : '') || '未分類';
     var st = sanitize(siteField ? siteField.value : '') || '未分類';
     var bl = sanitize(buildingField ? buildingField.value : '') || '未分類';
-    if (photos.some(function(o){ return o.client===cl && o.site===st && o.building===bl && o.filename===newFilename; })) {
+    if (photos.some(function(o){ return o.client===cl && o.site===st && o.building===bl && o.filename===newFilename; }) || shotInFlightNamed(cl, st, bl, newFilename)) {   // v3.206：記録中の名前も見る
       alert('この番号「' + newFilename + '」は既に登録されています。一覧で確認してください。'); return;
     }
+    var eqFnStart = fnEl.value;   // v3.206
+    var eqInFlight = addShotInFlight({ client: cl, site: st, building: bl, filename: newFilename });   // v3.206：登録の間、この名前を記録中に入れる
     var guEditCheck = $('gu-edit-check'), tCheck = $('t-check');
     var gInput = $('g-value'), uInput = $('u-value'), tInput = $('t-value'), memoEl = $('memo');
     var guEdited = guEditCheck && guEditCheck.checked;
@@ -6951,6 +6953,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     try {
       var saved = await savePhotoToDB(photo);
       photos.push(saved);
+      dropShotInFlight(eqInFlight);   // v3.206
       lastShotPhotoId = saved.id;
       equipmentBaseId = saved.id;
       // (逆算ループ / v3-140) 先行ピンから来ていれば、この写真なし登録を起点ピンへ自動リンク。
@@ -6963,10 +6966,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       showPinrecBanner();
       clearGutMemoInputs();
       var keepFilename = $('keep-filename-check');
-      if (!keepFilename || !keepFilename.checked) { fnEl.value = ''; }
+      if ((!keepFilename || !keepFilename.checked) && fnEl.value === eqFnStart) { fnEl.value = ''; }   // v3.206：登録の間に打ち直した番号は消さない
       updatePreview();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
+      dropShotInFlight(eqInFlight);   // v3.206
       alert('登録に失敗しました：' + ((err && err.message) || err));
     }
   }
@@ -7403,6 +7407,31 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   var continuousEndBtn = $('continuous-end-btn');
   var continuousBannerName = $('continuous-banner-name');
   var isContinuousShot = false; // 次回の撮影が連続モードかどうか
+  // v3.206：記録中（写真を受け取ってから保存し終えるまで。位置情報を待つ間を含む）の写真の名前。
+  //   同じ会社・事業所・棟に同じ名前の写真を2枚作らないよう、保存済みの写真と一緒に見る（v3.198 B1 を広げる）
+  var shotsInFlight = [];
+  var shotReceiveSeq = 0;   // v3.206：写真を受け取った順の番号（いちばん後に受け取った写真だけが、撮影のあとの状態を変える）
+  function shotInFlightNamed(c, s, b, f) { return shotsInFlight.some(function(x) { return x.client === c && x.site === s && x.building === b && x.filename === f; }); }
+  function shotNameTaken(c, s, b, f) { return existingPhotoNamed(c, s, b, f) || shotInFlightNamed(c, s, b, f); }
+  function nextFreeBranch(c, s, b, base, from) { var n = Math.max(1, from || 1); while (shotNameTaken(c, s, b, base + '_' + n + '.jpg')) n++; return n; }
+  function addShotInFlight(x) { shotsInFlight.push(x); updateShotRecordingNote(); return x; }
+  function dropShotInFlight(x) { var i = shotsInFlight.indexOf(x); if (i !== -1) shotsInFlight.splice(i, 1); updateShotRecordingNote(); }
+  // v3.206：記録中は、撮影ボタンの下に「記録中…」と出す（画面は止めない。次の番号はそのまま打てる）
+  function updateShotRecordingNote() {
+    try {
+      var el = $('shot-recording-note');
+      if (!el) {
+        if (!shotsInFlight.length || !shootBtn || !shootBtn.parentNode) return;
+        el = document.createElement('div');
+        el.id = 'shot-recording-note';
+        el.setAttribute('role', 'status');
+        el.style.cssText = 'margin:6px 0 0;padding:6px 10px;border-radius:8px;background:#fff4e5;color:#7a4b00;font-size:13px;line-height:1.5;';
+        el.textContent = '⏳ 記録中…（前の写真の位置情報を待っています）。次の番号は、そのまま打ってかまいません。';
+        shootBtn.parentNode.insertBefore(el, shootBtn.nextSibling);
+      }
+      el.style.display = shotsInFlight.length ? 'block' : 'none';
+    } catch (_) {}
+  }
   var retakeContext = null;     // 一覧から「この番号で撮り直す」を押したときの、元写真の情報
 
   // ===== (v3-194) 撮り直し中バナー =====
@@ -7485,6 +7514,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // pendingShootPin = { buildingId, areaId, sheetId, pinId, label } をランタイムに保持（保存スキーマ不変・reloadで消える）。
   // 既存の前方経路（写真→ピン＝pendingAutoPhotoId）の鏡像。リンクは pin.photoId への書込みのみ＝前方配置と同一作法。
   var pendingShootPin = null;
+  // v3.206 Q03：先行ピンが同じかを、中身で比べる（選び直すと新しい物になるため）。片方だけ無いときは違う
+  function samePinRef(a, b) {
+    if (!a || !b) return a === b;
+    return a.pinId === b.pinId && a.sheetId === b.sheetId && a.buildingId === b.buildingId && (a.areaId || null) === (b.areaId || null);
+  }
   function setPendingShootPin(ref, pinId, label) {
     if (!ref || pinId == null) return;
     pendingShootPin = { buildingId: ref.buildingId, areaId: ref.areaId || null, sheetId: ref.sheetId, pinId: pinId, label: label || '' };
@@ -7574,6 +7608,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!retakeContext) {
       var plan = plannedShotName();
       var first = plan.base + '_1.jpg';
+      if (shotInFlightNamed(plan.client, plan.site, plan.building, first)) {   // v3.206：同じ名前の写真を、いま記録しているところ
+        alert('「' + first + '」は、いま記録しているところです（位置情報を待っています）。\n\n同じ設備の写真を足すときは、記録が終わってから「📷 続けて撮る」を使ってください。\n別の設備なら、番号を確かめてください。');
+        return;
+      }
       if (existingPhotoNamed(plan.client, plan.site, plan.building, first)) {
         alert('「' + first + '」は、もう撮ってあります。\n同じ名前で撮ると、保存の ZIP の中で写真が上書きされてしまいます。\n\n同じ設備の写真を足すときは、撮影リストの「📷 続けて撮る」を使ってください。\n別の設備なら、番号を確かめてください。');
         return;
@@ -8055,6 +8093,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     continuousRetakeBtn.addEventListener('click', function() {
       if (!continuousMode.active) return;
       if (cameraBlockedByOtherTab()) return;   // v3.203
+      if (shotsInFlight.length) { alert('前の写真を記録しているところです（位置情報を待っています）。\n記録が終わってから、もう一度押してください。'); return; }   // v3.206
       if (lastShotPhotoId == null) { alert('撮り直せる写真がありません。'); return; }
       var last = photos.find(function(p){ return p.id === lastShotPhotoId; });
       if (!last) { alert('撮り直せる写真がありません。'); return; }
@@ -8118,7 +8157,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var bBuilding = sanitize(buildingField ? buildingField.value : '') || '未分類';
       var dupNames = [];
       for (var di = 1; di <= files.length; di++) {
-        if (existingPhotoNamed(bClient, bSite, bBuilding, baseName + '_' + di + '.jpg')) dupNames.push(baseName + '_' + di + '.jpg');
+        if (shotNameTaken(bClient, bSite, bBuilding, baseName + '_' + di + '.jpg')) dupNames.push(baseName + '_' + di + '.jpg');   // v3.206：記録中の名前も見る
       }
       if (dupNames.length > 0) {
         alert('次の名前の写真が、もうあります（' + dupNames.length + ' 枚）。\n' + dupNames.slice(0, 10).join('\n') + (dupNames.length > 10 ? '\n…' : '') +
@@ -8127,6 +8166,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return;
       }
 
+      var bulkInFlight = [];   // v3.206：取り込みの間、付く名前を記録中に入れる
+      for (var bj = 1; bj <= files.length; bj++) bulkInFlight.push(addShotInFlight({ client: bClient, site: bSite, building: bBuilding, filename: baseName + '_' + bj + '.jpg' }));
+      var bulkCls = selectedCls;   // v3.206：分類は取り込みを始めた時点のもの
+      var bulkFnStart = (getFilename() || {}).value || '';   // v3.206：最後に消すのは、取り込みの間に打ち直していないときだけ
+      var bulkMemoStart = memo.value;   // v3.206
+      try {
       // G.U.T評価値（一括読み込みでは全枚数に同じ値を付与）
       var guEditCheck = $('gu-edit-check');
       var tCheck = $('t-check');
@@ -8146,7 +8191,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var geo = { lat: '', lng: '', accuracy: '', error: '' };
       if (geoCheck && geoCheck.checked) {
         if (geoStatus) { geoStatus.innerHTML = '📡 位置情報を取得中...'; geoStatus.className = 'geo-status'; }
-        geo = await getGeolocation();
+        geo = await Promise.race([getGeolocation(), new Promise(function(res) { setTimeout(function() { res({ lat: '', lng: '', accuracy: '', error: 'timeout' }); }, 12000); })]);   // v3.206
         if (geoStatus) {
           geoStatus.innerHTML = formatGeoStatus(geo);
           geoStatus.className = 'geo-status ' + (geo.error ? 'err' : 'ok');
@@ -8158,7 +8203,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         bulkInfo.innerHTML = '📥 ' + files.length + ' 枚を読み込み中...';
       }
 
-      var memoVal = memo.value;
+      var memoVal = bulkMemoStart;   // v3.206：メモも取り込みを始めた時点のもの（待つ間に打ったメモは、取り込む写真に付けない）
+      var bulkGutStart = [gInput ? gInput.value : '', uInput ? uInput.value : '', tInput ? tInput.value : ''].join('|');   // v3.206
       var savedCount = 0;
       var errorCount = 0;
 
@@ -8184,8 +8230,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             gValue: gVal, uValue: uVal, tValue: tVal, tTarget: tTarget,
             tBasis: tChecked ? (tHelperBasis || '') : '', // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
             guEdited: guEdited ? 1 : 0, tChecked: tChecked ? 1 : 0,
-            clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
-            clsSmall: selectedCls?selectedCls.small:'', clsGInit: selectedCls?selectedCls.g:'', clsUInit: selectedCls?selectedCls.u:'',
+            clsCode: bulkCls?bulkCls.code:'', clsBig: bulkCls?bulkCls.big:'', clsMid: bulkCls?bulkCls.mid:'',
+            clsSmall: bulkCls?bulkCls.small:'', clsGInit: bulkCls?bulkCls.g:'', clsUInit: bulkCls?bulkCls.u:'',
             geoLat: geo.lat,
             geoLng: geo.lng,
             geoAccuracy: geo.accuracy,
@@ -8201,6 +8247,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       }
 
+      } finally { bulkInFlight.forEach(dropShotInFlight); }   // v3.206
       updateStats();
       bulkCamera.value = '';
 
@@ -8211,20 +8258,22 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       // 読み込み後、ファイル名・メモ・G.U.Tをクリア（チェック状態は維持）
       var keepFilename = $('keep-filename-check');
-      if (!keepFilename || !keepFilename.checked) {
+      if ((!keepFilename || !keepFilename.checked) && ((getFilename() || {}).value || '') === bulkFnStart) {   // v3.206
         var fnEl2 = getFilename(); if (fnEl2) fnEl2.value = '';
       }
-      memo.value = '';
+      if (memo.value === memoVal) memo.value = '';   // v3.206：取り込みの間に打ったメモは消さない
+      if ([gInput ? gInput.value : '', uInput ? uInput.value : '', tInput ? tInput.value : ''].join('|') === bulkGutStart) {   // v3.206
       if (gInput) gInput.value = '';
       if (uInput) uInput.value = '';
       if (tInput) tInput.value = '';
+      }
       tHelperBasis = ''; // v3-117：段階B＝取り込み後はT根拠もクリア
       tHelperSelected = []; updateTBasisDisplay(''); // v3-119：選択・表示窓もクリア
       ['g-options-buttons','u-options-buttons','t-options-buttons'].forEach(function(cid){
         var c = $(cid);
         if (c) Array.from(c.children).forEach(function(ch){ ch.classList.remove('selected'); });
       });
-      if (typeof clearClassification === 'function') clearClassification(); // 分類もリセット（段階1）
+      if (selectedCls === bulkCls && typeof clearClassification === 'function') clearClassification(); // 分類もリセット（段階1）（v3.206：取り込みの間に選び直した分類は消さない）
       updatePreview();
 
       // 読み込み後、位置記録バナーを表示（直前の写真を紐づけ候補に）
@@ -8334,6 +8383,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var file = e.target.files[0];
     if (!file) return;
     var shotRetake = retakeContext;   // v3.198 D1：この写真を受け取った瞬間の撮り直しの状態（位置情報を待つ間に変わっても、これを使う）
+    // v3.206：位置情報を待つ間に入力の欄や連続撮影が変わっても、この写真は受け取った時点の値で記録する（R02）
+    var shotContinuous = !!(isContinuousShot && continuousMode.active && !retakeContext);   // この写真が「続けて撮る」の写真か
+    isContinuousShot = false;   // 次の写真の種類は、カメラを開く所で決め直す（保存のあとでは戻さない。待つ間に開いたカメラの分を消さないため）
+    var shotCls = selectedCls;   // 分類
+    var shotPin = pendingShootPin;   // 先行ピン（待つ間に別のピンを選んだら、この写真は紐づけない）
+    var shotSeq = ++shotReceiveSeq;
     
     var fields = getAllFields();
     var clientField = fields.find(function(f) { return f.key === 'client'; });
@@ -8344,7 +8399,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (retakeContext) {
       // 一覧からの差し替え撮影：元のファイル名（枝番込み）をそのまま使う
       fullName = String(retakeContext.filename || '').replace(/\.jpg$/i, '');
-    } else if (isContinuousShot && continuousMode.active) {
+    } else if (shotContinuous) {
       // 連続撮影モード：1枚目が _1、2枚目 _2、3枚目 _3 …
       continuousMode.counter += 1;
       fullName = continuousMode.baseFullName + '_' + continuousMode.counter;
@@ -8359,6 +8414,21 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var base = parts.length > 0 ? parts.join('_') : 'untitled';
       fullName = base + '_1';
     }
+    var shotPlan = plannedShotName();   // v3.206：受け取った時点の会社・事業所・棟と名前のもと
+    var shotBranchMoved = 0;   // v3.206：同じ名前を避けて枝番を変えたとき、その枝番
+    var inFlight = null;
+    if (!retakeContext) {
+      var shotBm = /^(.*)_(\d+)$/.exec(fullName);
+      if (shotBm && shotNameTaken(shotPlan.client, shotPlan.site, shotPlan.building, fullName + '.jpg')) {
+        shotBranchMoved = nextFreeBranch(shotPlan.client, shotPlan.site, shotPlan.building, shotBm[1], parseInt(shotBm[2], 10) + 1);
+        fullName = shotBm[1] + '_' + shotBranchMoved;
+        if (shotContinuous && continuousMode.counter < shotBranchMoved) continuousMode.counter = shotBranchMoved;
+      }
+      inFlight = addShotInFlight({ client: shotPlan.client, site: shotPlan.site, building: shotPlan.building, filename: fullName + '.jpg' });
+    }
+    var shotMode = { active: continuousMode.active, base: continuousMode.baseFullName, counter: continuousMode.counter, eqId: equipmentBaseId };   // v3.206：受け取ったあとの連続撮影の姿
+    var samePlan = function(a, b) { return a.client === b.client && a.site === b.site && a.building === b.building && a.base === b.base; };
+    var sameMode = function() { return continuousMode.active === shotMode.active && continuousMode.baseFullName === shotMode.base && continuousMode.counter === shotMode.counter && equipmentBaseId === shotMode.eqId; };
     
     var reader = new FileReader();
     reader.onload = async function(ev) {
@@ -8385,7 +8455,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           geoStatus.innerHTML = '📡 位置情報を取得中...';
           geoStatus.className = 'geo-status';
         }
-        geo = await getGeolocation();
+        geo = await Promise.race([getGeolocation(), new Promise(function(res) { setTimeout(function() { res({ lat: '', lng: '', accuracy: '', error: 'timeout' }); }, 12000); })]);   // v3.206：返事が無くても12秒で先へ進む
         if (geoStatus) {
           geoStatus.innerHTML = formatGeoStatus(geo);
           geoStatus.className = 'geo-status ' + (geo.error ? 'err' : 'ok');
@@ -8416,8 +8486,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         tBasis: '', // v3-117：段階B＝後方互換（評価なし＝空欄）
         guEdited: 0,
         tChecked: 0,
-        clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
-        clsSmall: selectedCls?selectedCls.small:'', clsGInit: selectedCls?selectedCls.g:'', clsUInit: selectedCls?selectedCls.u:'',
+        clsCode: shotCls?shotCls.code:'', clsBig: shotCls?shotCls.big:'', clsMid: shotCls?shotCls.mid:'',
+        clsSmall: shotCls?shotCls.small:'', clsGInit: shotCls?shotCls.g:'', clsUInit: shotCls?shotCls.u:'',
         geoLat: geo.lat,
         geoLng: geo.lng,
         geoAccuracy: geo.accuracy,
@@ -8460,13 +8530,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           await savePhotoToDB(photo);
           photos.push(photo);
         }
+        dropShotInFlight(inFlight);   // v3.206
         updateStats();
-        lastShotPhotoId = photo.id;
+        if (shotSeq === shotReceiveSeq) lastShotPhotoId = photo.id;   // v3.206：後から受け取った写真があれば、そちらを「直前の写真」のままにする
         // (逆算ループ / v3-140) 先行ピン「📷この位置で撮影」から来た最初の1枚を起点ピンへ自動リンク（撮り直しは除外）。
-        if (!retakeContext) { try { await linkPendingShootPin(photo.id); } catch(e) {} }
+        if (!retakeContext && samePinRef(pendingShootPin, shotPin)) { try { await linkPendingShootPin(photo.id); } catch(e) {} }   // v3.206：待つ間に別のピンを選んでいたら紐づけない
         
         camera.value = '';
-        var shotKind = retakeContext ? 'retake' : (isContinuousShot ? 'continuous' : 'first');
+        var shotKind = retakeContext ? 'retake' : (shotContinuous ? 'continuous' : 'first');
+        var shotStateKept = false;   // v3.206：待つ間にほかの操作があったので、撮影のあとの状態をさわらなかった
 
         if (retakeContext) {
           // 差し替え撮影：連続モードは開始せず、差し替え完了を表示
@@ -8480,7 +8552,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           shootBtn.textContent = '✓ 撮り直して差し替えました';
           shootBtn.style.background = '#34c759';
           renderList();
-        } else if (isContinuousShot) {
+        } else if (shotContinuous) {
           // 連続撮影モード継続中：counterを進め、バナーを更新
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
@@ -8488,9 +8560,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             //   旧 _0 始まりの名残で counter+1 のままだと、2枚目を「3枚目」と誤表示していた。
             continuousInfo.innerHTML = '🔗 連続撮影中：<strong>' + photo.filename + '</strong> をこの端末に記録しました（' + continuousMode.counter + '枚目）。<br>ピンぼけ等で撮り直すときは、画面の下の帯の「🔄 今の1枚を撮り直す」を押してください（同じ番号のまま写真だけ差し替わります）。';
           }
-          showContinuousBanner();
+          if (continuousMode.active) showContinuousBanner();   // v3.206：待つ間に「撮影を終了」していたら、帯を出し直さない
           shootBtn.textContent = '✓ 連続撮影でこの端末に記録しました';
           shootBtn.style.background = '#34c759';
+        } else if (!(samePlan(plannedShotName(), shotPlan) && sameMode())) {
+          // v3.206：記録を待つ間に、番号などの入力の欄・連続撮影・次の写真が変わった。写真は記録済み。撮影のあとの状態はさわらない
+          shotStateKept = true;
+          if (continuousInfo) {
+            continuousInfo.style.display = 'block';
+            continuousInfo.innerHTML = '🔗 <strong>' + photo.filename + '</strong> をこの端末に記録しました。<br>記録を待つ間に番号などが変わったので、この設備の「📷 続けて撮る」は始めません。同じ設備をもう1枚撮るときは、撮影リストの「📷 続けて撮る」を使ってください。';
+          }
         } else {
           // 初回撮影：連続撮影モードを開始可能な状態にする（baseは枝番なし、いま使った枝番は1）
           continuousMode.active = true;
@@ -8498,6 +8577,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           // （_0 固定だと baseFullName に _1 が残り、2枚目が「0001_1_2」と壊れる）
           continuousMode.baseFullName = fullName.replace(/_\d+$/, '');
           continuousMode.counter = 1; // 1枚目=_1。次のもう一枚は _2
+          if (shotBranchMoved > 1) continuousMode.counter = shotBranchMoved;   // v3.206：同じ名前を避けて枝番を変えたときは、その続きから
 
           if (continuousInfo) {
             continuousInfo.style.display = 'block';
@@ -8522,9 +8602,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         showPinrecBanner();
 
         // この設備の1枚目(_1)のidを記録（「撮影を終了してG.U.T評価へ」で使う）
-        if (shotKind === 'first') {
+        if (shotKind === 'first' && !shotStateKept) {
           equipmentBaseId = photo.id;
         }
+        if (shotBranchMoved) showToast('同じ名前の写真があったので、' + photo.filename + '（_' + shotBranchMoved + '）として残しました。');   // v3.206
         if (typeof renderTracker === 'function') renderTracker();
 
         setTimeout(function() {
@@ -8532,8 +8613,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           shootBtn.style.background = '';
         }, 1500);
 
-        isContinuousShot = false;
       } catch(err) {
+        dropShotInFlight(inFlight);   // v3.206
         var em = (err && (err.name || '') + ' ' + (err && err.message || ''));
         if (err && (err.name === 'QuotaExceededError' || /quota|storage|space|容量/i.test(em))) {
           alert('⚠️ 端末の保存容量がいっぱいで、これ以上保存できませんでした。\n\n「保存」タブでZIPを保存（バックアップ）し、安全な場所にコピーしてから、不要な写真を削除して空き容量を作ってください。\n\n※撮影できる枚数に決まった上限はありません。端末の空き容量だけが目安です。');
@@ -8541,8 +8622,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           alert('保存に失敗しました: ' + (err && err.message ? err.message : err));
           if (isRecoverableDbError(err)) showRescueWarning('写真の保存に失敗しました（保管庫の接続が不安定です）');
         }
-        isContinuousShot = false;
       }
+    };
+    reader.onerror = function() {   // v3.206：画像を読めなかったとき（記録中の名前を外し、知らせる）
+      dropShotInFlight(inFlight);
+      try { camera.value = ''; } catch (_) {}
+      alert('写真を読み込めませんでした（この端末には記録していません）。もう一度撮ってください。');
     };
     reader.readAsDataURL(file);
   });
