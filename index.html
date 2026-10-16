@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.206</title>
+<title>現場写真撮影アプリ v3.207</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -1694,6 +1694,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     padding: 8px 12px;
     border-radius: 8px;
     margin: 0;
+    width: auto;   /* 件5：全部のボタンの width:100% を打ち消す（撮り直しの帯のボタンと同じ） */
     flex-shrink: 0;
     cursor: pointer;
   }
@@ -2488,7 +2489,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.206 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-16）</span></span>
+  <span>📷 現場写真撮影アプリ v3.207 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-16）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4434,7 +4435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.206）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.207）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -5975,7 +5976,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
     
     labelRow.appendChild(labelEl);
-    labelRow.appendChild(orderBtns);
+    if (!isFilenameRow) labelRow.appendChild(orderBtns);   // 件3：番号の行は撮影タブに1つだけなので、並べ替えの矢印を付けない
     labelRow.appendChild(checkLabel);
     row.appendChild(labelRow);
 
@@ -6054,8 +6055,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   // 並べ替え：対象行を上下に移動。撮影対象カード内の全 field-row（filename行も含む）を対象
   function moveFieldRow(row, direction) {
-    // 撮影対象カード内の全 field-row を上から順に取得
-    var allRows = Array.from(document.querySelectorAll('#fixedFields .field-row, #customFields .field-row, #filenameFieldHolder .field-row'));
+    // 件3・A5・A18：並べ替えは、同じ入れ物（決まった項目／自由記述）の中の行だけ。番号の行は撮影タブから動かさない
+    if (row.dataset.filenameRow === '1') return;
+    var allRows = Array.from(row.parentNode.children).filter(function(r) { return r.classList && r.classList.contains('field-row'); });
     var idx = allRows.indexOf(row);
     if (idx === -1) return;
     var newIdx = idx + direction;
