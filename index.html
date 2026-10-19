@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.207</title>
+<title>現場写真撮影アプリ v3.208</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2489,7 +2489,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.207 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-16）</span></span>
+  <span>📷 現場写真撮影アプリ v3.208 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-17）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4435,7 +4435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.207）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.208）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -7171,6 +7171,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         contBtn.style.cssText = 'border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
         contBtn.onclick = function(ev){ ev.stopPropagation(); resumeContinuousFromList(grp, p); };
         actions.appendChild(contBtn);
+        actions.addEventListener('click', function(ev){ if (ev.target === contBtn && pendingShootPin) clearPendingShootPin(false); }, true);   // v3.208 F-04：先行ピン待ちを解いてから続けて撮る（await を挟まない：地雷1）
         // v3.199 S8：撮影リストから、この設備（代表の写真）の評価を開く。保存しても評価せずに戻っても、撮影リストへ戻る
         var evalBtn = document.createElement('button');
         evalBtn.textContent = '📊 評価';
@@ -7521,6 +7522,46 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!a || !b) return a === b;
     return a.pinId === b.pinId && a.sheetId === b.sheetId && a.buildingId === b.buildingId && (a.areaId || null) === (b.areaId || null);
   }
+  // v3.208：写真の番号。番号の欄（__filename__）の値が数字だけで、写真の名前の区切り（_）の1つと同じときだけ返す（地雷15：1つに決まるときだけ）。
+  //   名前の末尾の数字（枝番）や、会社・棟を含む名前から拾わない。決まらなければ ''
+  function photoNumberForPin(photo) {
+    if (!photo) return '';
+    var f = (photo.fields || []).find(function(x){ return x && x.key === '__filename__'; });
+    var v = f && f.value != null ? String(f.value).trim() : '';
+    if (!/^\d+$/.test(v)) return '';
+    var parts = String(photo.filename || '').replace(/\.[^.]+$/, '').split('_');
+    return parts.indexOf(v) !== -1 ? v : '';
+  }
+  // v3.208：ピンの番号（ピンを置くときに打った番号）と、写真の番号が、どちらも数字で、数として違うか（0010 と 10 は同じと見る）。
+  //   どちらかが空・数字でない・1つに決まらないときは「違う」と言わない（今までどおり付ける）。6桁の番号の比べ方は件1 で決め直す
+  function pinPhotoNumberDiffers(pinLabel, photo) {
+    var a = (pinLabel == null ? '' : String(pinLabel)).trim();
+    var b = photoNumberForPin(photo);
+    if (!/^\d+$/.test(a) || !b) return false;
+    return parseInt(a, 10) !== parseInt(b, 10);
+  }
+  // v3.208：はい／いいえを聞く自作の小窓（初めは「やめる」の側）。文字は textContent で入れる（地雷9）。このあと .click() は呼ばない（地雷1）
+  function askPinChoice(id, titleText, bodyText, cancelText, goText) {
+    return new Promise(function(resolve) {
+      var modal = $(id);
+      if (!modal) { modal = document.createElement('div'); modal.id = id; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content';
+      var title = document.createElement('p'); title.className = 'delguard-title'; title.textContent = titleText;
+      var body = document.createElement('p'); body.className = 'delguard-body'; body.textContent = bodyText;
+      var cancel = document.createElement('button'); cancel.id = id + 'Cancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
+      cancel.textContent = cancelText; cancel.style.marginBottom = '8px';
+      var go = document.createElement('button'); go.id = id + 'Go'; go.type = 'button'; go.textContent = goText;
+      go.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      box.appendChild(title); box.appendChild(body); box.appendChild(cancel); box.appendChild(go);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      cancel.addEventListener('click', function() { close(false); });
+      go.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { cancel.focus(); } catch (e) {}
+    });
+  }
   function setPendingShootPin(ref, pinId, label) {
     if (!ref || pinId == null) return;
     pendingShootPin = { buildingId: ref.buildingId, areaId: ref.areaId || null, sheetId: ref.sheetId, pinId: pinId, label: label || '' };
@@ -7552,6 +7593,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var pin = sheet && (sheet.pins || []).find(function(p){ return p.id === pendingShootPin.pinId; });
     if (!sheet || !pin || (pin.type && pin.type !== 'pin')) { clearPendingShootPin(true); return false; }
     if (pin.photoId != null) { clearPendingShootPin(true); return false; } // 念のため：既に写真があるピンは上書きしない
+    var newPhoto = photos.find(function(p){ return p.id === newPhotoId; });
+    if (newPhoto && pinPhotoNumberDiffers(pin.label, newPhoto)) {   // v3.208 F-05：ピンの番号と撮った番号が違えば付けない（写真はそのまま）
+      clearPendingShootPin(true);
+      showToast('ピン「' + String(pin.label).trim() + '」と撮った番号「' + photoNumberForPin(newPhoto) + '」が違うので、紐づけませんでした。付けるときは、ピンの「写真を紐づける」から');
+      return false;
+    }
     pin.photoId = newPhotoId;
     try { ensurePinNumRuleDecided(photos.find(function(p){ return p.id === newPhotoId; })); } catch (e) {}
     try { await saveMapData(mapData); } catch (e) {}
@@ -8536,7 +8583,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         updateStats();
         if (shotSeq === shotReceiveSeq) lastShotPhotoId = photo.id;   // v3.206：後から受け取った写真があれば、そちらを「直前の写真」のままにする
         // (逆算ループ / v3-140) 先行ピン「📷この位置で撮影」から来た最初の1枚を起点ピンへ自動リンク（撮り直しは除外）。
-        if (!retakeContext && samePinRef(pendingShootPin, shotPin)) { try { await linkPendingShootPin(photo.id); } catch(e) {} }   // v3.206：待つ間に別のピンを選んでいたら紐づけない
+        if (!retakeContext && !shotContinuous && samePinRef(pendingShootPin, shotPin)) { try { await linkPendingShootPin(photo.id); } catch(e) {} }   // v3.208 F-03：続けて撮った写真は付けない（初めの1枚だけ）   // v3.206：待つ間に別のピンを選んでいたら紐づけない
         
         camera.value = '';
         var shotKind = retakeContext ? 'retake' : (shotContinuous ? 'continuous' : 'first');
@@ -9615,10 +9662,90 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       try { cancel.focus(); } catch (e) {}
     });
   }
+  // v3.208 G-01：開いている置き換えの小窓に、消える写真のうち未保存の枚数・ZIP の写真の枚数・ZIP の種類を文字で足す（地雷9）。
+  //   未保存があれば、先に保存するよう赤い字で勧める。小窓をもう閉じていたら何もしない
+  // v3.208 G-01：「続ける」を、ZIP の中を数え終えるまで押せなくする（10秒たっても終わらなければ押せるように戻す。「やめる」はいつでも押せる）
+  function holdImportNoticeGo(on) {
+    var go = $('importNoticeGo');
+    if (!go) return;
+    if (holdImportNoticeGo._t) { clearTimeout(holdImportNoticeGo._t); holdImportNoticeGo._t = null; }
+    if (on) {
+      go.disabled = true; go.textContent = 'ZIP の中を数えています…'; go.style.opacity = '0.5';
+      holdImportNoticeGo._t = setTimeout(function() { holdImportNoticeGo(false); }, 10000);
+    } else if (go.disabled) {
+      go.disabled = false; go.textContent = '分かった、続ける'; go.style.opacity = '';
+    }
+  }
+  function showImportNoticeInfo(n, info) {
+    var modal = $('importNoticeModal');
+    if (!info || !modal || !modal.classList.contains('show')) return;
+    var box = modal.querySelector('.delguard-content'); var cancel = $('importNoticeCancel');
+    if (!box || !cancel || $('importNoticeMore')) return;
+    var lines = [];
+    if (info.unsaved != null) lines.push('消える写真 ' + n + ' 枚のうち、まだ保存していない写真は ' + info.unsaved + ' 枚です。');
+    if (info.zipPhotos != null) lines.push('選んだ ZIP の写真は ' + info.zipPhotos + ' 枚です。');
+    if (info.isInc) lines.push('この ZIP は「① 新しく撮った分だけ」の ZIP です。置き換えると、ZIP に入っていない写真は戻りません。');
+    if (!lines.length) return;
+    var more = document.createElement('p'); more.className = 'delguard-body'; more.id = 'importNoticeMore';
+    more.textContent = lines.join('');
+    box.insertBefore(more, cancel);
+    if (info.unsaved > 0) {
+      var adv = document.createElement('p'); adv.className = 'delguard-body'; adv.id = 'importNoticeSaveFirst';
+      adv.style.cssText = 'font-weight:700;color:#c62828;';
+      adv.textContent = '先に「💾 保存」タブで、まだ保存していない写真を保存してください（「やめる」を押して保存タブへ）。';
+      box.insertBefore(adv, cancel);
+    }
+  }
+  // v3.208 G-01：ZIP の中を数える。ZIP の終わりの目次だけを読む（丸ごとは読まない）。読めなければ数を出さないだけ。
+  //   ファイルはもう選んであるので、このあと .click() は呼ばない（地雷1）
+  var importNoticeSeq = 0;
+  function readBlobBytes(blob) {
+    return new Promise(function(res, rej) { var r = new FileReader(); r.onload = function() { res(new Uint8Array(r.result)); }; r.onerror = function() { rej(r.error); }; r.readAsArrayBuffer(blob); });
+  }
+  function zipEntryName(bytes) {
+    try { if (typeof TextDecoder !== 'undefined') return new TextDecoder('utf-8').decode(bytes); } catch (e) {}
+    var s = ''; for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    try { return decodeURIComponent(escape(s)); } catch (e) { return s; }
+  }
+  function readImportNoticeInfo(f) {
+    var unsaved = (typeof getUnsavedPhotos === 'function') ? getUnsavedPhotos().length : null;
+    var none = unsaved == null ? null : { unsaved: unsaved, zipPhotos: null, isInc: false };
+    if (!f || typeof f !== 'object' || typeof f.slice !== 'function' || typeof FileReader === 'undefined' || !(f.size > 22)) return Promise.resolve(none);
+    var u16 = function(b, o) { return b[o] | (b[o + 1] << 8); };
+    var u32 = function(b, o) { return (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0; };
+    var tailLen = Math.min(f.size, 65557);
+    return readBlobBytes(f.slice(f.size - tailLen)).then(function(t) {
+      var e = -1;
+      for (var i = t.length - 22; i >= 0; i--) { if (t[i] === 0x50 && t[i + 1] === 0x4b && t[i + 2] === 0x05 && t[i + 3] === 0x06) { e = i; break; } }
+      if (e < 0) return none;
+      var cdSize = u32(t, e + 12), cdOff = u32(t, e + 16);
+      if (cdSize === 0xffffffff || cdOff === 0xffffffff || cdOff + cdSize > f.size) return none;
+      return readBlobBytes(f.slice(cdOff, cdOff + cdSize)).then(function(c) {
+        var n = 0, inc = false, p = 0;
+        while (p + 46 <= c.length && u32(c, p) === 0x02014b50) {
+          var nl = u16(c, p + 28), xl = u16(c, p + 30), cl = u16(c, p + 32);
+          var name = zipEntryName(c.subarray(p + 46, p + 46 + nl));
+          if (!/\/$/.test(name)) {
+            if (/(^|\/)撮影記録_新しく撮った分\.csv$/.test(name)) inc = true;
+            if (!/^_backup\//.test(name) && /\.(jpe?g|png|heic)$/i.test(name)) n++;
+          }
+          p += 46 + nl + xl + cl;
+        }
+        return { unsaved: unsaved, zipPhotos: n, isInc: inc };
+      });
+    }).catch(function() { return none; });
+  }
   function onPhotoImportChosen(f) {
     if (!f) return Promise.resolve(false);
     if (photos.length > 0) {
-      return askImportReplaceNotice(photos.length).then(function(goOn) {
+      var noticeN = photos.length;
+      var asking = askImportReplaceNotice(photos.length);   // 小窓はすぐ出す（今までどおり）
+      if (typeof readImportNoticeInfo === 'function' && f && typeof f === 'object') {   // v3.208 G-01：ZIP の中を数え終えるまで「続ける」を押せなくし、数え終えたら文を足す
+        var noticeSeq = ++importNoticeSeq;   // この小窓の分か（ZIP を選び直したとき、前の ZIP の数を出さない）
+        holdImportNoticeGo(true);
+        readImportNoticeInfo(f).then(function(info) { if (noticeSeq !== importNoticeSeq) return; showImportNoticeInfo(noticeN, info); holdImportNoticeGo(false); }, function() { if (noticeSeq === importNoticeSeq) holdImportNoticeGo(false); });
+      }
+      return asking.then(function(goOn) {
         if (!goOn) return false;
         importBackupZipKeepingUnsaved(f);
         return true;
@@ -15083,6 +15210,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       } else {
         // ピンのみ写真自動紐づけ
         newPin.photoId = pendingAutoPhotoId || null;
+        var autoAttached = newPin.photoId != null ? photos.find(function(p){ return p.id === newPin.photoId; }) : null;   // v3.208 F-07
         if (newPin.photoId != null) { try { ensurePinNumRuleDecided(photos.find(function(p){ return p.id === newPin.photoId; })); } catch (e) {} }
         pendingAutoPhotoId = null;
       }
@@ -15093,6 +15221,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       renderPins();
       showToast('✅ この端末に記録しました'); // ピン設置の確定（v3-49）
       noteCreatedPin(newPin.id); // (9 / v3-76) 直前配置の単発undo対象として記録
+      var undoBtn1 = document.getElementById('pin-undo-btn');   // v3.208 F-07：直前の写真が自動で付いたら名前で知らせる（違うときは、そのまま押せば取り消せる）。ほかは、ふだんの文
+      if (undoBtn1) undoBtn1.textContent = autoAttached ? '📷「' + autoAttached.filename + '」のピンを付けました　↩ 取り消す' : '↩ 直前の配置を取り消す';
     });
   }
 
@@ -15117,6 +15247,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     renderPins();
     showToast('✅ この端末に記録しました');
     noteCreatedPin(newPin.id); // (9 / v3-76) 直前配置の単発undo対象として記録
+    var undoBtn2 = document.getElementById('pin-undo-btn'); if (undoBtn2) undoBtn2.textContent = '↩ 直前の配置を取り消す';   // v3.208 F-07：ふだんの文に戻す
   }
 
   // ===== (9 / v3-76) 直前に置いたピンの単発undo（runtime のみ・保存スキーマ不変）=====
@@ -15259,7 +15390,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         b.textContent = '📄 ' + it.path + '（ピン' + it.n + '）';
         b.addEventListener('click', function(){
           closeMapPick();
+          var mpSheet = resolveSheet(it.ref);   // v3.208 F-12：この図面に、この写真のピンがもうあれば知らせる（止めない）
+          var mpPlaced = pendingPlacePhotoId != null && !!mpSheet && (mpSheet.pins || []).some(function(p){ return p.photoId === pendingPlacePhotoId; });
           openPinEditor(it.ref, pendingPlacePhotoId); // 開いたマップをタップ→この写真のピンが置ける（pendingAutoPhotoId）
+          if (mpPlaced) showToast('この写真のピンは、このマップにもうあります。もう1本置けます');
           pendingPlacePhotoId = null;
         });
         listEl.appendChild(b);
@@ -15728,6 +15862,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     // (逆算ループ / v3-140) 写真がまだ無い先行ピンのときだけ、起点ピンを記憶して撮影タブへ。
     // 次に保存した写真がこのピンへ自動で紐づく（写真ありのピンは代表＝最小枝番を温存＝上書きしない）。
+    var sfpEndedCont = false;   // v3.208 F-24：先行ピンを選んだら、前の設備の「続けて撮る」を終える（帯を1本にする）
+    if (!pin.photoId && continuousMode.active) { endContinuousMode(); sfpEndedCont = true; }
     if (!pin.photoId) {
       var sfpLabel = (pin.label != null && String(pin.label).trim() !== '') ? String(pin.label).trim() : ('ピン ' + (pin.no != null ? pin.no : ''));
       setPendingShootPin(editSheetRef, pin.id, sfpLabel);
@@ -15743,7 +15879,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       showToast('📷 撮影タブへ：番号 ' + num + ' をセットしました');
     } else if (pendingShootPin) {
-      showToast('📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）');
+      showToast((sfpEndedCont ? '前の設備の「続けて撮る」を終えました。' : '') + '📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）');
     } else {
       showToast('📷 撮影タブへ移動しました。番号を入力して撮影してください');
     }
@@ -15969,6 +16105,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     }
     renderPhotoPicker('');
     if (photoPickerSearch) photoPickerSearch.value = '';
+    try {   // v3.208 F-11：ピンの番号（数字のとき）で絞って開く（消せば全部）
+      var ppSheet = resolveSheet(editSheetRef);
+      var ppPin = ppSheet && editingPinId && ppSheet.pins.find(function(p){ return p.id === editingPinId; });
+      var ppLabel = ppPin && ppPin.label != null ? String(ppPin.label).trim() : '';
+      if (photoPickerSearch && /^\d+$/.test(ppLabel)) { photoPickerSearch.value = ppLabel; renderPhotoPicker(ppLabel); }
+    } catch (e) {}
     photoPickerModal.classList.add('show');
   }
   function closePhotoPicker() {
@@ -15979,6 +16121,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!sheet || !editingPinId) return;
     var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
     if (!pin) return;
+    var chosenPh = photos.find(function(p){ return p.id === photoId; });   // v3.208 F-11：番号が違う・前の紐づけを置き換えるときは確かめる
+    var replacing = pin.photoId != null && pin.photoId !== photoId;
+    var differs = !!chosenPh && pinPhotoNumberDiffers(pin.label, chosenPh);
+    if (replacing || differs) {
+      var oldPh = replacing ? photos.find(function(p){ return p.id === pin.photoId; }) : null;
+      var msg = (differs ? 'ピン「' + String(pin.label).trim() + '」に、番号の違う写真「' + chosenPh.filename + '」を紐づけます。' : '')
+        + (replacing ? '今の紐づけ（' + (oldPh ? '写真「' + oldPh.filename + '」' : '前の写真') + '）は外れます。' : '')
+        + 'よろしいですか？ 写真は消えません。';
+      if (!(await askPinChoice('pinLinkAskModal', 'この写真を紐づけますか？', msg, 'やめる', '紐づける'))) return;
+    }
     pin.photoId = photoId;
     await saveMapData(mapData);
     closePhotoPicker();
