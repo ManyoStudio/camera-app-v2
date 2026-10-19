@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.208</title>
+<title>現場写真撮影アプリ v3.209</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2489,7 +2489,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.208 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-17）</span></span>
+  <span>📷 現場写真撮影アプリ v3.209 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-19）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4435,7 +4435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.208）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.209）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -6672,6 +6672,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     } else {
       // 引数なし（取り込みのあと＝importBackupZip の中）は従来どおり、今ある全部で作り直す
       backedUpKeys = new Set(photos.map(photoPathKey));
+      try { importReachedEnd = true; } catch (e) {}   // v3.209 R10：引数なし＝取り込みが写真を読み終えた合図
     }
     persistBackedUpKeys();
     lastBackupTime = Date.now();
@@ -7123,11 +7124,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       del.textContent = '×';
       del.onclick = async function() {
         // v3.197 L7：confirm() の代わりに、未保存の数が出る確認画面を通す
-        return openDeleteGuard({ count: 1, unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: p.filename, onConfirm: async function() {
+        return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: p.filename, onConfirm: async function() {
           await deletePhotoFromDB(p.id);
           forgetBackedUpKey(p);
           var idx = photos.findIndex(function(ph) { return ph.id === p.id; });
           if (idx !== -1) photos.splice(idx, 1);
+          if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos([p]);   // v3.209 R6：消せたあとに、ピンのつながりを外す
           renderList();
         } });
       };
@@ -7237,8 +7239,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           fbDel.onclick = async function() {
             if (!(p && p.id != null)) return;
             // v3.197 L7：confirm() の代わりに、未保存の数が出る確認画面を通す
-            return openDeleteGuard({ count: 1, unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: (p && p.filename) ? p.filename : '', onConfirm: async function() {
-              try { await deletePhotoFromDB(p.id); forgetBackedUpKey(p); } catch(e){}
+            return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: (p && p.filename) ? p.filename : '', onConfirm: async function() {
+              try { await deletePhotoFromDB(p.id); forgetBackedUpKey(p); if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos([p]); } catch(e){}   // v3.209 R6：消せたときだけ、ピンのつながりを外す
               var i = photos.findIndex(function(ph){ return ph.id === p.id; });
               if (i !== -1) photos.splice(i, 1);
               renderList();
@@ -7309,7 +7311,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var ph = photos.find(function(p){ return String(p.id) === String(pid); });
         return ph && !backedUpKeys.has(photoPathKey(ph));
       }).length;
-      return openDeleteGuard({ count: ids.length, unsaved: selUnsaved, selected: true, onConfirm: async function() {
+      var selPhotos = ids.map(function(pid){ return photos.find(function(p){ return String(p.id) === String(pid); }); }).filter(Boolean);   // v3.209 R6：消す写真（記録そのもの）
+      return openDeleteGuard({ count: ids.length, unsaved: selUnsaved, pinPhotos: selPhotos, selected: true, onConfirm: async function() {
         if (typeof beginTabOp === 'function' && !beginTabOp()) return;   // v3.204：選んで削除は、始める前に1回だけ確かめ、始めたら最後まで消す
         try {
         var ok = 0;
@@ -7326,6 +7329,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           } catch (e) {}
         }
         } finally { if (typeof endTabOp === 'function') endTabOp(); }
+        if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos(selPhotos.filter(function(ph){ return photos.indexOf(ph) < 0; }));   // v3.209 R6：一覧から抜けた（消せた）写真だけ
         setListSelectMode(false);   // モード解除＋再描画
         alert('✅ ' + ok + ' 枚を削除しました');
       } });
@@ -8687,10 +8691,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       return;
     }
     // v3.197 L7：confirm() の代わりに、消す枚数とそのうち未保存の数が出る確認画面を通す
-    return openDeleteGuard({ count: photos.length, unsaved: getUnsavedCount(), onConfirm: async function() {
+    return openDeleteGuard({ count: photos.length, unsaved: getUnsavedCount(), pinPhotos: photos.slice(), onConfirm: async function() {
+      var gone = photos.slice();   // v3.209 R6
       await clearAllPhotosFromDB();
       forgetAllBackedUpKeys();
       photos = [];
+      if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos(gone);   // v3.209 R6：消せたあとに（止められたときは例外で抜けるので外さない）
       dismissedReminder = false;
       renderList();
       refreshLinkStatusIfOpen();   // (v3-134) 全削除後も紐づけ状況を更新
@@ -8844,6 +8850,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         //   ピン入り図面の配布は「🖼 ピン入り図面を画像で書き出す」を使う。取り込み側は旧ZIPの位置記録.htmlを引き続き読める。
       }
 
+      zip.file('_backup/settings.json', settingsBackupText());   // v3.209 R3：設定（読むだけ）
       var writtenKeys = [];   // v3.197 A1：この ZIP に実際に書いた写真の鍵
       for (var i = 0; i < photos.length; i++) {
         var p = photos[i];
@@ -8930,6 +8937,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       // 新しく撮った分の撮影記録（CSV）と台帳（この回に含めた写真だけ）
       zip.file('撮影記録_新しく撮った分.csv', '\uFEFF' + generateCSV(list));
+      zip.file('_backup/settings.json', settingsBackupText());   // v3.209 R3：設定（読むだけ）
       var backupMeta = list.map(function(p) {
         var m = {};
         for (var k in p) { if (k !== 'dataUrl' && k !== 'id') m[k] = p[k]; }
@@ -9066,6 +9074,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             photosInThisPart: chunk.length, totalPhotos: photos.length,
             equipmentKeysInThisPart: Object.keys(eqKeys)
           }, null, 2));
+          zip.file('_backup/settings.json', settingsBackupText());   // v3.209 R3：設定（読むだけ。小分けの全部の ZIP に入れる）
 
           if (chunk.length > 0) {
             zip.file('撮影記録.csv', '\uFEFF' + generateCSV(chunk));
@@ -9218,6 +9227,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             photosInThisPart: chunk.length, totalPhotos: selected.length,
             equipmentKeysInThisPart: Object.keys(eqKeys)
           }, null, 2));
+          zip.file('_backup/settings.json', settingsBackupText());   // v3.209 R3：設定（読むだけ。小分けの全部の ZIP に入れる）
           zip.file('撮影記録.csv', '\uFEFF' + generateCSV(chunk));
           var meta = chunk.map(function(p){ var m = {}; for (var k in p) { if (k !== 'dataUrl' && k !== 'id') m[k] = p[k]; } m.path = p.client + '/' + p.site + '/' + p.building + '/' + p.filename; return m; });
           zip.file('_backup/photos.json', '\uFEFF' + JSON.stringify({
@@ -9621,19 +9631,423 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     refreshLinkStatusIfOpen();   // (v3-134) 取り込み（写真＋位置記録の再リンク）後に紐づけ状況を更新
     alert(doneMsg);
   }
+  // ===== v3.209 読込の守り（先の版）=====
+  // R3：保存の ZIP（①②③）に、設定を _backup/settings.json として入れる。localStorage を読むだけで、書かない。
+  //   値は文字のまま入れる（読み直して書き直さない＝中身を1文字も変えない）。localStorage に無い鍵は書かない。
+  //   保存済みの印・保存の履歴・タブの見張りの印・表示の好みは入れない（この端末だけの記録のため）
+  var SETTINGS_BACKUP_KEYS = ['appState', 'surveySettings', 'pinNumRule', 'pinNumRuleDecided', 'impNumRule', 'impAutoTidy'];
+  function settingsBackupText() {
+    var o = { version: 1, app: 'camera-app', kind: 'settings', exportedAt: new Date().toISOString(), values: {} };
+    SETTINGS_BACKUP_KEYS.forEach(function(k) {
+      var raw = null;
+      try { raw = localStorage.getItem(k); } catch (e) {}
+      if (raw != null) o.values[k] = raw;
+    });
+    return '﻿' + JSON.stringify(o, null, 2);
+  }
+  // R10：読み込みが最後まで済んだか（importBackupZip の中の、引数なしの markBackupDone で立つ）。取りやめ・読めない ZIP では立たない
+  var importReachedEnd = false;
+  // R4・R7：ZIP の目次から、名前が re に合う1つだけを読む（readImportNoticeInfo と同じ読み方。ZIP を丸ごとは読まない）。
+  //   返す値：{ found: 見つかったか, text: 中身の文字（読めなければ null）, why: '' | 'compressed'（圧縮されている） | 'unreadable'（読めない） }
+  function readZipEntryText(f, re) {
+    var bad = { found: false, text: null, why: 'unreadable' };
+    if (!f || typeof f !== 'object' || typeof f.slice !== 'function' || typeof FileReader === 'undefined' || !(f.size > 22)) return Promise.resolve(bad);
+    var u16 = function(b, o) { return b[o] | (b[o + 1] << 8); };
+    var u32 = function(b, o) { return (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) >>> 0; };
+    var tailLen = Math.min(f.size, 65557);
+    return readBlobBytes(f.slice(f.size - tailLen)).then(function(t) {
+      var e = -1;
+      for (var i = t.length - 22; i >= 0; i--) { if (t[i] === 0x50 && t[i + 1] === 0x4b && t[i + 2] === 0x05 && t[i + 3] === 0x06) { e = i; break; } }
+      if (e < 0) return bad;
+      var cdSize = u32(t, e + 12), cdOff = u32(t, e + 16);
+      if (cdSize === 0xffffffff || cdOff === 0xffffffff || cdOff + cdSize > f.size) return bad;
+      return readBlobBytes(f.slice(cdOff, cdOff + cdSize)).then(function(c) {
+        var p = 0;
+        while (p + 46 <= c.length && u32(c, p) === 0x02014b50) {
+          var method = u16(c, p + 10), csize = u32(c, p + 20), nl = u16(c, p + 28), xl = u16(c, p + 30), cl = u16(c, p + 32), lho = u32(c, p + 42);
+          var name = zipEntryName(c.subarray(p + 46, p + 46 + nl));
+          if (!/\/$/.test(name) && re.test(name)) {
+            if (method !== 0) return { found: true, text: null, why: 'compressed' };
+            if (csize === 0xffffffff || lho === 0xffffffff || lho + 30 > f.size) return { found: true, text: null, why: 'unreadable' };
+            return readBlobBytes(f.slice(lho, lho + 30)).then(function(h) {
+              if (h.length < 30 || u32(h, 0) !== 0x04034b50) return { found: true, text: null, why: 'unreadable' };
+              var start = lho + 30 + u16(h, 26) + u16(h, 28);
+              if (start + csize > f.size) return { found: true, text: null, why: 'unreadable' };
+              return readBlobBytes(f.slice(start, start + csize)).then(function(b) { return { found: true, text: zipEntryName(b).replace(/^﻿/, ''), why: '' }; });
+            });
+          }
+          p += 46 + nl + xl + cl;
+        }
+        return { found: false, text: null, why: '' };
+      });
+    }).catch(function() { return bad; });
+  }
+  // R4：settings.json の値を確かめる。1つでも受け付けられない値があれば ok: false（一部だけ戻すと組み合わせが食い違うため、全部を戻さない）。
+  //   知らない鍵は読み飛ばす（後の版の ZIP を読んでも止まらない）
+  function settingsIsInt(v, min, max) {
+    var n = (typeof v === 'number') ? v : ((typeof v === 'string' && /^\d+$/.test(v)) ? parseInt(v, 10) : NaN);
+    return Math.floor(n) === n && n >= min && n <= max;
+  }
+  function settingsAppStateOk(raw) {
+    var st = JSON.parse(raw);
+    if (!st || typeof st !== 'object' || !Array.isArray(st.fields) || st.fields.length > 200) return false;
+    var nFn = 0, seen = {};
+    for (var i = 0; i < st.fields.length; i++) {
+      var f = st.fields[i];
+      if (!f || typeof f !== 'object' || typeof f.key !== 'string' || !f.key || f.key.length > 100) return false;
+      if (Object.prototype.hasOwnProperty.call(seen, f.key)) return false;
+      seen[f.key] = true;
+      if (f.label != null && (typeof f.label !== 'string' || f.label.length > 200)) return false;
+      if (f.value != null && (typeof f.value !== 'string' || f.value.length > 1000)) return false;
+      if (f.isFilename) nFn++;
+      else if (f.isCustom && f.key.indexOf('custom_') !== 0) return false;
+    }
+    return nFn <= 1;
+  }
+  function settingsSurveyOk(raw) {
+    var o = JSON.parse(raw);
+    if (!o || typeof o !== 'object' || Array.isArray(o)) return false;
+    if (o.digitCount != null && !settingsIsInt(o.digitCount, 1, 99)) return false;
+    if (o.bucketSize != null && !settingsIsInt(o.bucketSize, 1, 100000)) return false;
+    if (o.targetCount != null && o.targetCount !== '' && !settingsIsInt(o.targetCount, 0, 1000000)) return false;
+    if (o.backupEvery != null && o.backupEvery !== '' && !settingsIsInt(o.backupEvery, 0, 100000)) return false;
+    if (o.numberMode != null && o.numberMode !== '' && o.numberMode !== 'exclude' && o.numberMode !== 'target') return false;
+    if (o.excludedText != null && (typeof o.excludedText !== 'string' || o.excludedText.length > 1000000)) return false;
+    if (o.dummyText != null && (typeof o.dummyText !== 'string' || o.dummyText.length > 1000000)) return false;
+    if (o.digitCheck != null && typeof o.digitCheck !== 'boolean') return false;
+    return true;
+  }
+  function parseSettingsBackup(text) {
+    var ng = { ok: false, values: null };
+    try {
+      if (typeof text !== 'string' || text.length > 5000000) return ng;
+      var o = JSON.parse(text.replace(/^﻿/, ''));
+      if (!o || typeof o !== 'object' || o.kind !== 'settings' || !o.values || typeof o.values !== 'object' || Array.isArray(o.values)) return ng;
+      var v = {}, src = o.values;
+      for (var i = 0; i < SETTINGS_BACKUP_KEYS.length; i++) {
+        var k = SETTINGS_BACKUP_KEYS[i];
+        if (!Object.prototype.hasOwnProperty.call(src, k) || src[k] == null) continue;
+        if (typeof src[k] !== 'string') return ng;
+        v[k] = src[k];
+      }
+      if (v.appState != null && !settingsAppStateOk(v.appState)) return ng;
+      if (v.surveySettings != null && !settingsSurveyOk(v.surveySettings)) return ng;
+      if (v.pinNumRule != null && v.pinNumRule !== 'head' && v.pinNumRule !== 'tail') return ng;
+      if (v.impNumRule != null && v.impNumRule !== 'head' && v.impNumRule !== 'tail') return ng;
+      if (v.pinNumRuleDecided != null && v.pinNumRuleDecided !== '1' && v.pinNumRuleDecided !== '0') return ng;
+      if (v.impAutoTidy != null && v.impAutoTidy !== '1' && v.impAutoTidy !== '0') return ng;
+      return { ok: true, values: v };
+    } catch (e) { return ng; }
+  }
+  // R4：比べるための形。ZIP の appState を loadState が作る欄と同じ形にする（決まった欄の名前はアプリの中の名前。知らない決まった欄は捨てる）
+  function settingsFieldsOf(st) {
+    var out = [];
+    ((st && st.fields) || []).forEach(function(f) {
+      if (f.isFilename) out.push({ key: '__filename__', label: '', value: '', checked: true, folder: false, isFilename: true });
+      else if (f.isCustom) out.push({ key: f.key, label: String(f.label || ''), value: String(f.value || ''), checked: !!f.checked, folder: !!f.folder });
+      else {
+        var def = fixedFieldDefs.find(function(d) { return d.key === f.key; });
+        if (def) out.push({ key: def.key, label: def.label, value: String(f.value || ''), checked: !!f.checked, folder: !!f.folder });
+      }
+    });
+    return out;
+  }
+  // 今の画面の欄（saveState と同じ読み方。書かない）
+  function settingsScreenFields() {
+    var out = [];
+    document.querySelectorAll('#fixedFields .field-row, #customFields .field-row, #filenameFieldHolder .field-row').forEach(function(row) {
+      var input = row.querySelector('.field-input'), check = row.querySelector('.include-check'), fc = row.querySelector('.folder-check'), lab = row.querySelector('.field-label');
+      if (!input || !check) return;
+      if (row.dataset.filenameRow === '1') { out.push({ key: '__filename__', label: '', value: '', checked: true, folder: false, isFilename: true }); return; }
+      out.push({ key: row.dataset.key, label: lab ? lab.textContent : '', value: input.value, checked: !!check.checked, folder: fc ? !!fc.checked : false });
+    });
+    return out;
+  }
+  // 調査の設定を、loadSurveySettings と同じ決まりで読む（localStorage は読まない）
+  function settingsSurveyNorm(o) {
+    var s = { targetCount: '', bucketSize: 100, excludedText: '', digitCheck: true, digitCount: 4, dummyText: '', backupEvery: 10, numberMode: '' };
+    if (!o || typeof o !== 'object') return s;
+    s.targetCount = (o.targetCount === 0 || o.targetCount) ? o.targetCount : '';
+    s.bucketSize = (parseInt(o.bucketSize, 10) > 0) ? parseInt(o.bucketSize, 10) : 100;
+    s.excludedText = typeof o.excludedText === 'string' ? o.excludedText : '';
+    s.digitCheck = (o.digitCheck === undefined) ? true : !!o.digitCheck;
+    s.digitCount = (parseInt(o.digitCount, 10) > 0) ? parseInt(o.digitCount, 10) : 4;
+    s.dummyText = typeof o.dummyText === 'string' ? o.dummyText : '';
+    s.backupEvery = (o.backupEvery === 0 || o.backupEvery === '0') ? 0 : ((parseInt(o.backupEvery, 10) > 0) ? parseInt(o.backupEvery, 10) : 10);
+    if (o.numberMode === 'exclude' || o.numberMode === 'target' || o.numberMode === '') s.numberMode = o.numberMode;
+    else s.numberMode = (s.excludedText && s.excludedText.trim()) ? 'exclude' : '';
+    return s;
+  }
+  // R4：今と ZIP で違う所だけを、文の並びで返す（{ text, red }）。ファイル名（番号）の欄の値は戻さないので比べない
+  function settingsDiffLines(inc, hasPhotos) {
+    var lines = [];
+    function add(t, red) { lines.push({ text: t, red: !!red }); }
+    function show(v) { v = String(v == null ? '' : v); if (v === '') return '（空）'; return v.length > 40 ? v.slice(0, 40) + '…' : v; }
+    function onoff(b) { return b ? '入' : '切'; }
+    if (inc.appState != null) {
+      var a = settingsScreenFields(), b = settingsFieldsOf(JSON.parse(inc.appState));
+      var am = {}, bm = {};
+      a.forEach(function(f) { am[f.key] = f; });
+      b.forEach(function(f) { bm[f.key] = f; });
+      var nameOf = function(f) { return f.isFilename ? '番号の欄' : (f.label || f.key); };
+      b.forEach(function(f) {
+        var c = am[f.key];
+        if (!c) { add('欄が増えます：' + nameOf(f) + (f.value ? '（' + show(f.value) + '）' : '')); return; }
+        if (f.isFilename) return;
+        if (c.label !== f.label) add('欄の名前：' + show(c.label) + ' → ' + show(f.label));
+        if (c.value !== f.value) add(nameOf(f) + '：' + show(c.value) + ' → ' + show(f.value));
+        if (c.checked !== f.checked) add(nameOf(f) + '（名前に使う）：' + onoff(c.checked) + ' → ' + onoff(f.checked));
+        if (c.folder !== f.folder) add(nameOf(f) + '（フォルダに使う）：' + onoff(c.folder) + ' → ' + onoff(f.folder));
+      });
+      a.forEach(function(c) { if (!bm[c.key] && !c.isFilename) add('欄がなくなります：' + nameOf(c) + (c.value ? '（' + show(c.value) + '）' : '')); });
+      var ao = a.filter(function(f) { return bm[f.key] && !f.isFilename; }).map(function(f) { return f.key; }).join('\n');   // 番号の欄は置き場所が決まっているので並びに数えない
+      var bo = b.filter(function(f) { return am[f.key] && !f.isFilename; }).map(function(f) { return f.key; }).join('\n');
+      if (ao !== bo) add('欄の並びが変わります');
+    }
+    if (inc.surveySettings != null) {
+      var cs = loadSurveySettings(), is = settingsSurveyNorm(JSON.parse(inc.surveySettings));
+      var MODE = { '': '指定なし', exclude: '対象外の番号を入れる', target: '対象にする番号だけを入れる' };
+      [['targetCount', '対象設備数'], ['bucketSize', '区切り件数'], ['excludedText', '指定する番号'], ['digitCheck', '桁チェック'], ['digitCount', '桁数'],
+       ['dummyText', 'ダミー番号'], ['backupEvery', '保存を促す枚数'], ['numberMode', '番号の指定のしかた']].forEach(function(d) {
+        var k = d[0], x = cs[k], y = is[k];
+        if (String(x) === String(y)) return;
+        if (k === 'digitCheck') add(d[1] + '：' + onoff(x) + ' → ' + onoff(y));
+        else if (k === 'numberMode') add(d[1] + '：' + MODE[x] + ' → ' + MODE[y]);
+        else if (k === 'digitCount') add(hasPhotos ? ('桁数が ' + x + ' → ' + y + ' に変わります。今の写真の名前と桁が合わなくなります') : ('桁数：' + x + ' → ' + y), hasPhotos);
+        else if (k === 'bucketSize') add(d[1] + '：' + x + ' → ' + y + '（フォルダの分け方が変わります）');
+        else add(d[1] + '：' + show(x) + ' → ' + show(y));
+      });
+    }
+    var RULE = { head: '先頭の数字', tail: '末尾の数字' };
+    if (inc.pinNumRule != null && inc.pinNumRule !== pinNumRule) add('ピンの番号の読み方：' + RULE[pinNumRule] + ' → ' + RULE[inc.pinNumRule]);
+    if (inc.pinNumRuleDecided != null && (inc.pinNumRuleDecided === '1') !== !!pinNumRuleDecided) add('ピンの番号の読み方を決めたか：' + (pinNumRuleDecided ? '決めた' : 'まだ') + ' → ' + (inc.pinNumRuleDecided === '1' ? '決めた' : 'まだ'));
+    if (inc.impNumRule != null && inc.impNumRule !== impNumRule) add('写真の取り込みの番号の読み方：' + RULE[impNumRule] + ' → ' + RULE[inc.impNumRule]);
+    if (inc.impAutoTidy != null && (inc.impAutoTidy === '1') !== !!impAutoTidy) add('写真の取り込みで同じ名前を先に外す：' + onoff(impAutoTidy) + ' → ' + onoff(inc.impAutoTidy === '1'));
+    return lines;
+  }
+  // R4：自作の小窓。上が「今の設定のまま」で初めに選ばれる（「おすすめ」の印は、文とそろえて、初めのままの端末では「ZIP の設定にする」に付ける）。文字は textContent で入れる（ZIP から来た文字のため：地雷9）。
+  //   ファイルはもう選んであるので、このあと .click() は呼ばない（地雷1）。<body> の直下に置く（地雷13）
+  function askSettingsRestore(lines, opts) {
+    opts = opts || {};
+    return new Promise(function(resolve) {
+      var modal = $('settingsRestoreModal');
+      if (!modal) { modal = document.createElement('div'); modal.id = 'settingsRestoreModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+      modal.innerHTML = '';
+      var box = document.createElement('div'); box.className = 'delguard-content'; box.style.borderTopColor = '#0058c7';
+      var title = document.createElement('p'); title.className = 'delguard-title'; title.style.color = '#1d1d1f';
+      title.textContent = 'ZIP の設定が、今の設定と違います';
+      var body = document.createElement('p'); body.className = 'delguard-body';
+      body.textContent = '写真の読み込みは終わりました。設定（会社・事業所・棟・桁数など）を ZIP のとおりにしますか？ 違う所は次のとおりです。';
+      box.appendChild(title); box.appendChild(body);
+      if (opts.initial) {
+        var ini = document.createElement('p'); ini.className = 'delguard-body'; ini.id = 'settingsRestoreInitial';
+        ini.style.fontWeight = '700';
+        ini.textContent = 'この端末の設定は初めのままです。ZIP の設定にするのがおすすめです。';
+        box.appendChild(ini);
+      }
+      var list = document.createElement('ul'); list.id = 'settingsRestoreList';
+      list.style.cssText = 'text-align:left;margin:0 0 14px;padding:10px 12px 10px 28px;max-height:34vh;overflow-y:auto;background:#f6f6f8;border-radius:10px;font-size:14px;line-height:1.6;color:#1d1d1f;';
+      lines.forEach(function(l) { var li = document.createElement('li'); li.textContent = l.text; if (l.red) { li.style.color = '#c62828'; li.style.fontWeight = '700'; } list.appendChild(li); });
+      box.appendChild(list);
+      var keep = document.createElement('button'); keep.id = 'settingsRestoreKeep'; keep.type = 'button'; keep.className = 'delguard-cancel';
+      keep.textContent = opts.initial ? '今の設定のまま' : '今の設定のまま（おすすめ）';   // 文の「おすすめ」とボタンをそろえる（初めのままの端末は ZIP の設定がおすすめ）
+      keep.style.cssText = 'width:100%;margin:0 0 8px;padding:14px;border:none;border-radius:10px;background:#f0f0f3;color:#1d1d1f;font-size:16px;font-weight:800;cursor:pointer;';
+      var use = document.createElement('button'); use.id = 'settingsRestoreUse'; use.type = 'button';
+      use.textContent = opts.initial ? 'ZIP の設定にする（おすすめ）' : 'ZIP の設定にする';
+      use.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+      box.appendChild(keep); box.appendChild(use);
+      modal.appendChild(box);
+      function close(v) { modal.classList.remove('show'); resolve(v); }
+      keep.addEventListener('click', function() { close(false); });
+      use.addEventListener('click', function() { close(true); });
+      modal.classList.add('show');
+      try { keep.focus(); } catch (e) {}
+    });
+  }
+  // R4：調査の設定の入力欄に値を入れる（setupSurveySettings の「値を入れる」部分と同じ。見張りは足さない）
+  function fillSurveyInputs(s) {
+    var tc = $('survey-target-count'), bs = $('survey-bucket-size'), ex = $('survey-excluded');
+    var dchk = $('survey-digit-check'), dcnt = $('survey-digit-count');
+    var dummy = $('survey-dummy-starts');
+    var backupEveryEl = $('survey-backup-every');
+    if (tc) tc.value = (s.targetCount === 0 || s.targetCount) ? s.targetCount : '';
+    if (bs) bs.value = s.bucketSize || 100;
+    if (ex) ex.value = s.excludedText || '';
+    if (dchk) dchk.checked = s.digitCheck;
+    if (dcnt) dcnt.value = s.digitCount || 4;
+    if (dummy) dummy.value = s.dummyText || '';
+    if (backupEveryEl) backupEveryEl.value = (s.backupEvery === 0 ? 0 : (s.backupEvery || 10));
+    var exChk = $('survey-mode-exclude'), tgChk = $('survey-mode-target');
+    if (exChk) exChk.checked = (s.numberMode === 'exclude');
+    if (tgChk) tgChk.checked = (s.numberMode === 'target');
+  }
+  // R4：ZIP の設定を書き、画面にもその場で入れ直す（localStorage だけ書くと、次に欄を触ったとき古い設定で上書きされるため）。
+  //   ① 今の6つの値を settingsBeforeImport に1つだけ控える ② ファイル名（番号）の欄の値は今のまま（欄そのものも今の物を使い続ける）
+  function applySettingsBackup(v) {
+    var before = {};
+    SETTINGS_BACKUP_KEYS.forEach(function(k) { try { var r = localStorage.getItem(k); if (r != null) before[k] = r; } catch (e) {} });
+    try { localStorage.setItem('settingsBeforeImport', JSON.stringify({ at: new Date().toISOString(), values: before })); } catch (e) {}
+    var fnRow = document.querySelector('[data-filename-row="1"]');
+    var fnEl = getFilename(); var curFn = fnEl ? fnEl.value : '';
+    var hasFnInZip = false;
+    if (v.appState != null) {
+      var st = JSON.parse(v.appState);
+      st.fields.forEach(function(f) { if (f && f.isFilename) { f.value = curFn; hasFnInZip = true; } });
+      try { localStorage.setItem('appState', JSON.stringify(st)); } catch (e) {}
+    }
+    if (v.surveySettings != null) { try { localStorage.setItem('surveySettings', v.surveySettings); } catch (e) {} }
+    ['pinNumRule', 'pinNumRuleDecided', 'impNumRule', 'impAutoTidy'].forEach(function(k) { if (v[k] != null) { try { localStorage.setItem(k, v[k]); } catch (e) {} } });
+    if (v.appState != null) {   // 欄を作り直す。ファイル名（番号）の欄は今の物（入力のしかけ・値）をそのまま使う
+      if (fnRow && fnRow.parentNode) fnRow.parentNode.removeChild(fnRow);
+      loadState();
+      var fresh = document.querySelector('[data-filename-row="1"]');
+      var holder = $('filenameFieldHolder');
+      if (fnRow) { if (fresh && fresh.parentNode) fresh.parentNode.replaceChild(fnRow, fresh); else if (holder) holder.appendChild(fnRow); }
+      addFilenameRowIfMissing(); attachFilenameListener();
+      if (!hasFnInZip) saveState();   // ZIP に番号の欄が無かったときは、足した欄を含めて書き直す
+    }
+    fillSurveyInputs(loadSurveySettings());
+    try { updateSurveyFolderInfo(); updateExcludedInfo(); updateDummyInfo(); renderDummyButtons(); updateBackupEveryInfo(); } catch (e) {}
+    try { updatePreview(); } catch (e) {}
+    if (v.pinNumRule === 'head' || v.pinNumRule === 'tail') pinNumRule = v.pinNumRule;
+    if (v.pinNumRuleDecided != null) pinNumRuleDecided = (v.pinNumRuleDecided === '1');
+    if (v.impNumRule === 'head' || v.impNumRule === 'tail') impNumRule = v.impNumRule;
+    if (v.impAutoTidy != null) impAutoTidy = (v.impAutoTidy === '1');
+    try { syncPinNumRuleButtons(); } catch (e) {}
+    try { var at = $('imp-autotidy'); if (at) at.checked = impAutoTidy; } catch (e) {}
+  }
+  // R5：設定を戻せなかったときの知らせ（読込タブの状態の欄の下に、文字で1行。地雷9）
+  function showSettingsMissingNote(kind) {
+    var msg = {
+      old: 'この ZIP には設定が入っていません（v3.208 までの ZIP など）。設定は今のままです。会社・事業所・棟・桁数を確かめてください。',
+      compressed: 'この ZIP の設定は読めませんでした（ZIP が作り直されています）。設定は今のままです。',
+      unreadable: 'この ZIP の設定は読めませんでした。設定は今のままです。',
+      bad: 'この ZIP の設定は形が合わないので、戻しませんでした。設定は今のままです。'
+    }[kind];
+    if (!msg) return;
+    var el = $('settingsBackupNote');
+    if (!el) {
+      var st = $('photoImportStatus');
+      if (!st || !st.parentNode) return;
+      el = document.createElement('p'); el.id = 'settingsBackupNote';
+      el.style.cssText = 'font-size:13px;color:#7a4d00;font-weight:700;line-height:1.6;margin:6px 0 0;';
+      st.parentNode.insertBefore(el, st.nextSibling);
+    }
+    el.textContent = msg; el.style.display = 'block';
+  }
+  function hideSettingsMissingNote() { var el = $('settingsBackupNote'); if (el) { el.style.display = 'none'; el.textContent = ''; } }
+  // R4・R5：読み込みが最後まで済んだあと、ZIP の設定を読み、違えば聞いてから戻す。失敗しても投げない
+  async function afterImportAskSettings(f) {
+    try {
+      hideSettingsMissingNote();
+      if (!importReachedEnd) return;   // 取りやめ・読めない ZIP では何もしない（R10）
+      var r = await readZipEntryText(f, /(^|\/)_backup\/settings\.json$/);
+      if (!r.found) { showSettingsMissingNote(r.why === 'unreadable' ? 'unreadable' : 'old'); return; }
+      if (r.text == null) { showSettingsMissingNote(r.why || 'unreadable'); return; }
+      var p = parseSettingsBackup(r.text);
+      if (!p.ok) { showSettingsMissingNote('bad'); return; }
+      var hasPhotos = photos.length > 0;
+      var lines = settingsDiffLines(p.values, hasPhotos);
+      if (!lines.length) return;   // 同じなら何も出さない（小分けの ZIP の2個目など）
+      var initial = true;
+      try { initial = (localStorage.getItem('appState') == null); } catch (e) {}
+      if (!(await askSettingsRestore(lines, { initial: initial, hasPhotos: hasPhotos }))) return;
+      if (typeof tabWriteBlocked === 'function' && tabWriteBlocked()) { try { showStaleWriteNotice(); } catch (e) {} return; }   // ほかのタブで新しく開かれていたら書かない
+      applySettingsBackup(p.values);
+      try { showToast('✅ 設定を ZIP のとおりに戻しました'); } catch (e) {}
+    } catch (e) {}
+  }
+  // R6：写真を消したら、その写真につながっているピンのつながりを外す（ピンは残す。札が空なら写真の番号を札に残す）
+  function forEachPinIn(md, fn) {
+    ((md && md.buildings) || []).forEach(function(b) {
+      ((b && b.sheets) || []).forEach(function(s) { ((s && s.pins) || []).forEach(fn); });
+      ((b && b.areas) || []).forEach(function(a) { ((a && a.sheets) || []).forEach(function(s) { ((s && s.pins) || []).forEach(fn); }); });
+    });
+  }
+  function photosById(list) { var byId = {}; (list || []).forEach(function(p) { if (p && p.id != null) byId[p.id] = p; }); return byId; }
+  function countPinsOfPhotos(list) {
+    try {
+      if (!list || !list.length || typeof mapData === 'undefined' || !mapData) return 0;
+      var byId = photosById(list), n = 0;
+      forEachPinIn(mapData, function(pin) { if (pin && pin.photoId != null && byId[pin.photoId]) n++; });
+      return n;
+    } catch (e) { return 0; }
+  }
+  //   list：消すのに成功した写真。位置記録をまだ読めていない・空のときは何も変えず、保存もしない（空の位置記録で上書きしない）
+  function unlinkPinsOfDeletedPhotos(list) {
+    try {
+      if (!list || !list.length || typeof mapData === 'undefined' || !mapData) return 0;
+      var byId = photosById(list), n = 0;
+      forEachPinIn(mapData, function(pin) {
+        var ph = (pin && pin.photoId != null) ? byId[pin.photoId] : null;
+        if (!ph) return;
+        if (pin.label == null || String(pin.label).trim() === '') {   // 札が空なら番号を残す（relinkPin の v3-124 と同じ考え）
+          var num = photoDisplayNum(ph);
+          if (num && String(num) !== String(pin.no)) pin.label = String(num);
+        }
+        pin.photoId = null; n++;
+      });
+      if (n > 0) {
+        saveMapData(mapData).catch(function() {});   // 変えたときだけ保存（待たない作法：地雷8）
+        try { renderBuildingsList(); } catch (e) {}
+      }
+      return n;
+    } catch (e) { return 0; }
+  }
+  // R6：削除の確認画面に1行足す（今の文 deleteGuardBody・deleteGuardWarn は変えない。新しい要素に textContent で入れる）
+  function fillDeleteGuardPins(list) {
+    try {
+      var warn = $('deleteGuardWarn'), el = $('deleteGuardPins');
+      if (!el) {
+        if (!warn || !warn.parentNode) return;
+        el = document.createElement('p'); el.id = 'deleteGuardPins'; el.className = 'delguard-body';
+        el.style.cssText = 'font-weight:700;color:#7a4d00;';
+        warn.parentNode.insertBefore(el, warn.nextSibling);
+      }
+      var n = countPinsOfPhotos(list);
+      if (n > 0) {
+        el.textContent = '図面のピンが ' + n + ' 本、' + (list.length === 1 ? 'この写真' : 'これらの写真') + 'につながっています。ピンは残し、つながりだけを外します（番号は札に残します）。';
+        el.style.display = 'block';
+      } else { el.textContent = ''; el.style.display = 'none'; }
+    } catch (e) {}
+  }
+  // R7：古い ZIP（v3.208 まで）で、消えた写真のピンが photoKey: null のまま入っていたら、つながりを外す（「データを読み込む」で位置記録が丸ごと入れ替わったときだけ）
+  //   photoKey の項目そのものが無い、とても古い形のピンには触らない（同じ端末で戻すときに要るため）
+  async function afterImportFixPins(f, mapBefore) {
+    try {
+      if (!importReachedEnd) return;
+      if (typeof mapData === 'undefined' || !mapData || mapData === mapBefore) return;
+      var r = await readZipEntryText(f, /(^|\/)_backup\/mapdata\.json$/);
+      if (!r.text) return;
+      var o = JSON.parse(r.text.replace(/^﻿/, ''));
+      var stale = {};
+      forEachPinIn(o && o.mapData, function(pin) {
+        if (pin && pin.id != null && Object.prototype.hasOwnProperty.call(pin, 'photoKey') && pin.photoKey === null && pin.photoId != null) stale[pin.id] = true;
+      });
+      var n = 0;
+      forEachPinIn(mapData, function(pin) { if (pin && Object.prototype.hasOwnProperty.call(stale, pin.id) && pin.photoId != null) { pin.photoId = null; n++; } });
+      if (n > 0) { await saveMapData(mapData); try { renderBuildingsList(); } catch (e) {} }
+    } catch (e) {}
+  }
   // v3.197 A2：取り込みの前に未保存だった写真は、取り込みのあとも未保存のまま残す。
   //   importBackupZip（無改変関数）は最後に、引数なしの markBackupDone で全部を保存済みにするため、呼ぶ側で鍵を控えて戻す。
   //   取り込みが途中で終わっても失敗しても戻す（保存済みにする前なら、戻しても印は変わらない）。
   function importBackupZipKeepingUnsaved(f) {
     if (typeof beginTabOp === 'function' && !beginTabOp()) return Promise.resolve();   // v3.204：始める前に1回だけ確かめる
     var unsavedBefore = getUnsavedPhotos().map(photoPathKey);
+    var mapBefore = (typeof mapData !== 'undefined') ? mapData : null;   // v3.209 R7：位置記録が丸ごと入れ替わったかを見る
+    try { importReachedEnd = false; } catch (e) {}   // v3.209 R10
     function restore() {
       try { unsavedBefore.forEach(function(k){ backedUpKeys.delete(k); }); persistBackedUpKeys(); updateUnsavedPill(); } catch (e) {}
     }
     function done() { if (typeof endTabOp === 'function') endTabOp(); }   // v3.204：最後まで書いたら目印を下ろす
+    function fixPins() { return (typeof afterImportFixPins === 'function') ? afterImportFixPins(f, mapBefore) : null; }   // v3.209 R7：目印を下ろす前に、ピンを直して保存
+    function askSettings() { return (typeof afterImportAskSettings === 'function') ? afterImportAskSettings(f) : null; }   // v3.209 R4・R5：目印を下ろしたあと（小窓で待つ間、目印を持ち続けない）
     return Promise.resolve().then(function(){ return importBackupZip(f); })
       .then(restore, function(err){ restore(); throw err; })
-      .then(done, function(err){ done(); throw err; });
+      .then(fixPins)
+      .then(done, function(err){ done(); throw err; })
+      .then(askSettings);
   }
   // v3.199 S7：取り込み（importBackupZip）の確認の窓は［OK］＝置き換え。位置記録だけの読み込みは［OK］＝追加で、意味が逆。
   //   取り違えて写真を消さないよう、写真が1枚以上あるときだけ、呼ぶ前に自作の小窓で知らせる（確認の窓そのものは変えない）。
@@ -9763,9 +10177,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // v3-139：破壊的操作（アプリ内データ削除）は専用確認モーダルの後ろに置く。背景タップでは閉じない。
   function performDataDelete() {
     return (async function() {
+      var gone = photos.slice();   // v3.209 R6
       await clearAllPhotosFromDB();
       forgetAllBackedUpKeys();
       photos = [];
+      if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos(gone);   // v3.209 R6：消せたあとに
       renderList();
       refreshLinkStatusIfOpen();   // (v3-134) 削除後も紐づけ状況を更新
       exportClearBtn.style.display = 'none';
@@ -9779,7 +10195,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var modal = $('deleteGuardModal'); if (!modal) { /* 念のためのフォールバック */ return; }
     deleteGuardAction = (opts && typeof opts.onConfirm === 'function') ? opts.onConfirm : null;
     guardCheckDbCount(opts);   // v3.203：全部を消す経路では、保存場所の数（件数だけ）を数え、画面より多ければ押せなくする
-    if (opts) { fillDeleteGuard(opts); modal.classList.add('show'); return; }
+    if (opts) { fillDeleteGuard(opts); if (typeof fillDeleteGuardPins === 'function') fillDeleteGuardPins(opts.pinPhotos || null); modal.classList.add('show'); return; }   // v3.209 R6：ピンの1行
     var body = $('deleteGuardBody');
     if (body) body.innerHTML = '撮影済みデータ <strong>' + photos.length + '</strong> 枚をこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。';
     var warn = $('deleteGuardWarn');
@@ -9788,6 +10204,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (u > 0) { warn.style.display = 'block'; warn.innerHTML = '⚠️ まだ保存していない写真が <strong>' + u + '</strong> 枚あります。削除すると元に戻せません。'; }
       else { warn.style.display = 'none'; warn.textContent = ''; }
     }
+    if (typeof fillDeleteGuardPins === 'function') fillDeleteGuardPins(photos.slice());   // v3.209 R6：ピンの1行
     modal.classList.add('show');
   }
   // v3.197 L7：経路ごとの文言。消す枚数と、そのうち未保存の枚数を必ず出す（外から来る名前は escape：地雷9）
@@ -9833,10 +10250,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   recoveryDeleteBtn.addEventListener('click', async function() {
     // v3.197 L7：confirm() の代わりに、消す枚数とそのうち未保存の数が出る確認画面を通す
     //   「やめる」なら「続きから使いますか」の画面に戻る（確認画面はその上に重なる：z-index 2200 > 100）
-    return openDeleteGuard({ count: photos.length, unsaved: getUnsavedCount(), onConfirm: async function() {
+    return openDeleteGuard({ count: photos.length, unsaved: getUnsavedCount(), pinPhotos: photos.slice(), onConfirm: async function() {
+      var gone = photos.slice();   // v3.209 R6
       await clearAllPhotosFromDB();
       forgetAllBackedUpKeys();
       photos = [];
+      if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos(gone);   // v3.209 R6：消せたあとに（位置記録をまだ読めていなければ何も変えない）
       recoveryModal.classList.remove('show');
       updateStats();
     } });
@@ -16736,8 +17155,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
               } else {
                 // 置き換え：各ピンの photoKey を自分の写真idへ翻訳してから入れ替え
                 (incoming.buildings || []).forEach(function(b) {
-                  (b.sheets || []).forEach(function(s) { s.pins = (s.pins || []).map(function(pin){ var rp = relinkPin(pin, false); delete rp.photoKey; return rp; }); });
-                  (b.areas || []).forEach(function(a) { (a.sheets || []).forEach(function(s) { s.pins = (s.pins || []).map(function(pin){ var rp = relinkPin(pin, false); delete rp.photoKey; return rp; }); }); });
+                  // v3.209 R8：photoKey が null と書いてある（保存のときに写真が無かった）ピンは、古い番号のままにせず、つながりを外す
+                  (b.sheets || []).forEach(function(s) { s.pins = (s.pins || []).map(function(pin){ var rp = relinkPin(pin, false); if (pin && pin.photoKey === null) rp.photoId = null; delete rp.photoKey; return rp; }); });
+                  (b.areas || []).forEach(function(a) { (a.sheets || []).forEach(function(s) { s.pins = (s.pins || []).map(function(pin){ var rp = relinkPin(pin, false); if (pin && pin.photoKey === null) rp.photoId = null; delete rp.photoKey; return rp; }); }); });
                 });
                 mapData = incoming;
               }
