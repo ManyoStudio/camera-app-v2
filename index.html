@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.209</title>
+<title>現場写真撮影アプリ v3.210</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2489,7 +2489,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.209 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-19）</span></span>
+  <span>📷 現場写真撮影アプリ v3.210 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-21）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4435,7 +4435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.209）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.210）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -6673,6 +6673,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 引数なし（取り込みのあと＝importBackupZip の中）は従来どおり、今ある全部で作り直す
       backedUpKeys = new Set(photos.map(photoPathKey));
       try { importReachedEnd = true; } catch (e) {}   // v3.209 R10：引数なし＝取り込みが写真を読み終えた合図
+      try { if (importLiveKeys && importLiveKeys.length) { importLiveKeys.forEach(function(k){ backedUpKeys.delete(k); }); importLiveKeys = []; } } catch (e) {}   // v3.210：置き換えの途中で記録された写真は未保存のまま
     }
     persistBackedUpKeys();
     lastBackupTime = Date.now();
@@ -9471,8 +9472,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (!confirm('今の写真（' + photos.length + ' 枚）を消して、ZIPの内容に置き換えます。よろしいですか？')) {
           setImpStatus('復元をキャンセルしました。', false); return;
         }
-        try { await clearAllPhotosFromDB(); photos = []; }
-        catch (err) { setImpStatus('⚠️ 既存データの削除に失敗しました：' + err.message, false); return; }
+        var replacedOld = photos; photos = [];   // v3.210 G-01：今の写真は、読み終えて確かめてから消す（afterImportPhotos）
       }
     }
 
@@ -9519,6 +9519,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           };
         }
 
+        if (typeof importMatchKey === 'function') key = importMatchKey(mode, key, photo, existingByKey, entries);   // v3.210 A2：前からある同じ鍵の写真と、外で中身を比べる
         if (mode === 'merge' && existing[key]) {
           // 合流：同じ番号の既存レコードに、足りない情報を補い合う（写真・評価・位置情報）
           var E = existingByKey[key];
@@ -9536,6 +9537,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       await new Promise(function(r) { setTimeout(r, 0); });
     }
 
+    try { if (typeof afterImportPhotos === 'function') await afterImportPhotos({ mode: mode, ok: ok, ng: ng, old: replacedOld || null, info: parsed || null }); } catch (e) {}   // v3.210 G-01：置き換えの後始末
+    if (typeof importStopAfterPhotos === 'function' && importStopAfterPhotos()) return;   // v3.210：置き換えをやめたときはここで終え、完了の窓・保存済みの印・位置記録に進まない（2026-10-21 利用者の承認）
     renderList();
     updateStats();
     markBackupDone();   // 復元直後はZIPと同内容＝バックアップ済みとみなす
@@ -9941,6 +9944,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     try {
       hideSettingsMissingNote();
       if (!importReachedEnd) return;   // 取りやめ・読めない ZIP では何もしない（R10）
+      if (typeof replaceResult !== 'undefined' && replaceResult && replaceResult.kind === 'rolledback') return;   // v3.210：置き換えをやめたときは設定を聞かない
       var r = await readZipEntryText(f, /(^|\/)_backup\/settings\.json$/);
       if (!r.found) { showSettingsMissingNote(r.why === 'unreadable' ? 'unreadable' : 'old'); return; }
       if (r.text == null) { showSettingsMissingNote(r.why || 'unreadable'); return; }
@@ -10011,6 +10015,217 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       } else { el.textContent = ''; el.style.display = 'none'; }
     } catch (e) {}
   }
+  // ===== v3.210 読込の守り（後の版）=====
+  // 同じ鍵（会社/事業所/棟/名前）の写真は、中身を比べる（利用者の決定 2026-10-20）：
+  //   名前も中身も同じ → 1枚にまとめる。名前は同じで中身が違う → 両方残し、ZIP の方を空いている次の枝番にして知らせる
+  //   （v3.206 の nextFreeBranch と同じ考え）。どちらの場合も写真を捨てない
+  // 中身の比べ方：画像の文字の形（dataUrl）の「,」より後ろが1文字も同じか。先に長さで分け、同じ長さのときだけ比べる（iPad で重くしない）。
+  //   写真の無い記録（設備の記録）は「同じ」と見なさない（追加では今までどおり合流させ、置き換えでは両方残す）
+  function samePhotoImage(a, b) {
+    if (!a || !b || isPlaceholder(a) || isPlaceholder(b)) return false;
+    var x = (typeof a.dataUrl === 'string') ? a.dataUrl : '', y = (typeof b.dataUrl === 'string') ? b.dataUrl : '';
+    var i = x.indexOf(',') + 1, j = y.indexOf(',') + 1;
+    if (x.length - i <= 0 || x.length - i !== y.length - j) return false;   // 長さが違えば中身も違う（ここで済む）
+    return x.substring(i) === y.substring(j);
+  }
+  // 空いている次の枝番の名前。「名前_番号.拡張子」なら番号+1 から、そうでなければ「名前_2」から。
+  //   同じ会社/事業所/棟の写真（list）・記録中の写真・avoid（ZIP の中の名前）と重ならない番号まで進める
+  function importFreeName(p, list, avoid) {
+    var fn = String((p && p.filename) || ''), m = /^(.*)_(\d+)(\.[A-Za-z0-9]+)$/.exec(fn), base, ext, n;
+    if (m) { base = m[1]; ext = m[3]; n = parseInt(m[2], 10) + 1; }
+    else { var d = fn.lastIndexOf('.'); base = d > 0 ? fn.slice(0, d) : fn; ext = d > 0 ? fn.slice(d) : ''; n = 2; }
+    var taken = Object.create(null);
+    (list || []).forEach(function(q) { if (q && q.client === p.client && q.site === p.site && q.building === p.building) taken[q.filename] = true; });
+    function busy(nm) { return !!(taken[nm] || (avoid && avoid[nm]) || (typeof shotInFlightNamed === 'function' && shotInFlightNamed(p.client, p.site, p.building, nm))); }
+    while (busy(base + '_' + n + ext)) n++;
+    return base + '_' + n + ext;
+  }
+  // A2：取り込みの中の1行から、ZIP の写真1枚ごとに呼ばれる。返した鍵で、今までどおり「合流」か「新しく入れる」かが決まる。
+  //   1回の読み込みの間だけ、ZIP の中の名前と、ZIP から来た写真を覚える（existingByKey は読み込みのたびに新しく作られるので、それで見分ける）
+  var importKeyCtx = null;
+  function importMatchKey(mode, key, photo, existingByKey, entries) {
+    try {
+      if (!importKeyCtx || importKeyCtx.map !== existingByKey) {
+        var names = Object.create(null);
+        (entries || []).forEach(function(en) { var nm = String((en && en.path) || '').split('/').pop(); names[nm] = true; if (nm.normalize) names[nm.normalize('NFC')] = true; });
+        importKeyCtx = { map: existingByKey, zipNames: names, seen: new Set(), renamed: [] };
+      }
+      var ctx = importKeyCtx;
+      if (!photo) return key;
+      var k2 = photoPathKey(photo), E = (mode === 'merge' && existingByKey) ? existingByKey[k2] : null;
+      var fromZip = !!E && ctx.seen.has(E);
+      ctx.seen.add(photo);
+      if (!E || fromZip) return key;   // 置き換え・前からある写真に同じ鍵が無い・ZIP の中どうし → 今までどおり
+      if (isPlaceholder(E) || isPlaceholder(photo) || samePhotoImage(E, photo)) return k2;   // 中身が同じ（または写真の無い記録）→ 合流。評価・メモなどは mergeIntoExisting の今の決まりのまま
+      var from = photo.filename;
+      photo.filename = importFreeName(photo, photos, ctx.zipNames);   // 中身が違う → ZIP の方を次の枝番にして、両方残す
+      var nk = photoPathKey(photo);
+      ctx.renamed.push({ from: from, to: photo.filename, key: nk });
+      return nk;
+    } catch (e) { return key; }
+  }
+  // G-01：置き換えの後始末。取り込みの中で写真を読み終えた所（保存済みの印を付ける前）から呼ばれる。
+  //   今の写真（r.old）は、ZIP を全部書けたこと・ほかのタブ・保存場所の件数を確かめてから消す。投げない
+  var importLiveKeys = [];   // 確かめ役の中-1：置き換えの途中で記録された写真の鍵（保存済みの印を付けない）
+  var replaceResult = null;   // 置き換えの結果（包む処理が、目印を下ろしたあとに知らせる）
+  async function afterImportPhotos(r) {
+    var olds = null;
+    try {
+      replaceResult = null;
+      if (!r || r.mode !== 'replace' || !Array.isArray(r.old)) return;
+      olds = r.old;
+      // 確かめ役の重-1：今の一覧には、ZIP から入れた写真のほかに、読み込みの途中で記録された写真（位置情報を待っていた写真など）が混ざりうる。
+      //   ZIP から入れた写真（importMatchKey を通った物）だけを扱い、途中で記録された写真には触らない（消さない・保存済みにしない）
+      var seenZip = (importKeyCtx && importKeyCtx.seen) ? importKeyCtx.seen : null;
+      var live = seenZip ? photos.filter(function(p) { return !seenZip.has(p); }) : photos.slice();   // 控えが無い＝ZIP の写真は1枚も入っていない（確かめ役の軽-A）
+      var news = seenZip ? photos.filter(function(p) { return seenZip.has(p); }) : [];   // ZIP から入れた写真だけ
+      importLiveKeys = live.map(photoPathKey);
+      if (typeof tabWriteBlocked === 'function' && tabWriteBlocked()) { photos = news.concat(olds).concat(live); replaceResult = { kind: 'othertab' }; return; }   // 消さない（v3.204 の決まり。2重に見えるだけ）
+      if (r.ng > 0 || r.ok === 0) {   // 1枚でも読めない → 読み込んだ分を消して、今の写真に戻す
+        var left = [];
+        for (var i = 0; i < news.length; i++) { try { await deletePhotoFromDB(news[i].id); } catch (e) { left.push(news[i]); } }
+        photos = olds.concat(left).concat(live);
+        replaceResult = { kind: 'rolledback', ng: r.ng, left: left.length };
+        return;
+      }
+      var cnt = await countPhotosInDB();   // 件数だけ（v3.204 の数の歯止めと同じ考え）。数えられなければ null
+      if (cnt != null && cnt > olds.length + news.length + live.length) { photos = news.concat(olds).concat(live); replaceResult = { kind: 'unknown' }; return; }
+      var whole = isWholeBackup(r.info);   // ② のような「全部が入った ZIP」か
+      // 確かめ役の中-2：台帳（photos.json）で会社・事業所・棟を戻せなかった写真（台帳に同じファイル名が2つ以上あり、ZIP の中の場所が台帳と違う）は、
+      //   フォルダの名前で会社などが組み立てられ、今の写真と鍵が合わない。そのときは ZIP に無い今の写真を消さない。
+      //   今の写真に同じファイル名・同じ画像の物があれば、今の記録（会社・事業所・棟・メモ・評価）を残し、ZIP の方を外す（写真は捨てない）
+      var lost = [], lostSame = [];
+      if (r.info && Array.isArray(r.info.photos) && r.info.photos.length) {
+        var ledKeys = {};
+        r.info.photos.forEach(function(m) { if (m) ledKeys[photoPathKey(m)] = true; });
+        lost = news.filter(function(n) { return !ledKeys[photoPathKey(n)]; });
+      }
+      if (lost.length) whole = false;
+      lost.forEach(function(n) {
+        for (var li = 0; li < olds.length; li++) { if (olds[li].filename === n.filename && samePhotoImage(olds[li], n)) { lostSame.push(n); return; } }
+      });
+      var newByKey = {};
+      news.forEach(function(n) { if (lost.indexOf(n) < 0) newByKey[photoPathKey(n)] = n; });
+      var keep = [], gone = [], dropNew = [], renameNew = [], evalDiff = 0;
+      olds.forEach(function(o) {
+        var k = photoPathKey(o), unsaved = !backedUpKeys.has(k), n = newByKey[k];
+        if (n) {
+          if (!unsaved) { gone.push(o); return; }   // 保存済み → ZIP の写真に置き換わる
+          keep.push(o);                             // まだ保存していない今の写真は残す
+          if (dropNew.indexOf(n) >= 0 || renameNew.indexOf(n) >= 0) return;
+          if (samePhotoImage(o, n)) { dropNew.push(n); if (evalDiffers(o, n)) evalDiff++; }   // 中身も同じ → 1枚にまとめる（今の写真を残す）。評価・メモが違えば数えて知らせる
+          else renameNew.push(n);                   // 中身が違う → ZIP の方を次の枝番にして、両方残す
+        } else if (!whole || unsaved) keep.push(o);   // ① や小分けの ZIP に無い写真・まだ保存していない写真は消さない
+        else gone.push(o);
+      });
+      var deleted = [];
+      for (var g = 0; g < gone.length; g++) { try { await deletePhotoFromDB(gone[g].id); deleted.push(gone[g]); } catch (e) { keep.push(gone[g]); } }
+      var merged = 0;
+      for (var d = 0; d < dropNew.length; d++) { try { await deletePhotoFromDB(dropNew[d].id); news.splice(news.indexOf(dropNew[d]), 1); merged++; } catch (e) {} }
+      var lostMerged = 0;
+      for (var ls = 0; ls < lostSame.length; ls++) { try { await deletePhotoFromDB(lostSame[ls].id); news.splice(news.indexOf(lostSame[ls]), 1); lostMerged++; } catch (e) {} }
+      var renamed = [];
+      for (var q = 0; q < renameNew.length; q++) {
+        var nw = renameNew[q], from = nw.filename;
+        nw.filename = importFreeName(nw, news.concat(keep), null);
+        try { await updatePhotoInDB(nw); renamed.push({ from: from, to: nw.filename, key: photoPathKey(nw) }); }
+        catch (e) { nw.filename = from; }   // 名前を変えられなければ、同じ名前のまま両方残す（捨てない）
+      }
+      photos = news.concat(keep).concat(live);   // 途中で記録された写真は、そのまま残す
+      var pins = await repointPinsAfterReplace(deleted, news);
+      replaceResult = { kind: 'done', deleted: deleted.length, kept: keep.length, merged: merged, renamed: renamed, pins: pins, evalDiff: evalDiff, lost: lost.length, lostSame: lostMerged };
+    } catch (e) {
+      try {   // 途中で何かあっても、今の写真を一覧から落とさない
+        if (olds) { var ids = {}; photos.forEach(function(p) { ids[p.id] = true; }); olds.forEach(function(o) { if (!ids[o.id]) photos.push(o); }); }
+      } catch (_) {}
+    }
+  }
+  // R9：置き換えで消した今の写真を指すピンを、ZIP から入った同じ写真（同じ鍵）につなぎ直す。
+  //   同じ写真が無ければ、つながりを外して札に番号を残す（R6 と同じ）。変えたときだけ保存する（空の位置記録で上書きしない）
+  async function repointPinsAfterReplace(deleted, news) {
+    try {
+      if (!deleted || !deleted.length || typeof mapData === 'undefined' || !mapData) return 0;
+      var byOld = photosById(deleted), byKey = {}, n = 0;
+      (news || []).forEach(function(p) { byKey[photoPathKey(p)] = p; });
+      forEachPinIn(mapData, function(pin) {
+        var o = (pin && pin.photoId != null) ? byOld[pin.photoId] : null;
+        if (!o) return;
+        var nw = byKey[photoPathKey(o)];
+        if (nw) pin.photoId = nw.id;
+        else {
+          if (pin.label == null || String(pin.label).trim() === '') { var num = photoDisplayNum(o); if (num && String(num) !== String(pin.no)) pin.label = String(num); }
+          pin.photoId = null;
+        }
+        n++;
+      });
+      if (n > 0) { await saveMapData(mapData); try { renderBuildingsList(); } catch (e) {} }
+      return n;
+    } catch (e) { return 0; }
+  }
+  // photos.json の上の段で、② のような「全部が入った ZIP」かを見分ける
+  function isWholeBackup(info) {
+    if (!info || typeof info !== 'object') return false;   // 台帳の無い古い ZIP は「全部」と言い切れない → ZIP に無い写真は消さない
+    if (info.kind) return false;                           // 'incremental'（①）・'split-part'（③）
+    if (info.rescued && info.parts > 1) return false;      // 救出ページの小分け
+    return true;
+  }
+  // 置き換えをやめた（今の写真に戻した）ときは、取り込みの中の1行（後始末のすぐ後）からここを呼び、true を返して取り込みをそこで終える。
+  //   「✅ 復元が完了しました」の窓・保存済みの印・位置記録の読み込みに進まない（確かめ役の軽-3）。画面の一覧と状態の文だけを戻す
+  function importStopAfterPhotos() {
+    try {
+      if (false || !replaceResult || replaceResult.kind !== 'rolledback') return false;
+      importLiveKeys = [];
+      try { if (importProgress) importProgress.style.display = 'none'; } catch (e) {}
+      try { renderList(); updateStats(); } catch (e) {}
+      try { setImpStatus('⚠️ ZIP の写真が ' + Number(replaceResult.ng || 0) + ' 枚読めなかったので、置き換えはやめました。今の写真は消していません。', false); } catch (e) {}
+      try { refreshLinkStatusIfOpen(); } catch (e) {}
+      return true;
+    } catch (e) { return false; }
+  }
+  // 結果を知らせる（包む処理から、目印を下ろしたあと・設定の小窓の前に1回）。名前を変えた写真は「まだ保存していない」に戻す
+  async function afterImportNotice() {
+    try {
+      var rr = replaceResult, ren = [];
+      if (importKeyCtx && importKeyCtx.renamed) ren = ren.concat(importKeyCtx.renamed);
+      if (rr && rr.renamed) ren = ren.concat(rr.renamed);
+      if (ren.length) {
+        ren.forEach(function(x) { backedUpKeys.delete(x.key); });
+        persistBackedUpKeys();
+        try { updateUnsavedPill(); } catch (e) {}
+      }
+      var lines = [];
+      if (rr && rr.kind === 'rolledback') lines.push('ZIP の写真が ' + rr.ng + ' 枚読めなかったので、置き換えはやめました。今の写真は消していません。' + (rr.left ? '読み込んだ写真のうち ' + rr.left + ' 枚は外せずに残っています（写真が2重に見えることがあります）。' : ''));
+      if (rr && (rr.kind === 'othertab' || rr.kind === 'unknown')) lines.push('今の写真は消していません。写真が2重に見えることがあります。開き直してから、もう一度確かめてください。');
+      if (rr && rr.kind === 'done' && rr.kept > 0) lines.push('まだ保存していない写真など ' + rr.kept + ' 枚は、消さずに残しました。');
+      if (rr && rr.kind === 'done' && rr.merged > 0) lines.push('名前も中身も同じ写真 ' + rr.merged + ' 枚は、1枚にまとめました（今の写真を残しました）。');
+      if (rr && rr.kind === 'done' && rr.evalDiff > 0) lines.push('ZIP と評価・メモが違う写真が ' + rr.evalDiff + ' 枚あります（画像は同じです）。今の写真の評価・メモを残しました。ZIP の評価・メモは ZIP の中に残っています。');
+      if (rr && rr.kind === 'done' && rr.lost > 0) lines.push('ZIP の記録（台帳）から会社・事業所・棟を戻せなかった写真が ' + rr.lost + ' 枚ありました。ZIP に無い今の写真は消さずに残しました。' + (rr.lostSame > 0 ? 'そのうち今の写真と同じ ' + rr.lostSame + ' 枚は、今の記録（会社・事業所・棟・メモ・評価）を残しました。' : ''));
+      if (ren.length) lines.push('名前は同じで中身が違う写真が ' + ren.length + ' 枚ありました。写真は捨てずに両方残し、ZIP の方を空いている次の枝番にしました：' + ren.slice(0, 5).map(function(x) { return x.from + ' → ' + x.to; }).join('、') + (ren.length > 5 ? ' ほか ' + (ren.length - 5) + ' 枚' : ''));
+      if (false || !lines.length) return;
+      await showImportResultNotice(lines);
+    } catch (e) {}
+  }
+  // ボタン1つの小窓。文は textContent（地雷9）。confirm は使わない。ファイルはもう選んであるので .click() は呼ばない（地雷1）
+  function showImportResultNotice(lines) {
+    return new Promise(function(resolve) {
+      try {
+        var modal = $('importResultModal');
+        if (!modal) { modal = document.createElement('div'); modal.id = 'importResultModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
+        modal.innerHTML = '';
+        var box = document.createElement('div'); box.className = 'delguard-content';
+        var title = document.createElement('p'); title.className = 'delguard-title'; title.textContent = '読み込みの結果';
+        box.appendChild(title);
+        lines.forEach(function(t) { var p = document.createElement('p'); p.className = 'delguard-body'; p.style.wordBreak = 'break-all'; p.textContent = t; box.appendChild(p); });
+        var ok = document.createElement('button'); ok.id = 'importResultOk'; ok.type = 'button'; ok.textContent = '分かった';
+        ok.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
+        box.appendChild(ok);
+        modal.appendChild(box);
+        ok.addEventListener('click', function() { modal.classList.remove('show'); resolve(); });
+        modal.classList.add('show');
+        try { ok.focus(); } catch (e) {}
+      } catch (e) { resolve(); }
+    });
+  }
   // R7：古い ZIP（v3.208 まで）で、消えた写真のピンが photoKey: null のまま入っていたら、つながりを外す（「データを読み込む」で位置記録が丸ごと入れ替わったときだけ）
   //   photoKey の項目そのものが無い、とても古い形のピンには触らない（同じ端末で戻すときに要るため）
   async function afterImportFixPins(f, mapBefore) {
@@ -10037,16 +10252,19 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var unsavedBefore = getUnsavedPhotos().map(photoPathKey);
     var mapBefore = (typeof mapData !== 'undefined') ? mapData : null;   // v3.209 R7：位置記録が丸ごと入れ替わったかを見る
     try { importReachedEnd = false; } catch (e) {}   // v3.209 R10
+    try { replaceResult = null; importKeyCtx = null; } catch (e) {}   // v3.210：前の読み込みの結果を持ち越さない
     function restore() {
       try { unsavedBefore.forEach(function(k){ backedUpKeys.delete(k); }); persistBackedUpKeys(); updateUnsavedPill(); } catch (e) {}
     }
     function done() { if (typeof endTabOp === 'function') endTabOp(); }   // v3.204：最後まで書いたら目印を下ろす
     function fixPins() { return (typeof afterImportFixPins === 'function') ? afterImportFixPins(f, mapBefore) : null; }   // v3.209 R7：目印を下ろす前に、ピンを直して保存
+    function notice() { return (typeof afterImportNotice === 'function') ? afterImportNotice() : null; }   // v3.210：置き換え・枝番の結果を知らせる（目印を下ろしたあと）
     function askSettings() { return (typeof afterImportAskSettings === 'function') ? afterImportAskSettings(f) : null; }   // v3.209 R4・R5：目印を下ろしたあと（小窓で待つ間、目印を持ち続けない）
     return Promise.resolve().then(function(){ return importBackupZip(f); })
       .then(restore, function(err){ restore(); throw err; })
       .then(fixPins)
       .then(done, function(err){ done(); throw err; })
+      .then(notice)
       .then(askSettings);
   }
   // v3.199 S7：取り込み（importBackupZip）の確認の窓は［OK］＝置き換え。位置記録だけの読み込みは［OK］＝追加で、意味が逆。
@@ -10151,6 +10369,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   function onPhotoImportChosen(f) {
     if (!f) return Promise.resolve(false);
+    if (typeof shotsInFlight !== 'undefined' && shotsInFlight && shotsInFlight.length > 0) {   // v3.210：記録中の写真があるときは読み込まない
+      if (typeof showToast === 'function') showToast('写真を記録しているところです（位置情報を待っています）。記録が終わってから、もう一度読み込んでください');
+      return Promise.resolve(false);
+    }
     if (photos.length > 0) {
       var noticeN = photos.length;
       var asking = askImportReplaceNotice(photos.length);   // 小窓はすぐ出す（今までどおり）
