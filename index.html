@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.212</title>
+<title>M1現場アプリ v3.213</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2484,12 +2484,199 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .qa-intro-tabs { display:flex; flex-direction:column; gap:4px; margin:0 0 12px; }
   .qa-intro-tabs > div { padding:2px 0; }
   .qa-intro-tip { margin:0; background:#fff7e6; border:1px solid #ffe0a3; border-radius:9px; padding:9px 11px; color:#7a5a10; }
+  /* =====================================================================
+     v3.213 画面①「画面の土台と読みやすさ」（CAM-102 の一部。土台は見本17）
+     ・今ある決まりは書き換えず、ここに新しい決まりを足すだけ（後ろに置いて上書きする）
+     ・色の検査が読む部品は、選び方を1行・色を #値のまま・!important なしで書く
+     ・救出の知らせの箱（#safetyStatus・.safety-status）には何も当てない
+     ・写真の保存の仕組み・データには触れない（見た目だけ）
+     ===================================================================== */
+  :root { --m1-tabh: 0px; --m1-tabw: 0px; }
+
+  /* ---- 地・字（書体・太さ・大きさ・行の間・数字の幅） ---- */
+  html, body { background: #fbfbfd; }
+  body { font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif; color: #1d1d1f; font-size: 18px; line-height: 1.5; font-weight: 400; }
+  button, input, textarea, select { font-family: -apple-system, "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif; }
+  .card-title, .recovery-title, .delguard-title, .saveguide-status, .backup-title, .bulklink-title, .pin-detail-title, .place-select-title { font-size: 22px; font-weight: 700; color: #1d1d1f; }
+  button, .tab, .cb-btn { font-weight: 600; }
+  #totalCount, #totalEquipCount, #totalSize, #exportCount, #badgeCount, #unsavedBarNum, .stat-bar strong, #filename, .photo-name, #continuous-banner-name, #eval-bar-name { font-variant-numeric: tabular-nums; }
+  #totalCount, #totalEquipCount, #exportCount, .stat-bar strong { font-weight: 700; }
+  .field-label, .survey-label { font-size: 16px; color: #3a3a3c; }
+  .preview-line, .stat-bar, .photo-path, .photo-fields, .photo-time, .geo-status, .gut-hint, .gut-note, .map-section-hint, .mlb-count, .empty, .storage-estimate, .keep-filename-toggle, .folder-toggle, .input-desc { font-size: 16px; color: #6e6e73; }
+  .photo-name { font-size: 18px; color: #1d1d1f; }
+  input::placeholder, textarea::placeholder { color: #6e6e73; opacity: 1; }
+  input[type="text"], input[type="number"], textarea, select, .survey-input { background: #ffffff; color: #1d1d1f; border: 1px solid #6e6e73; font-size: 18px; min-height: 52px; border-radius: 4px; }
+
+  /* ---- 題名の行（細く・白い地）と未保存の数 ---- */
+  .app-bar { background: #ffffff; color: #1d1d1f; border-bottom: 1px solid #8e8e93; padding: 6px 12px; font-size: 18px; font-weight: 700; }
+  .app-bar span[style] { color: #6e6e73 !important; opacity: 1 !important; font-size: 16px !important; }
+  .badge-count { background: #d70015; color: #ffffff; min-width: 44px; min-height: 36px; font-size: 18px; font-weight: 700; border-radius: 4px; font-variant-numeric: tabular-nums; }
+  .badge-count.zero { background: #6e6e73; }
+
+  /* ---- 未保存の赤い帯（残して細く。字は白・太字） ---- */
+  .unsaved-bar { background: #d70015; box-shadow: none; }
+  .unsaved-bar-btn { color: #ffffff; font-size: 16px; font-weight: 700; min-height: 36px; padding: 4px 8px; }
+  .unsaved-bar-btn strong { font-size: 18px; }
+  .offline-bar { font-size: 16px; }
+
+  /* ---- カード・箱 ---- */
+  .card { background: #ffffff; border: 1px solid #8e8e93; border-radius: 4px; box-shadow: none; }
+  .info-box { background: #ffffff; border: 1px solid #8e8e93; color: #1d1d1f; font-size: 16px; }
+  .warning-box, #evalNoTarget { background: #fff5e6; border: 1px solid #6e6e73; color: #1d1d1f; font-size: 16px; }
+
+  /* ---- 説明の札（開く・閉じる） ---- */
+  .desc-toggle { font-size: 16px; min-height: 44px; }
+  .desc-toggle.is-closed { background: #ffffff; color: #3460fb; border-color: #3460fb; }
+  .desc-toggle.is-open { background: #ffffff; color: #3a3a3c; border-color: #8e8e93; }
+
+  /* ---- タブ（中・ラベル付き。縦は上・横は左に固定。見た目の並びだけ変える） ---- */
+  .tab-bar { background: #fbfbfd; box-shadow: none; }
+  .tab { background: #ffffff; color: #3a3a3c; border: 1px solid #8e8e93; border-radius: 4px; box-shadow: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+  .tab .tab-ic { font-size: 22px; line-height: 1; }
+  .tab .tab-lb { font-size: 16px; font-weight: 700; line-height: 1.2; }
+  .tab.active { background: #3460fb; color: #ffffff; border-color: #3460fb; box-shadow: none; }
+  .tab[data-view="settings"] { order: 1; }
+  .tab[data-view="shoot"] { order: 2; }
+  .tab[data-view="eval"] { order: 3; }
+  .tab[data-view="floorplan"] { order: 4; }
+  .tab[data-view="list"] { order: 5; }
+  .tab[data-view="export"] { order: 6; }
+  .tab[data-view="import"] { order: 7; }
+  .tab[data-view="reference"] { order: 8; }
+  .tab[data-view="qa"] { order: 9; }
+  @media (orientation: portrait) {
+    :root { --m1-tabh: 64px; }
+    .tab-bar { position: fixed; left: 0; right: 0; top: 0; z-index: 70; height: 64px; margin: 0; padding: 4px; display: flex; flex-wrap: nowrap; gap: 4px; border-radius: 0; border-bottom: 1px solid #8e8e93; }
+    .tab { flex: 1 1 0; min-width: 0; min-height: 0; padding: 2px; }
+    body { padding-top: calc(64px + env(safe-area-inset-top)); }
+    .app-bar { top: 64px; }
+    .offline-bar { top: 64px; }
+    .unsaved-bar { top: calc(64px + var(--offline-h, 0px)); }
+    .pinrec-banner, .shoot-for-pin-banner, .retake-banner, #equip-tracker { top: calc(64px + var(--offline-h, 0px) + var(--unsaved-h, 0px)); }
+  }
+  @media (orientation: landscape) {
+    :root { --m1-tabw: 132px; }
+    .tab-bar { position: fixed; left: 0; top: 0; bottom: 0; z-index: 70; width: 132px; margin: 0; padding: 8px 6px; display: flex; flex-direction: column; flex-wrap: nowrap; gap: 6px; overflow-y: auto; border-radius: 0; border-right: 1px solid #8e8e93; }
+    .tab { flex: 0 0 auto; min-height: 64px; padding: 4px 2px; }
+    body { padding-left: calc(132px + env(safe-area-inset-left)); }
+    .container { max-width: none; }
+    #continuous-banner, #eval-bar, #complete-bar, #m1-backbar, #toastHost, #pin-undo-chip { left: 132px; }
+  }
+  html { scroll-padding-top: calc(var(--m1-tabh) + var(--offline-h, 0px) + var(--unsaved-h, 0px) + 72px); }
+
+  /* ---- 押して進むボタン（#3460fb・白い字）。押した時は #2449d8 ---- */
+  button { background: #3460fb; color: #ffffff; border-radius: 4px; }
+  button.success { background: #3460fb; color: #ffffff; }
+  .map-add-blank, .map-add-read, .bulk-btn, .map-item-rename-ok, .layer-align-done, .pin-editor-done, .backup-btn-go { background: #3460fb; color: #ffffff; }
+  .saveguide-go, .saveguide-confirm, .place-from-photo-btn, .draw-mode-btn, .vector-done-btn, .draw-done-btn, .place-select-start { background: #3460fb; color: #ffffff; }
+  .pin-open-btn, .map-add-mini, .layer-add-btn, .bulklink-confirm, .pin-zoom-fit { background: #3460fb; color: #ffffff; }
+  .map-add-blank:active, .map-add-read:active, .pin-editor-done:active, .backup-btn-go:active, .saveguide-go:active, .place-from-photo-btn:active, .draw-mode-btn:active { background: #2449d8; }
+  .layer-add-btn:active, .bulklink-confirm:active { background: #2449d8; }
+  #goto-save-btn, #exportIncBtn, #exportBtn, #splitToggleBtn, #incRebuildBtn, #exportSplitBtn, #evalNoTargetListBtn, #recoveryKeepBtn, #digit-yes-btn, #nophoto-btn, #backupModalIncBtn, #imp-confirm { background: #3460fb !important; color: #ffffff !important; }
+  #shoot-btn, .bulk-btn, #goto-save-btn, #exportIncBtn, #exportBtn, #splitToggleBtn, #incRebuildBtn, #exportSplitBtn, #evalNoTargetListBtn, #recoveryKeepBtn, #digit-yes-btn, .backup-btn-go, .saveguide-go, .saveguide-confirm, .bulklink-confirm, .pin-open-btn, .map-add-blank, .map-add-read, .place-select-start { min-height: 56px; font-size: 18px; }
+
+  /* ---- 補助のボタン（閉じる・やめる・あとで）：白い地・濃い字・枠 ---- */
+  .layer-done-btn, .saveguide-done, .placement-skip, .placement-finish, #pin-detail-close, #photo-picker-close { background: #ffffff; color: #1d1d1f; border: 1px solid #6e6e73; }
+  button.secondary, #digit-no-btn, .saveguide-dlalt, .bulklink-cancel, .delguard-cancel, .backup-btn-later, .place-select-cancel { background: #ffffff !important; color: #1d1d1f !important; border: 1px solid #6e6e73 !important; min-height: 56px; font-size: 18px; }
+
+  /* ---- 危ない（削除）：入口は白い地に赤い字と枠。最後の確認だけ赤く塗る ---- */
+  button.danger, #recoveryDeleteBtn, #clearAllBtn, #pin-detail-delete, #exportClearBtn, #listSelectDelete { background: #ffffff !important; color: #d70015 !important; border: 2px solid #d70015 !important; min-height: 56px; font-size: 18px; }
+  .delguard-del { background: #d70015 !important; color: #ffffff !important; min-height: 56px; font-size: 18px; }
+
+  /* ---- 選んだ札・行：淡い青の地＋#3460fb の 3px の線（上の字は濃い字） ---- */
+  .cls-opt.selected, .gut-opt.selected, .fn-kbd-btn.on, .ref-big-chip.on, .qa-cat-btn.active, .bulklink-mode-btn.selected { background: #eaf0ff !important; color: #1d1d1f !important; border: 3px solid #3460fb !important; }
+  .fn-kbd-btn, .cls-opt, .qa-cat-btn, .ref-big-chip { font-size: 16px; min-height: 44px; }
+
+  /* ---- 図面に記録の帯（細く） ---- */
+  .pinrec-banner { background: #ffffff; border-bottom: 1px solid #8e8e93; box-shadow: none; padding: 4px 8px; }
+  .pinrec-banner-btn { background: #3460fb; color: #ffffff; border: none; border-radius: 4px; min-height: 44px; font-size: 16px; padding: 8px; box-shadow: none; }
+  .pinrec-banner-close { background: #ffffff; color: #1d1d1f; border: 1px solid #6e6e73; width: 44px; height: 44px; border-radius: 4px; }
+  .retake-banner-text, .retake-banner-text .rtk-name { color: #1d1d1f; font-size: 16px; }
+  .retake-banner-cancel { background: #ffffff; color: #1d1d1f; border: 1px solid #1d1d1f; min-height: 44px; font-size: 16px; }
+  .shoot-for-pin-text { font-size: 16px; }
+  .shoot-for-pin-cancel { min-height: 44px; font-size: 16px; }
+
+  /* ---- 下の帯（白い地・上に #3460fb の 3px の線。帯の中の行の間は 1.3） ---- */
+  .continuous-banner { background: #ffffff; flex-direction: row; flex-wrap: wrap; column-gap: 12px; line-height: 1.3; }
+  .eval-bar { background: #ffffff; flex-direction: row; flex-wrap: wrap; column-gap: 12px; line-height: 1.3; }
+  #continuous-banner, #eval-bar, #complete-bar { color: #1d1d1f; border-top: 3px solid #3460fb; border-radius: 0; box-shadow: 0 -2px 8px rgba(0,0,0,0.12); }
+  #continuous-banner-name, .eval-bar-title, .eval-bar-sub { color: #1d1d1f; flex: 0 0 100%; line-height: 1.3; }
+  #continuous-banner-name, .eval-bar-title { font-size: 18px; }
+  .eval-bar-sub { font-size: 16px; }
+  .eval-bar-title #eval-bar-name, #complete-bar-name { color: #1d1d1f; }
+  .cb-btn { flex: 1 1 calc(50% - 12px); width: auto; min-height: 56px; font-size: 18px; border-radius: 4px; box-shadow: none; padding: 12px; line-height: 1.3; }
+  .cb-shoot { background: #3460fb; color: #ffffff; }
+  .cb-retake { background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  .cb-end { background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  .cb-eval { background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  .eval-bar .cb-eval { background: #3460fb; color: #ffffff; border: none; }
+  /* 評価のカードの説明と、評価の帯の説明の重なりをまとめる（帯の説明は出さない。カードの説明は残す） */
+  #eval-bar > .eval-bar-sub { display: none; }
+
+  /* ---- 下の帯は、その帯のタブでだけ大きく出す。ほかのタブでは細い1行「◯◯に戻る（次：…）」 ---- */
+  body[data-curview]:not([data-curview="shoot"]) #continuous-banner { display: none !important; }
+  body[data-curview]:not([data-curview="eval"]) #eval-bar { display: none !important; }
+  body[data-curview]:not([data-curview="floorplan"]) #complete-bar { display: none !important; }
+  #m1-backbar { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 61; width: auto; min-height: 56px; margin: 0; padding: 8px 12px calc(8px + env(safe-area-inset-bottom)); background: #3460fb; color: #ffffff; border: none; border-radius: 0; font-size: 18px; font-weight: 600; line-height: 1.3; }
+  #m1-backbar:active { background: #2449d8; }
+  body[data-m1back] #m1-backbar { display: block; }
+  body.bottombar-on[data-m1back] { padding-bottom: 88px; }
+
+  /* ---- 「タッチペン・音声入力」の説明は閉じておく（開けば読める） ---- */
+  details.input-help { display: block; padding: 4px 12px; }
+  details.input-help > summary { min-height: 44px; display: flex; align-items: center; gap: 8px; font-size: 16px; color: #3a3a3c; cursor: pointer; }
+  details.input-help > span { display: block; font-size: 16px; padding: 0 0 8px; }
+
+  /* ---- 工程の札（撮影・評価・位置記録） ---- */
+  #equip-tracker .trk-name { font-size: 16px; }
+  #equip-tracker .trk-step { font-size: 16px; }
+  #equip-tracker .trk-todo { background: #ffffff; color: #6e6e73; border: 1px solid #8e8e93; }
+  #equip-tracker .trk-cur { background: #eaf0ff; color: #1d1d1f; border: 3px solid #3460fb; }
+
+  /* ---- 「ファイル名に含める」（ファイル名の行は押せない印なので今のまま） ---- */
+  .check-toggle { font-size: 16px; color: #3a3a3c; }
+  .check-toggle input[type="checkbox"] { accent-color: #3460fb; }
+  .field-row:not(.field-row-filename) .check-toggle.active { background: #eaf0ff; color: #1d1d1f; box-shadow: inset 0 0 0 3px #3460fb; }
+
+  /* ---- 撮影・評価・保存・設定の画面の小さい字を 16px に寄せる（style= で書いた字も） ---- */
+  #view-shoot [style*="font-size:11px"], #view-shoot [style*="font-size:12px"], #view-shoot [style*="font-size:13px"], #view-shoot [style*="font-size:14px"], #view-shoot [style*="font-size:15px"] { font-size: 16px !important; }
+  #view-eval [style*="font-size:11px"], #view-eval [style*="font-size:12px"], #view-eval [style*="font-size:13px"], #view-eval [style*="font-size:14px"], #view-eval [style*="font-size:15px"] { font-size: 16px !important; }
+  #view-export [style*="font-size:11px"], #view-export [style*="font-size:12px"], #view-export [style*="font-size:13px"], #view-export [style*="font-size:14px"], #view-export [style*="font-size:15px"] { font-size: 16px !important; }
+  #view-settings [style*="font-size:11px"], #view-settings [style*="font-size:12px"], #view-settings [style*="font-size:13px"], #view-settings [style*="font-size:14px"], #view-settings [style*="font-size:15px"] { font-size: 16px !important; }
+  #view-shoot .desc-collapsible, #view-eval .desc-collapsible, #view-export .desc-collapsible, #view-settings .desc-collapsible { font-size: 16px; }
+  #view-shoot [style*="font-size: 11px"], #view-shoot [style*="font-size: 12px"], #view-shoot [style*="font-size: 13px"], #view-shoot [style*="font-size: 14px"], #view-shoot [style*="font-size: 15px"] { font-size: 16px !important; }
+  #view-eval [style*="font-size: 11px"], #view-eval [style*="font-size: 12px"], #view-eval [style*="font-size: 13px"], #view-eval [style*="font-size: 14px"], #view-eval [style*="font-size: 15px"] { font-size: 16px !important; }
+  #view-export [style*="font-size: 11px"], #view-export [style*="font-size: 12px"], #view-export [style*="font-size: 13px"], #view-export [style*="font-size: 14px"], #view-export [style*="font-size: 15px"] { font-size: 16px !important; }
+  #view-settings [style*="font-size: 11px"], #view-settings [style*="font-size: 12px"], #view-settings [style*="font-size: 13px"], #view-settings [style*="font-size: 14px"], #view-settings [style*="font-size: 15px"] { font-size: 16px !important; }
+  .desc-toggle .desc-chevron, #fnPad .fn-pad-fold, .cls-level-label, .survey-unit, .t-target-radio, .gut-info, .gut-toggle, #survey-excluded-info { font-size: 16px; }
+  #view-shoot .more-info > summary, #view-eval .more-info > summary, #view-export .more-info > summary, #view-settings .more-info > summary, #view-export .more-info .more-body { font-size: 16px; }
+
+  /* ---- 確かめ役の指摘で足した直し（読みやすさの比・押す所の大きさ） ---- */
+  /* 保存タブの「🆘 データが消えた…」：字は #d70015（淡い橙の地と 4.6 以上）、「ここをクリック」は #d70015 に白い字（5.38） */
+  #view-export > details.card > summary { color: #d70015 !important; font-size: 18px !important; min-height: 44px; }
+  #view-export > details.card > summary > span { background: #d70015 !important; color: #ffffff !important; font-size: 16px !important; }
+  #view-export a[href$="diag.html"] { background: #ffffff !important; color: #d70015 !important; border: 2px solid #d70015 !important; font-size: 18px !important; min-height: 56px; display: inline-flex !important; align-items: center; }
+  /* 保存の ①②③ の丸：字を 16px にしたので、丸も大きくし、地を濃い色にそろえる（白い字と 16.8） */
+  #view-export p > span[style*="border-radius:50%"] { background: #1d1d1f !important; color: #ffffff !important; width: 28px !important; height: 28px !important; line-height: 28px !important; }
+  /* style= で書いた薄い字（#8a8a8e・#86868b）を #6e6e73 に（白と 5.07） */
+  #view-shoot [style*="color:#8a8a8e"], #view-shoot [style*="color: #8a8a8e"], #view-settings [style*="color:#86868b"], #view-settings [style*="color: #86868b"], #view-settings [style*="color:#8a8a8e"], #view-settings [style*="color: #8a8a8e"] { color: #6e6e73 !important; }
+  /* 押す所を 44px 以上に（手袋） */
+  .check-toggle, .keep-filename-toggle, #fnPad .fn-pad-fold, .delete-field-btn, .t-target-radio { min-height: 44px; }
+  .order-btn { min-width: 44px; min-height: 44px; font-size: 18px; }
+  .add-field-btn { min-height: 44px; font-size: 16px; color: #3460fb; }
+  .survey-checkrow { font-size: 16px; }
+  .survey-excluded { font-size: 16px; border: 1px solid #6e6e73; }
+  .cls-opt { border: 1px solid #8e8e93; }
+  .unsaved-bar-btn { min-height: 44px; }
+  /* 「タッチペン・音声入力について」：開く印を出す */
+  details.input-help > summary::after { content: '▼'; margin-left: auto; font-size: 16px; color: #3460fb; }
+  details.input-help[open] > summary::after { content: '▲'; }
 </style>
 </head>
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.212 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-30）</span></span>
+  <span>📷 M1現場アプリ v3.213 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-31）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2543,25 +2730,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <span>撮影データと入力内容はSafari内に一時保存されます（Safariの履歴消去等で失われます）</span>
   </div>
 
-  <div class="input-help">
-    <span class="input-help-icon">✏️</span>
+  <details class="input-help">
+    <summary><span class="input-help-icon">✏️</span>タッチペン・音声入力について</summary>
     <span>タッチペン・音声入力は、ご利用のデバイスのキーボード設定に準じてご利用いただけます</span>
-  </div>
+  </details>
 
   <div id="unsavedPill" class="unsaved-pill">
     <span>⚠️ 未保存 <strong id="unsavedPillNum">0</strong> 枚 — こまめに保存してください</span>
   </div>
 
   <div class="tab-bar">
-    <div class="tab" data-view="settings">⚙️ 設定</div>
-    <div class="tab active" data-view="shoot">📸 撮影</div>
-    <div class="tab" data-view="eval">📊 評価</div>
-    <div class="tab" data-view="floorplan">📍 位置記録</div>
-    <div class="tab" data-view="export">💾 保存</div>
-    <div class="tab" data-view="import">📥 読込</div>
-    <div class="tab" data-view="list">📋 撮影リスト</div>
-    <div class="tab" data-view="reference">📖 評価参考</div>
-    <div class="tab" data-view="qa">❓ Q&A</div>
+    <div class="tab" data-view="settings"><span class="tab-ic">⚙️</span><span class="tab-lb">設定</span></div>
+    <div class="tab active" data-view="shoot"><span class="tab-ic">📸</span><span class="tab-lb">撮影</span></div>
+    <div class="tab" data-view="eval"><span class="tab-ic">📊</span><span class="tab-lb">評価</span></div>
+    <div class="tab" data-view="floorplan"><span class="tab-ic">📍</span><span class="tab-lb">位置記録</span></div>
+    <div class="tab" data-view="export"><span class="tab-ic">💾</span><span class="tab-lb">保存</span></div>
+    <div class="tab" data-view="import"><span class="tab-ic">📥</span><span class="tab-lb">読込</span></div>
+    <div class="tab" data-view="list"><span class="tab-ic">📋</span><span class="tab-lb">撮影リスト</span></div>
+    <div class="tab" data-view="reference"><span class="tab-ic">📖</span><span class="tab-lb">評価参考</span></div>
+    <div class="tab" data-view="qa"><span class="tab-ic">❓</span><span class="tab-lb">Q&A</span></div>
   </div>
 
   <div id="equip-tracker"></div>
@@ -4435,7 +4622,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.212）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：M1現場アプリ v3.213）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -7383,6 +7570,45 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(kb) obs.observe(kb,{attributes:true,attributeFilter:['style']});
       sync();
     }catch(e){}
+  })();
+
+  // v3.213 画面①：今のタブを body の data-curview に写す。下の帯（撮影・評価・位置記録）は、その帯のタブでだけ大きく出し（CSS）、
+  //   ほかのタブでは、画面の下に細い1行「◯◯に戻る（次：…）」を出す。押すとその帯のタブへ移る（タブを押すのと同じ）。
+  //   見た目だけ：帯の出し入れ（style.display）と、帯のボタンの処理・写真の保存には触れない
+  (function setupBackBar(){
+    var BARS = [['continuous-banner', 'shoot', '撮影に戻る', 'continuous-banner-name'],
+                ['eval-bar', 'eval', '評価に戻る', 'eval-bar-name'],
+                ['complete-bar', 'floorplan', '位置記録に戻る', 'complete-bar-name']];
+    try {
+      var back = document.createElement('button');
+      back.id = 'm1-backbar'; back.type = 'button';
+      back.addEventListener('click', function(){ var t = document.querySelector('.tab[data-view="' + back.dataset.go + '"]'); if (t) t.click(); });
+      document.body.appendChild(back);
+      var sync = function(){
+        var a = document.querySelector('.tab.active');
+        var v = a ? a.dataset.view : '';
+        document.body.setAttribute('data-curview', v);
+        var shown = function(b){ var el = $(b[0]); return !!(el && el.style.display && el.style.display !== 'none'); };
+        var own = BARS.some(function(b){ return b[1] === v && shown(b); });   // 今のタブの帯が出ているときは、細い1行で帯のボタンを覆わない
+        var show = null;
+        BARS.forEach(function(b){ if (!show && !own && shown(b) && v !== b[1]) show = b; });
+        if (show) {
+          var n = $(show[3]); var nm = n ? (n.textContent || '').trim() : '';
+          back.textContent = '▲ ' + show[2] + (nm ? '（' + nm + '）' : '');
+          back.dataset.go = show[1];
+          document.body.setAttribute('data-m1back', '1');
+        } else {
+          document.body.removeAttribute('data-m1back');
+        }
+      };
+      var obs = new MutationObserver(sync);
+      BARS.forEach(function(b){
+        var el = $(b[0]); if (el) obs.observe(el, { attributes: true, attributeFilter: ['style'] });
+        var n = $(b[3]); if (n) obs.observe(n, { childList: true, characterData: true, subtree: true });
+      });
+      document.querySelectorAll('.tab').forEach(function(t){ obs.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+      sync();
+    } catch (e) {}
   })();
   
   // ファイル名入力欄のイベントリスナー登録（DOM生成後に呼ばれる）
