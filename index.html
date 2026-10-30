@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="現場撮影">
 <meta name="theme-color" content="#007aff">
-<title>現場写真撮影アプリ v3.211</title>
+<title>現場写真撮影アプリ v3.212</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2489,7 +2489,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 現場写真撮影アプリ v3.211 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-29）</span></span>
+  <span>📷 現場写真撮影アプリ v3.212 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-30）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -2895,8 +2895,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="card">
       <p class="card-title">📋 撮影リスト</p>
       <div class="stat-bar">
-        <span>合計：<strong id="totalCount">0</strong> 枚</span>
-        <span>設備：<strong id="totalEquipCount">0</strong> 件</span>
+        <span>合計：<strong id="totalCount">読み込み中</strong> 枚</span>
+        <span>設備：<strong id="totalEquipCount">—</strong> 件</span>
         <span>容量：<strong id="totalSize">0 MB</strong></span>
       </div>
       <p id="storageEstimate" class="storage-estimate"></p>
@@ -2914,7 +2914,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         </div>
       </div>
       <div id="photoList" class="photo-list">
-        <div class="empty">まだ撮影がありません</div>
+        <div class="empty">写真を読み込み中です…</div>
       </div>
     </div>
 
@@ -2990,7 +2990,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         3. 読み込みは「ZIPを読み込む（写真＋位置記録）」から。写真と位置記録の両方が一度に戻ります。
       </div>
       <div class="stat-bar">
-        <span>保存対象：<strong id="exportCount">0</strong> 枚</span>
+        <span>保存対象：<strong id="exportCount">読み込み中</strong> 枚</span>
       </div>
       <div class="progress" id="progress">
         <div class="progress-bar" id="progressBar"></div>
@@ -4435,7 +4435,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.211）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：現場写真撮影アプリ v3.212）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -5503,6 +5503,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   //     このタブを閉じてから新しいタブで開く手順を出す。前回の印による案内では、まだ読み始めていないので、ボタンで移る
   //   ・showRescueWarning（救出の知らせ）と updateStats は変えない
   var BOOT_MARK_KEY = 'bootPending';
+  var bootPhotosLoaded = false;   // v3.212：写真を読み終わるまでは、枚数を「読み込み中」のままにする（撮影リスト・保存タブを開いても「0」と描かない）
   var BOOT_SOFT_MS = 15000, BOOT_HARD_MS = 60000;
   try { if (window.__BOOT_TEST_MS__) { BOOT_SOFT_MS = window.__BOOT_TEST_MS__[0]; BOOT_HARD_MS = window.__BOOT_TEST_MS__[1]; } } catch (_) {}   // 検証キットだけが使う
   var bootTimers = [], bootDone = false, bootShown = false;
@@ -5526,7 +5527,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var bar = document.createElement('div');
       bar.id = 'bootGuideBar';
       bar.style.cssText = 'margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#fff4ce;border:1px solid #f0c36d;color:#1d1d1f;font-size:14px;font-weight:600;line-height:1.6;';
-      bar.textContent = '⏳ 写真を読み込んでいます' + (hint > 0 ? '（前回は ' + hint + ' 枚）' : '') + '。写真が多いと時間がかかります。このままお待ちください。※サイトデータ（履歴）は消さないでください。';
+      bar.textContent = '⏳ データの保管庫につないで、写真を読み込んでいます' + (hint > 0 ? '（前回は ' + hint + ' 枚）' : '') + '。写真が多いと時間がかかります。このままお待ちください。※サイトデータ（履歴）は消さないでください。';
       var host = safetyStatus && safetyStatus.parentNode;
       if (host) host.insertBefore(bar, safetyStatus); else document.body.insertBefore(bar, document.body.firstChild);
       bootShown = true;
@@ -5549,6 +5550,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       box.appendChild(title);
       var lines = [];
       if (kind === 'resume') lines.push('写真の読み込みの途中で画面を閉じた場合も、この表示が出ます。');
+      else lines.push('データの保管庫（Safari内のデータベース）につないでいる途中か、写真を読み込んでいる途中で止まっています。');   // v3.212
       lines.push('写真は、この端末に残っている可能性があります' + bootHintText(hint) + '。');
       lines.push('サイトデータ（履歴・Webサイトデータ）は、絶対に消さないでください。消すと写真も消えます。');
       var homeApp = (kind !== 'resume') && isStandaloneApp();   // v3.205：ホーム画面のアプリのときは、Safari の新しいタブでは写真が見えない
@@ -6980,6 +6982,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   function renderList() {
+    if (!bootPhotosLoaded) return;   // v3.212：写真を読み終わるまでは描かない（絞り込み・並べ替え・選択を触っても「0」と描かず、前回の枚数の控えも 0 にしない）
     if (photos.length === 0) {
       photoList.innerHTML = '<div class="empty">まだ撮影がありません</div>';
       updateStats();
@@ -7026,6 +7029,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       } else {
         img = document.createElement('img');
         img.className = 'photo-thumb';
+        img.loading = 'lazy'; img.decoding = 'async';   // v3.212：見える所だけ読む（表示だけ）
         img.src = p.dataUrl;
       }
       
@@ -7343,9 +7347,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
       tab.classList.add('active');
       $('view-' + tab.dataset.view).classList.add('active');
-      if (tab.dataset.view === 'list') renderList();
+      if (tab.dataset.view === 'list' && bootPhotosLoaded) renderList();   // v3.212：読み終わるまでは描かない
       if (tab.dataset.view === 'shoot') { if (typeof renderDummyButtons === 'function') renderDummyButtons(); }
-      if (tab.dataset.view === 'export') {
+      if (tab.dataset.view === 'export' && bootPhotosLoaded) {   // v3.212：読み終わるまでは「0」と描かない
         updateStats();
         updateStorageInfo();
         if (typeof updateMapPortCounts === 'function') updateMapPortCounts();
@@ -17995,7 +17999,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     try { renderIncBackupList(); } catch (e) {}
 
     try {
-      await initDB();
       var prevHint = null;
       try { prevHint = parseInt(localStorage.getItem('photoCountHint') || '0', 10) || 0; } catch(_) { prevHint = 0; }
       // v3.202：前回の起動が最後まで終わっていなければ（印が残っている）、写真を読む前に案内を出して待つ。
@@ -18005,7 +18008,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (prevBoot) { await askBootResume(bootHint); }
       writeBootMark(bootHint);
       startBootWatch(bootHint);
+      await initDB();   // v3.212：保管庫を開くのも見張りの中で行う（開く要求が返らないときも、15 秒・60 秒の案内が出る）
       photos = await loadAllPhotosFromDB();
+      bootPhotosLoaded = true;   // v3.212：ここから先は、枚数と撮影リストを描いてよい
       endBootWatch(photos.length);
 
       // 異常検知：前回は写真があったのに今回0枚で読み込まれた＝接続破損の疑い。あわてて履歴を消す前に救出へ
@@ -18025,6 +18030,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         }
       } catch (_) {}
 
+      if (photos.length === 0) renderList();   // v3.212：「読み込み中」の文を、0 枚の文に戻す
       if (photos.length > 0) {
         recoveryText.textContent = '前回の撮影データ ' + photos.length + ' 枚が見つかりました。続きから使いますか？';
         recoveryModal.classList.add('show');
@@ -18048,6 +18054,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     } catch(err) {
       endBootWatch(null);   // v3.202：見張りの時計を止め、起動中の印を消す（接続できないときは、今までどおり救出の知らせを出す）
       showRescueWarning('データの保管庫（Safari内のデータベース）に接続できませんでした');
+      if (!bootPhotosLoaded) try { ['totalCount', 'exportCount'].forEach(function(id) { var el = $(id); if (el) el.textContent = '—'; }); var pl = $('photoList'); if (pl) pl.innerHTML = '<div class="empty">写真を読み込めませんでした（上の案内を見てください）</div>'; } catch (_) {}   // v3.212
     }
   }
   
