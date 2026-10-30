@@ -8,9 +8,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="現場撮影">
+<meta name="apple-mobile-web-app-title" content="m-One Genba App">
 <meta name="theme-color" content="#007aff">
-<title>M1現場アプリ v3.213</title>
+<title>m-One Genba App v3.214</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2671,12 +2671,133 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   /* 「タッチペン・音声入力について」：開く印を出す */
   details.input-help > summary::after { content: '▼'; margin-left: auto; font-size: 16px; color: #3460fb; }
   details.input-help[open] > summary::after { content: '▲'; }
+  /* =====================================================================
+     v3.214 画面の改善（CAM-102 の一部。土台は見本18b）
+     ・今ある決まり（v3.213 までの決まりを含む）は書き換えず、ここに新しい決まりを足すだけ
+     ・色の検査が読む部品は、選び方を1行・色を #値のまま・!important なしで書く
+     ・救出の知らせの箱には何も当てない
+     ・写真の保存の仕組み・データには触れない（見た目と、画面を移る道だけ）
+     ===================================================================== */
+
+  /* ---- B 地の色：ページは少し灰色 #eceef1、カードと入力欄は白。灰色の地でも比が足りるよう、薄い字と枠を濃くする ---- */
+  html, body { background: #eceef1; }
+  .card { background: #ffffff; border: 1px solid #767c86; }
+  .preview-line, .stat-bar, .photo-path, .photo-fields, .photo-time, .geo-status, .gut-hint, .gut-note, .map-section-hint, .mlb-count, .empty, .storage-estimate, .keep-filename-toggle, .folder-toggle, .input-desc { color: #575e68; }
+  input[type="text"], input[type="number"], textarea, select, .survey-input { border: 1px solid #767c86; }
+  .tab-bar { background: #f6f7f9; }
+  .tab { border: 1px solid #767c86; }
+  .app-bar { border-bottom: 1px solid #767c86; }
+  .app-bar span[style] { color: #575e68 !important; }
+  details.input-help { background: #ffffff; border: 1px solid #767c86; }
+  .badge-count.zero { display: none; }
+
+  /* ---- A タブ：縦向きは画面の下に横一列で固定（ホームに戻る線の上）。横向きは今のまま左に縦一列 ---- */
+  @media (orientation: portrait) {
+    .tab-bar { top: auto; bottom: 0; height: calc(64px + env(safe-area-inset-bottom)); padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); border-top: 1px solid #767c86; border-bottom: none; box-shadow: 0 -2px 8px rgba(0,0,0,0.12); }
+    body { padding-top: env(safe-area-inset-top); padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px); }
+    .offline-bar { top: 0; }
+    .tab-bar { gap: 6px; }
+    #continuous-banner, #eval-bar, #complete-bar { bottom: calc(64px + env(safe-area-inset-bottom) + 8px); }
+    #toastHost { bottom: calc(64px + env(safe-area-inset-bottom) + 72px); }
+    #pin-undo-chip { bottom: calc(64px + env(safe-area-inset-bottom) + 116px); }
+    body.bottombar-on { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 300px); }
+    body.bottombar-on[data-m1back] { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 24px); }
+    /* 番号などを打つ間（端末のキーボードが出ている間）は、下のタブを隠す（入力が終わると必ず戻す。10キーで打つときは隠さない） */
+    body.m1-typing .tab-bar { display: none; }
+  }
+  /* 上に貼り付く物の並び（縦も横も）：電波なし → 題名の行（「＜ 戻る」がいつも見える）→ 未保存 → 先行ピン・撮り直し → 上チェックリスト・工程の札。高さは JS が測る */
+  .app-bar { top: var(--offline-h, 0px); }
+  .unsaved-bar { top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px)); }
+  .pinrec-banner, .shoot-for-pin-banner, .retake-banner { top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px)); }
+  #equip-tracker, #m1-steps { top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + var(--m1-ban-h, 0px)); }
+  #equip-tracker { border: 1px solid #767c86; }
+  html { scroll-padding-top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + 140px); scroll-padding-bottom: 160px; }
+  /* 下の帯が出ている間の知らせ（toast）は、帯のボタンに重ならないよう画面の上に出す */
+  body.bottombar-on #toastHost { top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + 8px); bottom: auto; }
+
+  /* ---- C 撮影のボタンを浮いたボタン（FAB）に。同じボタン・同じ処理（押した瞬間にカメラが開く）。撮影の帯が出ている間は帯の「続けて撮る」に任せる ---- */
+  body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { position: fixed; right: 24px; bottom: 24px; z-index: 65; width: auto; min-width: 260px; min-height: 72px; margin: 0; padding: 12px 24px; border-radius: 36px; font-size: 20px; box-shadow: 0 6px 16px rgba(0,0,0,0.28); }
+  @media (orientation: landscape) { body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { right: 24px; bottom: 24px; } }
+  @media (orientation: portrait) { body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { bottom: calc(64px + env(safe-area-inset-bottom) + 16px); } body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 104px); } }   /* 縦は下のタブの上に浮かせる */
+  @media (orientation: landscape) { body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: 112px; } }
+
+  /* ---- D 押した感触：押した瞬間にへこむ・暗くなる（100ms）。iOS では JS で押した印も付ける ---- */
+  button, .tab, .cls-opt, .gut-opt, .fn-kbd-btn, .fn-pad-key, summary, .desc-toggle, .t-target-radio, .check-toggle { transition: transform 100ms ease-out, filter 100ms ease-out, box-shadow 100ms ease-out; touch-action: manipulation; }
+  button.m1-pressed, .tab.m1-pressed, .cls-opt.m1-pressed, .gut-opt.m1-pressed, .fn-kbd-btn.m1-pressed, .fn-pad-key.m1-pressed, summary.m1-pressed, .desc-toggle.m1-pressed, .t-target-radio.m1-pressed, .check-toggle.m1-pressed { transform: translateY(2px) scale(0.98); filter: brightness(0.78); box-shadow: inset 0 3px 0 rgba(0,0,0,0.30); opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { button, .tab, .cls-opt, .gut-opt, .fn-kbd-btn, .fn-pad-key, summary, .desc-toggle { transition: none; } }
+  /* 足あと：移った先の上に「何を押して来たか」 */
+  #m1-foot { display: none; margin: 0 0 12px; padding: 12px 16px; background: #eaf0ff; color: #1d1d1f; border-left: 4px solid #3460fb; border-radius: 4px; font-size: 16px; font-weight: 700; }
+  #m1-foot.show { display: block; }
+
+  /* ---- E 戻る道：上チェックリスト（設備ごとに1行：済み・今・まだ＋「〜へ ▶」）と、題名の行の「＜ 戻る」。v3.213 の細い1行は出さない ---- */
+  #m1-backbar { display: none !important; }
+  #m1-back { display: none; width: auto; min-width: 44px; min-height: 44px; margin: 0 8px 0 0; padding: 4px 12px; background: #ffffff; color: #2449d8; border: 2px solid #2449d8; border-radius: 4px; font-size: 16px; font-weight: 700; }
+  #m1-back.show { display: inline-flex; align-items: center; }
+  #m1-steps { display: none; position: sticky; z-index: 45; background: #f6f7f9; border-bottom: 1px solid #767c86; padding: 6px 12px; }
+  body[data-steps] #m1-steps { display: block; }
+  body[data-steps] #equip-tracker, body[data-steps] #pinrec-banner { display: none !important; }
+  #m1-steps .m1-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 4px 0; }
+  #m1-steps .m1-row + .m1-row { border-top: 1px solid #767c86; }
+  #m1-steps .m1-name { font-size: 18px; font-weight: 700; color: #1d1d1f; min-width: 120px; }
+  #m1-steps .m1-what { flex: 0 0 100%; font-size: 16px; color: #3a3a3c; }
+  #m1-steps .m1-go { margin-left: auto; }
+  .m1-step { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 999px; font-size: 16px; font-weight: 700; color: #575e68; background: #ffffff; border: 2px dotted #767c86; }
+  .m1-step.done { color: #17703a; background: #e3f4e8; border: 1px solid #17703a; }
+  .m1-step.cur { color: #1d1d1f; background: #eaf0ff; border: 3px solid #3460fb; }
+  .m1-step.skip { color: #3a3a3c; background: #f6f7f9; border: 1px solid #767c86; }
+  #m1-steps .m1-here { margin-left: auto; font-size: 16px; font-weight: 700; color: #3a3a3c; }
+  .m1-act { width: auto; min-height: 56px; margin: 0; padding: 8px 16px; border-radius: 4px; font-size: 18px; font-weight: 700; background: #3460fb; color: #ffffff; border: none; }
+  .m1-act.sub { background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; }
+  .m1-act.fwd { background: #ffffff; color: #2449d8; border: 2px solid #2449d8; }   /* 二番目に進む（画面を移る）：白い地に青い枠 */
+
+  /* ---- F バッジ：保存のタブに「未保存 n」（字で意味を出す） ---- */
+  .tab[data-badge] { position: relative; }
+  .tab[data-badge] .tab-ic { visibility: hidden; }   /* バッジを絵の場所に出す（絵とバッジが重ならない） */
+  .tab[data-badge]::after { content: attr(data-badge); position: absolute; top: 2px; left: 50%; transform: translateX(-50%); max-width: calc(100% - 4px); overflow: hidden; padding: 0 4px; min-width: 24px; height: 24px; line-height: 24px; border-radius: 12px; background: #d70015; color: #ffffff; font-size: 16px; font-weight: 700; white-space: nowrap; box-shadow: 0 0 0 2px #f6f7f9; }
+
+  /* ---- G 色の意味（B7・B8） ---- */
+  /* 保存：①＝主（塗り）・②＝二番目に進む（白い地に青い枠）・③＝補助（白い地に灰の枠）。写真なし登録も補助 */
+  #exportBtn { background: #ffffff !important; color: #2449d8 !important; border: 2px solid #2449d8 !important; }
+  #splitToggleBtn, #nophoto-btn { background: #ffffff !important; color: #1d1d1f !important; border: 2px solid #767c86 !important; }
+  /* ①②③ の丸：塗り・枠・点線（字の札「ふだん／区切りに／重いときだけ」は JS で足す） */
+  #view-export p > span.m1-c1 { background: #3460fb !important; color: #ffffff !important; }
+  #view-export p > span.m1-c2 { background: #ffffff !important; color: #2449d8 !important; box-shadow: inset 0 0 0 2px #2449d8; }
+  #view-export p > span.m1-c3 { background: #ffffff !important; color: #575e68 !important; box-shadow: inset 0 0 0 2px #767c86; }
+  .m1-ctag { display: inline-block; margin-left: 8px; padding: 0 8px; border-radius: 4px; font-size: 16px; font-weight: 700; color: #3a3a3c; background: #ffffff; border: 1px solid #767c86; }
+  /* 工程の札：まだ＝灰の点線 */
+  #equip-tracker .trk-todo { border: 2px dotted #767c86; }
+  /* 選んでいる：✓ を前に（色だけに頼らない） */
+  .cls-opt.selected::before, .gut-opt.selected::before, .fn-kbd-btn.on::before { content: '✓ '; }
+  /* 撮影の帯：上の線は「撮れた＝成功」の緑と、字「✓ 撮れました」（JS で足す） */
+  #continuous-banner { border-top: 3px solid #17703a; }
+  .m1-shot-ok { flex: 0 0 100%; color: #17703a; font-size: 16px; font-weight: 700; }
+
+  /* ---- C 設定：会社・事業所・棟・桁数・フォルダの区切りはいつも開いたまま。「その他の設定」と「説明文の表示」だけ開け閉め ---- */
+  #m1-today { margin: 0 0 16px; }
+  #m1-today .m1-trow { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid #767c86; font-size: 18px; }
+  #m1-today .m1-tkey { color: #3a3a3c; }
+  #m1-today .m1-tval { color: #1d1d1f; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #m1-today .m1-tval.m1-empty { color: #b0000f; }
+  .m1-more-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; min-height: 56px; margin: 8px 0; padding: 8px 12px; background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; border-radius: 4px; font-size: 18px; font-weight: 700; text-align: left; }
+  .m1-more-toggle .m1-more-sum { display: block; font-size: 16px; font-weight: 400; color: #3a3a3c; }
+  .m1-more-toggle .m1-more-arrow { color: #2449d8; white-space: nowrap; }
+  .m1-more-closed { display: none !important; }
+
+  /* ---- H 保存のアクションシート ---- */
+  #m1-save-cta { margin: 0 0 16px; }
+  #m1-sheet-back { display: none; position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 2040; background: rgba(0,0,0,0.45); }
+  #m1-sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 2050; max-height: 70vh; overflow-y: auto; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); background: #ffffff; color: #1d1d1f; border-radius: 16px 16px 0 0; }
+  #m1-sheet.show, #m1-sheet-back.show { display: block; }
+  #m1-sheet .m1-sheet-title { margin: 0 0 8px; font-size: 22px; font-weight: 700; }
+  #m1-sheet .m1-act { display: block; width: 100%; margin: 8px 0 0; text-align: left; }
+  #m1-sheet .m1-act .m1-sub-line { display: block; font-size: 16px; font-weight: 400; }
+  @media (orientation: landscape) { #m1-sheet { left: 132px; } }
 </style>
 </head>
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 M1現場アプリ v3.213 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-31）</span></span>
+  <span>📷 m-One Genba App v3.214 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-31）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4622,7 +4743,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：M1現場アプリ v3.213）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.214）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -7610,7 +7731,265 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       sync();
     } catch (e) {}
   })();
-  
+
+  // v3.214 画面の改善（CAM-102 の一部）：上チェックリスト（設備ごとに 済み・今・まだ と「〜へ ▶」）・題名の行の「＜ 戻る」・
+  //   移った先の「足あと」・押した感触の印・キーボードの間は下のタブを隠す・保存のタブのバッジ・保存のアクションシート・
+  //   設定の「今日の現場」と「その他の設定」・保存の ①②③ の札・撮影の帯の「✓ 撮れました」。
+  //   見た目と画面を移る道だけ：帯の出し入れ（style.display）・写真の保存・撮影の流れには触れない。カメラを開く click は遅らせない。
+  //   字は textContent で入れる（地雷9）。新しい保存はしない（「＜ 戻る」はメモリだけに覚える）
+  (function setupScreenV214(){
+    try {
+      var TABNAME = { settings: '設定', shoot: '撮影', eval: '評価', floorplan: '位置記録', list: '撮影リスト', export: '保存', 'import': '読込', reference: '評価参考', qa: 'Q&A' };
+      var curView = function(){ var a = document.querySelector('.tab.active'); return a ? a.dataset.view : ''; };
+      var shown = function(id){ var el = $(id); return !!(el && el.style.display && el.style.display !== 'none'); };
+      var text = function(id){ var el = $(id); return el ? (el.textContent || '').trim() : ''; };
+      var goTab = function(v){ var t = document.querySelector('.tab[data-view="' + v + '"]'); if (t) t.click(); };
+      var mk = function(tag, cls, t){ var e = document.createElement(tag); if (cls) e.className = cls; if (t != null) e.textContent = t; return e; };
+      var eqOf = function(n){ n = (n || '').replace(/^次：/, ''); var m = n.match(/^(.+)_\d+\.[A-Za-z]+$/); return m ? m[1] : n; };
+      var loaded = function(){ try { return typeof bootPhotosLoaded === 'undefined' || !!bootPhotosLoaded; } catch (_) { return true; } };
+      var root = document.documentElement;
+      var setVar = function(k, px){ try { root.style.setProperty(k, Math.round(px) + 'px'); } catch (_) {} };
+
+      // ---- 上に貼り付く物の高さ（題名の行・先行ピンと撮り直しの帯）を測って、並びを決める ----
+      var appBar = document.querySelector('.app-bar');
+      var measureTop = function(){
+        if (appBar) setVar('--m1-appbar-h', appBar.offsetHeight || 0);
+        var bh = 0; ['shoot-for-pin-banner', 'retake-banner'].forEach(function(id){ var el = $(id); if (el && shown(id)) bh += el.offsetHeight || 0; });
+        setVar('--m1-ban-h', bh);
+      };
+
+      // ---- 上チェックリスト ----
+      var steps = mk('div'); steps.id = 'm1-steps';
+      var ct = document.querySelector('.container'); if (ct) ct.parentNode.insertBefore(steps, ct);
+      var stepChips = function(stage, evalState){
+        var w = mk('span', 'm1-chips');
+        ['撮影', '評価', '位置記録'].forEach(function(s, i){
+          var st = i < stage ? 'done' : (i === stage ? 'cur' : 'todo'), word = st === 'done' ? '済み' : (st === 'cur' ? '今' : 'まだ'), mark = st === 'done' ? '✓ ' : (st === 'cur' ? '● ' : '○ ');
+          if (i === 1 && stage === 2 && evalState === 'skip') { st = 'skip'; word = 'しなかった'; mark = '− '; }
+          w.appendChild(mk('span', 'm1-step' + (st === 'todo' ? '' : ' ' + st), mark + s + ' ' + word));
+        });
+        return w;
+      };
+      var rows = function(){
+        var a = [];
+        if (shown('continuous-banner')) {
+          var n = text('continuous-banner-name');
+          var pinText = shown('shoot-for-pin-banner') ? ((document.querySelector('#shoot-for-pin-banner .shoot-for-pin-text') || {}).textContent || '').replace(/\s+/g, ' ').trim() : '';
+          a.push({ go: 'shoot', eq: eqOf(n), stage: 0, label: '📷 撮影へ', what: pinText || ('撮影中：' + n + '。撮り終えたら「' + text('continuous-eval-btn') + '」') });
+        }
+        if (shown('eval-bar')) { var e = text('eval-bar-name'); a.push({ go: 'eval', eq: eqOf(e), stage: 1, label: '📊 評価へ', what: '評価：' + e + ' の G.U.T評価・メモを入れて「' + text('eval-save-btn') + '」' }); }
+        if (shown('complete-bar')) {
+          var c = text('complete-bar-name'), ev = '';
+          try { var st = currentStages(); if (st && st.name === c) ev = st.eval ? 'done' : 'skip'; } catch (_) {}
+          a.push({ go: 'floorplan', eq: eqOf(c), stage: 2, ev: ev, label: '📍 位置記録へ', what: '位置記録：' + c + ' のピンを置く（任意）→「' + text('complete-done-btn') + '」' });
+        }
+        return a;
+      };
+      var stepsKey = null;
+      var renderSteps = function(){
+        var v = curView(), list = rows();
+        var key = JSON.stringify([v, list, shown('pinrec-banner')]);
+        if (key === stepsKey) { measureTop(); return; }   // 中身が同じなら作り直さない（押している最中にボタンが入れ替わらないように）
+        stepsKey = key;
+        steps.textContent = '';
+        list.forEach(function(r){
+          var row = mk('div', 'm1-row');
+          row.appendChild(mk('span', 'm1-name', '🔧 ' + r.eq));
+          row.appendChild(stepChips(r.stage, r.ev));
+          if (r.go === v) row.appendChild(mk('span', 'm1-here', '← 今この画面'));
+          else { var b = mk('button', 'm1-act fwd m1-go', r.label + ' ▶'); b.type = 'button'; b.addEventListener('click', function(){ goTab(r.go); }); row.appendChild(b); }
+          if (list.length === 1 && r.go !== v) row.appendChild(mk('span', 'm1-what', r.what));   // 2台以上の時と、下の帯に同じ文が出ている今の画面では、説明の行を省く
+          steps.appendChild(row);
+        });
+        if (shown('pinrec-banner') && v !== 'floorplan' && v !== 'eval') {   // 位置記録の画面（同じ画面）と評価の途中では出さない
+          var pr = mk('div', 'm1-row');
+          pr.appendChild(mk('span', 'm1-name', '📍 今撮った位置を図面に記録できます'));
+          var pb = mk('button', 'm1-act sub m1-go', '図面に記録 ▶'); pb.type = 'button'; pb.addEventListener('click', function(){ var o = $('pinrec-banner-btn'); if (o) o.click(); });
+          var pc = mk('button', 'm1-act sub', 'あとで'); pc.type = 'button'; pc.addEventListener('click', function(){ var o = $('pinrec-banner-close'); if (o) o.click(); });
+          pr.appendChild(pb); pr.appendChild(pc); steps.appendChild(pr);
+        }
+        if (steps.childNodes.length) document.body.setAttribute('data-steps', '1'); else document.body.removeAttribute('data-steps');
+        measureTop();
+      };
+
+      // ---- 「＜ 戻る」（タブの移り変わりをメモリだけに覚える）と、足あと ----
+      var back = mk('button'); back.id = 'm1-back'; back.type = 'button';
+      if (appBar) appBar.insertBefore(back, appBar.firstChild);
+      var hist = [], lastView = curView(), backTo = null, lastPress = null;
+      back.addEventListener('click', function(){ var p = hist.pop(); if (!p) return; backTo = p; goTab(p); });
+      var foot = mk('div'); foot.id = 'm1-foot'; foot.setAttribute('role', 'status');
+      // 人が新しく押し始めたら、前に押したボタンの名前は捨てる（古い足あとを出さない）
+      document.addEventListener('pointerdown', function(e){ if (e.isTrusted) lastPress = null; }, true);
+      document.addEventListener('click', function(e){
+        var t = e.target && e.target.closest ? e.target : null; if (!t) return;
+        if (t.closest('.tab-bar') || t.closest('#m1-back')) { if (e.isTrusted) lastPress = null; return; }   // 人がタブや「＜ 戻る」を押したときは足あとを出さない（処理の中で押すタブは別）
+        var b = t.closest('button'); if (!b) return;
+        lastPress = { label: (b.textContent || '').replace(/\s+/g, ' ').trim().replace(/^[✅✓]\s*/, '').slice(0, 40), t: Date.now() };
+      }, true);
+      var onView = function(){
+        var v = curView();
+        if (v !== lastView) {
+          if (backTo && v === backTo) backTo = null;                    // 「＜ 戻る」で戻ったときは積まない
+          else if (lastView) { hist.push(lastView); if (hist.length > 10) hist.shift(); }
+          var view = document.querySelector('.view.active');
+          if (lastPress && Date.now() - lastPress.t < 1500 && view) {
+            foot.textContent = '✓「' + lastPress.label + '」を押しました → ' + (TABNAME[v] || '') + 'の画面です';
+            view.insertBefore(foot, view.firstChild); foot.classList.add('show');
+            clearTimeout(foot._t); foot._t = setTimeout(function(){ foot.classList.remove('show'); }, 6000);
+          } else foot.classList.remove('show');
+          lastPress = null;
+          lastView = v;
+        }
+        var p = hist[hist.length - 1];
+        if (p && p !== v) { back.textContent = '＜ ' + (TABNAME[p] || '戻る'); back.classList.add('show'); } else back.classList.remove('show');
+        renderSteps(); renderBadge(); syncTyping();
+        if (v === 'settings') { renderToday(); if (window.__m1SumMore) window.__m1SumMore(); }
+      };
+
+      // ---- 押した感触（iOS で押した見た目を出す。押した物に 150ms の印。カメラの click は遅らせない） ----
+      document.addEventListener('touchstart', function(){}, { passive: true });
+      document.addEventListener('pointerdown', function(e){
+        var b = e.target && e.target.closest ? e.target.closest('button, .tab, .cls-opt, .gut-opt, .fn-kbd-btn, .fn-pad-key, summary, .desc-toggle, .t-target-radio, .check-toggle') : null;
+        if (b) { b.classList.add('m1-pressed'); setTimeout(function(){ b.classList.remove('m1-pressed'); }, 150); }
+      }, true);
+
+      // ---- キーボードの間は下のタブを隠す。入力欄にいて、しかも画面のキーボードで見える所が狭くなっている時だけ。
+      //      10キー（inputmode=none）・外付けのキーボードでは隠さない。キーボードが閉じれば（欄が消えても）必ず戻す ----
+      var typingEl = function(el){
+        if (!el || !el.matches) return false;
+        if (!el.matches('input[type="text"], input[type="number"], input[type="search"], input[type="tel"], input:not([type]), textarea')) return false;
+        if (el.readOnly || el.disabled || !el.isConnected) return false;
+        return (el.getAttribute('inputmode') || '').toLowerCase() !== 'none';
+      };
+      var syncTyping = function(){
+        var vv = window.visualViewport;
+        var kbd = !vv || (vv.height < window.innerHeight * 0.85);
+        document.body.classList.toggle('m1-typing', !!(typingEl(document.activeElement) && kbd));
+      };
+      document.addEventListener('focusin', function(){ syncTyping(); setTimeout(syncTyping, 400); });
+      document.addEventListener('focusout', function(){ setTimeout(syncTyping, 0); });
+      if (window.visualViewport) window.visualViewport.addEventListener('resize', syncTyping);
+      document.addEventListener('visibilitychange', syncTyping);
+      window.addEventListener('pageshow', syncTyping);
+
+      // ---- バッジ：保存のタブに「未保存 n」（読み込み中は出さない） ----
+      var unsaved = function(){ return parseInt(text('badgeCount') || '0', 10) || 0; };
+      var renderBadge = function(){
+        var n = loaded() ? unsaved() : 0;
+        var ex = document.querySelector('.tab[data-view="export"]');
+        if (ex) { if (n > 0) ex.setAttribute('data-badge', '未保存' + n); else ex.removeAttribute('data-badge'); }
+        var cta = $('m1-save-cta'); if (cta) cta.textContent = loaded() ? ('💾 保存する（未保存 ' + unsaved() + '枚）— 3つの保存のしかたから選ぶ') : '💾 保存する — 3つの保存のしかたから選ぶ';
+      };
+
+      // ---- 撮影の帯に「✓ 撮れました」 ----
+      var cb = $('continuous-banner');
+      if (cb) cb.insertBefore(mk('span', 'm1-shot-ok', '✓ 撮れました（写真はこの端末に記録済み。まだ保存（ZIP）はしていません）'), cb.firstChild);
+
+      // ---- 保存の ①②③ の丸に意味の札 ----
+      var CT = { '①': ['m1-c1', 'ふだん'], '②': ['m1-c2', '区切りに'], '③': ['m1-c3', '重いときだけ'] };
+      Array.prototype.forEach.call(document.querySelectorAll('#view-export p > span[style*="border-radius:50%"]'), function(sp){
+        var k = (sp.textContent || '').trim(); if (!CT[k]) return;
+        sp.classList.add(CT[k][0]); sp.parentNode.appendChild(mk('span', 'm1-ctag', CT[k][1]));
+      });
+
+      // ---- 保存のアクションシート ----
+      var sheetBack = mk('div'); sheetBack.id = 'm1-sheet-back';
+      var sheet = mk('div'); sheet.id = 'm1-sheet'; sheet.setAttribute('role', 'dialog'); sheet.setAttribute('aria-label', '保存のしかたを選ぶ');
+      document.body.appendChild(sheetBack); document.body.appendChild(sheet);
+      var closeSheet = function(){ sheet.classList.remove('show'); sheetBack.classList.remove('show'); lastPress = null; };
+      sheetBack.addEventListener('click', closeSheet);
+      var openSheet = function(){
+        lastPress = null;
+        sheet.textContent = '';
+        sheet.appendChild(mk('p', 'm1-sheet-title', loaded() ? ('💾 保存のしかたを選ぶ（未保存 ' + unsaved() + '枚）') : '💾 保存のしかたを選ぶ'));
+        [['exportIncBtn', '① 新しく撮った分だけ保存する', 'ふだんはこれ。前回の保存から増えた写真だけを ZIP に', ''],
+         ['exportBtn', '② すべてを1つの ZIP に保存する', '1日の終わり・区切りに', ' fwd'],
+         ['splitToggleBtn', '③ 小分けにして保存する', '写真が多くて重いときだけ', ' sub']].forEach(function(o){
+          var target = $(o[0]);
+          var b = mk('button', 'm1-act' + o[3], o[1]); b.type = 'button';
+          var usable = !!(target && !target.disabled && target.offsetParent !== null);
+          b.appendChild(mk('span', 'm1-sub-line', usable ? o[2] : (o[2] + '（今は選べません）')));
+          if (usable) b.addEventListener('click', function(){ closeSheet(); target.click(); });   // 同じ押す操作の中ですぐ押す（待たない）
+          else b.disabled = true;
+          sheet.appendChild(b);
+        });
+        var c = mk('button', 'm1-act sub', 'やめる（保存しない）'); c.type = 'button'; c.addEventListener('click', closeSheet); sheet.appendChild(c);
+        sheet.classList.add('show'); sheetBack.classList.add('show');
+      };
+      var exView = $('view-export');
+      if (exView) {
+        var cta = mk('button', 'm1-act'); cta.id = 'm1-save-cta'; cta.type = 'button'; cta.addEventListener('click', openSheet);
+        var sos = exView.querySelector(':scope > details.card');   // 救出の 🆘 の欄は先頭のまま（Q&A の案内どおり）。保存のボタンはその下に
+        if (sos && sos.nextSibling) exView.insertBefore(cta, sos.nextSibling); else exView.insertBefore(cta, exView.firstChild);
+      }
+
+      // ---- 設定：「今日の現場」（会社・事業所・棟・桁数・フォルダの区切り）を一番上にいつも出す。「その他の設定」と「説明文の表示」だけ開け閉め ----
+      var setView = $('view-settings');
+      var today = mk('div', 'card'); today.id = 'm1-today';
+      var renderToday = function(){
+        var f = function(k){ var e = document.querySelector('#fixedFields .field-row[data-key="' + k + '"] .field-input'); return e ? e.value.trim() : ''; };
+        var g = function(id){ var e = $(id); return e ? String(e.value || '').trim() : ''; };
+        var dc = $('survey-digit-check');
+        var rowsT = [['会社（クライアント会社）', f('client')], ['事業所', f('site')], ['棟', f('building')],
+          ['番号の桁数', (dc && !dc.checked) ? '桁を確かめない' : ((g('survey-digit-count') || '4') + ' けた')], ['フォルダの区切り', (g('survey-bucket-size') || '100') + ' 件ごと']];
+        today.textContent = '';
+        today.appendChild(mk('p', 'card-title', '📍 今日の現場（撮る前に確かめる）'));
+        rowsT.forEach(function(r){ var row = mk('div', 'm1-trow'); row.appendChild(mk('span', 'm1-tkey', r[0])); row.appendChild(mk('span', 'm1-tval' + (r[1] ? '' : ' m1-empty'), r[1] || '（未入力）')); today.appendChild(row); });
+        today.appendChild(mk('p', 'm1-what', '直すときは、この下の欄で（いつも開いています）'));
+      };
+      if (setView) { setView.insertBefore(today, setView.firstChild); setView.addEventListener('input', renderToday); setView.addEventListener('change', renderToday); }
+      var survey = $('survey-card');
+      if (survey) {
+        var divsOf = function(){ return Array.prototype.filter.call(survey.children, function(k){ return k.classList.contains('survey-divider'); }); };
+        if (divsOf().length >= 4) {
+          var tg = mk('button', 'm1-more-toggle'); tg.type = 'button';
+          var tgL = mk('span'), tgT = mk('span', '', 'その他の設定'), tgS = mk('span', 'm1-more-sum'), tgA = mk('span', 'm1-more-arrow');
+          tgL.appendChild(tgT); tgL.appendChild(tgS); tg.appendChild(tgL); tg.appendChild(tgA);
+          var d0 = divsOf()[0]; survey.insertBefore(tg, d0.nextSibling);
+          var closed = true;
+          var sumMore = function(){
+            var mx = $('survey-mode-exclude'), mt = $('survey-mode-target'), dm = $('survey-dummy-starts'), be = $('survey-backup-every');
+            var mode = (mx && mx.checked) ? '対象外を指定あり' : ((mt && mt.checked) ? '対象だけを指定あり' : '指定なし');
+            var dl = dm ? dm.value.split(/[\s,、]+/).filter(Boolean) : [];
+            var dummy = dl.length ? dl[0] + (dl.length > 1 ? ' ほか' + (dl.length - 1) + '件' : '') : 'なし';
+            var bv = be ? String(be.value || '').trim() : '';
+            var bk = bv === '' ? '10 枚ごと' : (bv === '0' ? 'お知らせしない' : bv + ' 枚ごと');
+            tgS.textContent = '撮る／撮らない番号：' + mode + '　ダミー番号：' + dummy + '　お知らせ：' + bk;
+            tgA.textContent = closed ? '開く ▼' : '閉じる ▲';
+            // 閉じる範囲は、開け閉めのたびに数え直す（あとから足される説明の札も含める）。対象設備数・区切り・桁数は範囲の外
+            var dv = divsOf(), kids = Array.prototype.slice.call(survey.children), a0 = kids.indexOf(dv[0]), a3 = kids.indexOf(dv[3]);
+            kids.forEach(function(k, i){ if (k === tg) return; k.classList.toggle('m1-more-closed', closed && i > a0 && i < a3); });
+            tg.setAttribute('aria-expanded', closed ? 'false' : 'true');
+          };
+          window.__m1SumMore = sumMore;
+          tg.addEventListener('click', function(){ closed = !closed; sumMore(); });
+          survey.addEventListener('input', sumMore); survey.addEventListener('change', sumMore);
+          sumMore();
+        }
+      }
+      var descCard = null;
+      Array.prototype.forEach.call(document.querySelectorAll('#view-settings > .card'), function(c){ var t = c.querySelector('.card-title'); if (t && /説明文の表示/.test(t.textContent)) descCard = c; });
+      if (descCard) {
+        var dt = mk('button', 'm1-more-toggle'); dt.type = 'button';
+        var dl2 = mk('span'); dl2.appendChild(mk('span', '', '説明文の表示')); dl2.appendChild(mk('span', 'm1-more-sum', '説明をぜんぶ閉じる・ぜんぶ開くのボタン')); dt.appendChild(dl2);
+        var da = mk('span', 'm1-more-arrow'); dt.appendChild(da);
+        var ttl = descCard.querySelector('.card-title'); descCard.insertBefore(dt, ttl ? ttl.nextSibling : descCard.firstChild);
+        var dclosed = true;
+        var dsync = function(){ da.textContent = dclosed ? '開く ▼' : '閉じる ▲'; Array.prototype.forEach.call(descCard.children, function(k){ if (k === dt || k.classList.contains('card-title')) return; k.classList.toggle('m1-more-closed', dclosed); }); dt.setAttribute('aria-expanded', dclosed ? 'false' : 'true'); };
+        dt.addEventListener('click', function(){ dclosed = !dclosed; dsync(); });
+        dsync();
+      }
+
+      // ---- 見張り：タブの class・帯の style と名前・先行ピンと撮り直しの帯・図面に記録の帯・未保存の数。画面の大きさが変わったら高さを測り直す ----
+      var obs = new MutationObserver(function(){ try { onView(); } catch (_) {} });
+      document.querySelectorAll('.tab').forEach(function(t){ obs.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+      ['continuous-banner', 'eval-bar', 'complete-bar', 'pinrec-banner', 'shoot-for-pin-banner', 'retake-banner'].forEach(function(id){ var el = $(id); if (el) obs.observe(el, { attributes: true, attributeFilter: ['style'] }); });
+      ['continuous-banner-name', 'eval-bar-name', 'complete-bar-name', 'shoot-for-pin-name', 'badgeCount', 'eval-save-btn'].forEach(function(id){ var el = $(id); if (el) obs.observe(el, { childList: true, characterData: true, subtree: true }); });
+      window.addEventListener('resize', measureTop);
+      renderToday(); onView();
+    } catch (e) {}
+  })();
+
   // ファイル名入力欄のイベントリスナー登録（DOM生成後に呼ばれる）
   function attachFilenameListener() {
     var fnEl = getFilename();
@@ -8323,6 +8702,18 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           ? 'ピンはまだ置いていません（位置記録は任意です）。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとからピンを置くこともできます）'
           : 'まだ「'+miss.join('・')+'」が未完了です。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとから追記もできます）';
         if(!confirm(doneMsg)) return;
+      }
+      // v3.214（B1）：続けて次の設備を撮っている最中に、前の設備の位置記録を完了したときは、前の設備の位置記録の段階だけを閉じる。
+      //   撮っている設備（番号・撮影の帯・いま撮影中の設備の印）はそのまま残し、撮影タブから評価に入れるようにする。それ以外は今までどおり次の設備へ
+      var __eb2 = $('eval-bar'), __evalOpen = !!(__eb2 && __eb2.style.display && __eb2.style.display !== 'none');   // 評価の途中の設備がある時は、今までどおり
+      if (continuousMode && continuousMode.active && equipmentBaseId != null && equipmentBaseId !== evalModeBaseId && !__evalOpen) {
+        var __cbar2 = $('complete-bar'); if (__cbar2) __cbar2.style.display = 'none';
+        evalModeBaseId = null;
+        clearGutMemoInputs();   // 前の設備の評価の欄と分類を空にする（次の設備の枝番の写真に前の分類を残さない）
+        var __st2 = document.querySelector('.tab[data-view="shoot"]'); if (__st2) __st2.click();
+        if (typeof renderTracker === 'function') renderTracker();
+        showToast('✅ ' + (nm||'設備') + ' を完了しました。撮影中の設備の続きを撮れます。');
+        return;
       }
       advanceToNextEquipment('✅ ' + (nm||'設備') + ' を完了しました。次の設備の番号を入力して撮影してください。');
     });
