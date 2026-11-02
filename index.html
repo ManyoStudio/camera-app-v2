@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="m-One Genba App">
 <meta name="theme-color" content="#007aff">
-<title>m-One Genba App v3.214</title>
+<title>m-One Genba App v3.215</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2792,12 +2792,192 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   #m1-sheet .m1-act { display: block; width: 100%; margin: 8px 0 0; text-align: left; }
   #m1-sheet .m1-act .m1-sub-line { display: block; font-size: 16px; font-weight: 400; }
   @media (orientation: landscape) { #m1-sheet { left: 132px; } }
+
+  /* =====================================================================
+     v3.215 必達①〜⑧（土台は見本 v215。①⑥⑦＝見本の直し、②③⑤⑧＝案B、④＝振り分けは案A・注意の見た目は案B）
+     ・救出の知らせの箱には何も当てない。字 16px 以上・押す所 56px（小さいもの 44px）・押す所の間 8px
+     ===================================================================== */
+  /* ---- ① 下のタブとの重なり：余白を、中身として流れる .container の下に付ける（body の下の余白は、body の高さが画面で止まるため中身の下に付かない）。
+         下の帯の高さ（--m1-bbar-h。JS で測る）と、撮影の浮いたボタンの高さを足す ---- */
+  @media (orientation: portrait) {
+    .container { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 24px + var(--m1-bbar-h, 0px)); }
+    body[data-curview="shoot"]:not(.bottombar-on) .container { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px + 72px + 24px); }
+  }
+  @media (orientation: landscape) {
+    .container { padding-bottom: calc(24px + env(safe-area-inset-bottom) + var(--m1-bbar-h, 0px)); }
+    body[data-curview="shoot"]:not(.bottombar-on) .container { padding-bottom: calc(24px + 72px + 24px); }
+  }
+  /* 小窓は、中身が画面より高いときは小窓の中で送る（いちばん下のボタンが画面の外に出ないように） */
+  .delguard-content, .saveguide-content, .backup-content, .recovery-content, .bulklink-content { max-height: calc(100vh - 32px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+  /* ---- ⑥ 「今日の現場」の「番号の桁数」の行は、打ち込める欄そのもの ---- */
+  #m1-today .m1-trow.m1-tdigit { align-items: center; flex-wrap: wrap; gap: 8px; }
+  #m1-today .m1-tdigit-in { display: inline-flex; align-items: center; gap: 8px; }
+  #m1-today .m1-tdigit-in .survey-input { width: 96px; min-height: 44px; font-size: 18px; font-weight: 700; text-align: center; }
+  #m1-today .m1-tdigit-in .survey-unit { font-size: 16px; color: #1d1d1f; }
+  #m1-today .m1-tdigit-check { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; font-size: 16px; color: #1d1d1f; }
+  #m1-today .m1-tdigit-check input { width: 24px; height: 24px; flex: 0 0 auto; }
+
+  /* ---- ⑦ 頭の2けたを残したときの知らせ（番号の欄のすぐ下） ---- */
+  #m1-numkeep-note { margin: 8px 0 0; padding: 8px 12px; border-radius: 10px; background: #eef3ff; border: 1px solid #3460fb; color: #1d1d1f; font-size: 16px; line-height: 1.5; }
+  #m1-numkeep-note b { color: #1f3fbf; }
+  #m1-numkeep-note button { display: block; width: auto; min-height: 44px; margin: 8px 0 0; padding: 8px 14px; border-radius: 10px; border: 1px solid #767c86; background: #ffffff; color: #1d1d1f; font-size: 16px; font-weight: 700; }
+  /* ---- 共通：下から出るシート・目的のボタン（②③で使う） ---- */
+  #m15-sheet-back { display: none; position: fixed; inset: 0; z-index: 2040; background: rgba(0,0,0,0.38); }
+  #m15-sheet-back.show { display: block; }
+  #m15-sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 2050; max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #ffffff; border-radius: 16px 16px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(0,0,0,0.25); }
+  #m15-sheet.show { display: block; }
+  @media (orientation: landscape) { #m15-sheet { left: 132px; } }
+  .m15-sheet-title { margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #1d1d1f; }
+  .m15-sheet-p { margin: 0 0 8px; font-size: 16px; line-height: 1.6; color: #1d1d1f; }
+  .m15-card-title { margin: 8px 0 8px; font-size: 18px; font-weight: 700; color: #1d1d1f; }
+  .m15-row { display: block; width: 100%; min-height: 56px; margin: 0 0 8px; padding: 10px 14px; border-radius: 12px; text-align: left; font-size: 17px; font-weight: 700; line-height: 1.35; }
+  .m15-row .m15-when { display: block; margin-top: 2px; font-size: 16px; font-weight: 400; }
+  .m15-row.m15-main { background: #3460fb; color: #ffffff; border: 2px solid #3460fb; }
+  .m15-row.m15-line { background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; }
+  .m15-row.m15-line .m15-when { color: #575e68; }
+  .m15-row.m15-danger-line { background: #ffffff; color: #9a1b1b; border: 2px solid #c62828; }
+  .m15-row.m15-danger-fill { background: #c62828; color: #ffffff; border: 2px solid #c62828; }
+  .m15-row:disabled { opacity: 0.6; }
+  .m15-sep { margin: 14px 0 8px; padding-top: 10px; border-top: 1px solid #767c86; font-size: 16px; font-weight: 700; color: #575e68; }
+  .m15-marks { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 10px; font-size: 16px; color: #1d1d1f; }
+  .m15-yes::before { content: "○ "; font-weight: 700; color: #1b6e2b; }
+  .m15-no { color: #9a1b1b; }
+  .m15-no::before { content: "⊘ "; font-weight: 700; }
+  .m15-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .m15-tiles3 { grid-template-columns: 1fr 1fr 1fr; }
+  .m15-tile { display: flex; flex-direction: column; align-items: flex-start; width: 100%; min-height: 112px; margin: 0; padding: 12px 14px; border-radius: 14px; text-align: left; font-size: 18px; font-weight: 700; line-height: 1.35; background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; }
+  .m15-tile .m15-when { display: block; margin-top: 6px; font-size: 16px; font-weight: 400; color: #575e68; }
+  .m15-tile .m15-tag { display: inline-block; margin-top: 8px; padding: 2px 10px; border-radius: 12px; font-size: 16px; font-weight: 700; border: 1px solid currentColor; }
+  .m15-tile.m15-main { background: #3460fb; color: #ffffff; border-color: #3460fb; }
+  .m15-tile.m15-main .m15-when { color: #ffffff; }
+  .m15-tile.m15-danger-line { color: #9a1b1b; border-color: #c62828; }
+  .m15-tile.m15-danger-line .m15-when { color: #9a1b1b; }
+  .m15-status { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; background: #ffffff; border: 1px solid #767c86; font-size: 16px; color: #1d1d1f; }
+  .m15-bad { color: #9a1b1b; font-weight: 700; }
+  .m15-ok { color: #1b6e2b; font-weight: 700; }
+  .m15-steps { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; padding: 8px 10px; border-radius: 12px; background: #ffffff; border: 1px solid #767c86; font-size: 16px; }
+  .m15-st { display: inline-flex; align-items: center; width: auto; min-height: 44px; margin: 0; padding: 4px 12px; border-radius: 22px; border: 1px dashed #767c86; color: #575e68; background: #ffffff; font-size: 16px; font-weight: 700; }
+  .m15-st.done { border: 1px solid #1b6e2b; color: #1b6e2b; }
+  .m15-st.cur { border: 2px solid #3460fb; color: #ffffff; background: #3460fb; }
+  .m15-arrow { color: #575e68; font-weight: 700; }
+  .m15-fold { display: block; width: 100%; min-height: 56px; margin: 8px 0 16px; padding: 10px 14px; border-radius: 12px; text-align: left; font-size: 16px; font-weight: 700; background: #ffffff; color: #1d1d1f; border: 1px solid #767c86; }
+  /* ---- ② 保存：今のカードは畳む（id と処理はそのまま。保存が始まったら開く） ---- */
+  #view-export > .card.m15-folded { display: none; }
+  /* ---- ③ 読込 ---- */
+  .m15-keep { margin: 8px 0 0; font-size: 16px; line-height: 1.5; font-weight: 700; color: #1d1d1f; }
+  .m15-check { display: flex; align-items: center; gap: 10px; min-height: 56px; margin: 6px 0 10px; padding: 8px 12px; border: 2px solid #c62828; border-radius: 12px; font-size: 16px; font-weight: 700; color: #9a1b1b; }
+  .m15-check input { width: 28px; height: 28px; flex: 0 0 auto; }
+  .m15-hint { margin: 0 0 10px; padding: 10px 12px; border-radius: 12px; font-size: 16px; line-height: 1.6; font-weight: 700; text-align: left; border: 2px solid #3460fb; background: #eef3ff; color: #1d1d1f; }
+  .m15-hint.m15-hint-danger { border-color: #c62828; background: #fff4f4; color: #9a1b1b; }
+  .m15-fake { display: flex; gap: 8px; margin-top: 6px; }
+  .m15-fake span { flex: 1; text-align: center; padding: 6px; border-radius: 8px; border: 1px solid #767c86; background: #ffffff; color: #1d1d1f; font-weight: 700; }
+  .m15-fake span.m15-this { border: 3px solid currentColor; }
+  /* ---- ④ 説明：ⓘ（押すと出て、もう一度押すか外を押すと消える）・写真を失う注意は ⚠ の1行 ---- */
+  .m15-hid, .m15-hid-toggle { display: none !important; }
+  .m15-i { display: inline-flex; align-items: center; gap: 6px; width: auto; min-height: 44px; margin: 4px 8px 8px 0; padding: 6px 14px; border-radius: 22px; border: 1px solid #3460fb; background: #ffffff; color: #1f3fbf; font-size: 16px; font-weight: 700; line-height: 1.3; text-align: left; }
+  .m15-i.m15-i-open { background: #3460fb; color: #ffffff; }
+  .m15-info.m15-pop { display: block !important; margin: 0 0 12px !important; padding: 12px 14px !important; border: 1px solid #3460fb !important; border-radius: 12px !important; background: #ffffff !important; color: #1d1d1f !important; font-size: 16px !important; line-height: 1.6 !important; box-shadow: 0 4px 14px rgba(0,0,0,0.12); }
+  .m15-info.m15-pop * { font-size: 16px !important; }
+  body.m15-info-all .m15-info.m15-hid { display: block !important; font-size: 16px; color: #1d1d1f; }
+  body.m15-info-all .m15-i { display: none; }
+  .m15-keep.m15-warn { color: #9a1b1b; background: #fff4f4; border: 1px solid #c62828; border-radius: 10px; padding: 8px 12px; margin: 4px 0 8px; }
+  /* ---- ⑤ 横向きの右側（横で幅 1024px 以上だけ。縦では出さない） ---- */
+  #m15-aside, #m15-aside-rail { display: none; }
+  @media (orientation: landscape) and (min-width: 1024px) {
+    :root { --m15-aside-w: 280px; }
+    body.m15-aside-on { padding-right: var(--m15-aside-w); }
+    body.m15-aside-rail { padding-right: 56px; }
+    body.m15-aside-on #m15-aside { display: flex; flex-direction: column; position: fixed; right: 0; top: var(--m15-aside-top, 0px); bottom: 0; width: var(--m15-aside-w); z-index: 55; background: #ffffff; border-left: 1px solid #767c86; }
+    body.m15-aside-rail #m15-aside-rail { display: block; position: fixed; right: 0; top: var(--m15-aside-top, 0px); bottom: 0; width: 56px; z-index: 55; margin: 0; padding: 12px 4px; border-radius: 0; border: none; border-left: 1px solid #767c86; background: #ffffff; color: #1f3fbf; font-size: 16px; font-weight: 700; writing-mode: vertical-rl; }
+    body.m15-aside-on #m1-steps { display: none !important; }
+    body.m15-aside-on #continuous-banner, body.m15-aside-on #eval-bar, body.m15-aside-on #complete-bar, body.m15-aside-on #toastHost { right: var(--m15-aside-w); }
+    body.m15-aside-rail #continuous-banner, body.m15-aside-rail #eval-bar, body.m15-aside-rail #complete-bar, body.m15-aside-rail #toastHost { right: 56px; }
+    body.m15-aside-on[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { right: calc(var(--m15-aside-w) + 24px); }
+    body.m15-aside-rail[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { right: 80px; }
+  }
+  @media (orientation: landscape) and (min-width: 1180px) { :root { --m15-aside-w: 300px; } }
+  .m15-aside-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 12px; border-bottom: 1px solid #767c86; background: #f6f7f9; }
+  .m15-aside-title { font-size: 16px; font-weight: 700; color: #1d1d1f; }
+  .m15-aside-fold { width: auto; min-height: 44px; margin: 0; padding: 6px 12px; border-radius: 10px; border: 1px solid #767c86; background: #ffffff; color: #1d1d1f; font-size: 16px; font-weight: 700; }
+  .m15-aside-body { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 8px 12px 16px; }
+  .m15-sec { margin: 0 0 14px; }
+  .m15-sec-title { margin: 8px 0 6px; font-size: 16px; font-weight: 700; color: #575e68; }
+  .m15-kv { display: flex; flex-wrap: wrap; gap: 4px 8px; padding: 6px 0; border-bottom: 1px solid #d5d8dd; font-size: 16px; line-height: 1.4; }
+  .m15-k { color: #575e68; min-width: 6em; }
+  .m15-v { color: #1d1d1f; font-weight: 700; }
+  .m15-kv.m15-bad .m15-v { color: #9a1b1b; }
+  .m15-kv.m15-ok .m15-v { color: #1b6e2b; }
+  .m15-muted { margin: 4px 0; font-size: 16px; color: #575e68; line-height: 1.5; }
+  .m15-side-info, .m15-side-info * { font-size: 16px !important; line-height: 1.6; color: #1d1d1f; }
+  .m15-side-info-title { font-weight: 700; margin: 0 0 6px; color: #1f3fbf !important; }
+  .m15-side-row { padding: 8px 0; border-bottom: 1px solid #d5d8dd; font-size: 16px; }
+  .m15-side-row .m1-chips { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0; }
+  .m15-side-btn { display: block; width: 100%; min-height: 56px; margin: 8px 0 0; padding: 8px 12px; border-radius: 12px; font-size: 16px; font-weight: 700; text-align: left; background: #3460fb; color: #ffffff; }
+  .m15-side-btn.sub { background: #ffffff; color: #1f3fbf; border: 1px solid #3460fb; }
+  /* ---- ⑧ 位置記録：段階の表示・ピンの詳細の並び・B3・字は 16px 以上 ---- */
+  .m15-next { margin: 0 0 8px; font-size: 16px; font-weight: 700; color: #1d1d1f; }
+  #view-floorplan p, #view-floorplan label, #view-floorplan .map-section-hint, #view-floorplan .pin-select-label, #view-floorplan .pin-no-data, #view-floorplan .map-howto-steps, #view-floorplan .map-howto-note { font-size: 16px !important; }
+  #view-floorplan [style*="color:#8a94a6"], #view-floorplan [style*="color:#6e6e73"] { color: #575e68 !important; }
+  .pin-detail-fname, .pin-editor-hint, .pin-filter-hint, #pin-detail-modal small { font-size: 16px !important; }
+  .pin-filter-hint { color: #575e68 !important; }
+  .pin-detail-content.m15-pd { display: flex; flex-direction: column; }
+  .m15-pd #pin-detail-title { order: -3; }
+  .m15-pd #pin-detail-photo { order: -2; }
+  .m15-pd #pin-detail-shoot { order: -1; min-height: 56px; font-size: 17px; font-weight: 700; background: #3460fb !important; color: #ffffff !important; border: none !important; }
+  .m15-pd button { min-height: 56px; font-size: 16px; }
+  .m15-pd #pin-detail-close { background: #ffffff !important; color: #1d1d1f !important; border: 1px solid #767c86 !important; }
+  .m15-pd #pin-detail-delete { background: #ffffff !important; color: #9a1b1b !important; border: 2px solid #c62828 !important; margin-top: 16px; }
+  .m15-pd .m15-pd-more { min-height: 44px; }
+  body.m15-pinshoot #shoot-for-pin-banner { display: none !important; }
+  /* ---- 確かめ役の指摘で直した所 ---- */
+  body.m15-info-all .m15-i.m15-pd-more { display: inline-flex; }   /* 「ぜんぶ開く」でも、ピンの詳細の「ほかの操作」は消さない（重さ A） */
+  .m15-st:disabled { opacity: 1; }   /* 段階の札は押せなくても薄くしない（字と地の比を保つ） */
+  .m15-i { margin-top: 8px; }
+  .m15-card-info { cursor: default; }
+  #view-floorplan .map-empty, #pin-detail-modal .pin-detail-photo { font-size: 16px !important; color: #575e68 !important; }
+  #m1-today .m1-tdigit-in .survey-input { min-height: 56px; }
+  /* ---- 第3段：ページの長さを縮める（案2）。強める印（important）は足さない・新しい部品は作る所で正しい場所に置く ----
+         すき間を詰める（字 16px・押す所 44/56px・間 8px は守る） */
+  .card { padding: 12px 16px; margin-bottom: 10px; }
+  .card-title { margin-bottom: 6px; }
+  .m15-i { margin: 2px 8px 6px 0; padding: 4px 12px; }
+  .m15-keep { margin: 4px 0 6px; }
+  .input-help { margin-bottom: 8px; }
+  #m15-route .m15-steps { padding: 4px 8px; margin-bottom: 6px; gap: 4px; }
+  #m15-route .m15-next { margin: 0 0 6px; }
+  #m15-route .m15-sep { margin: 8px 0 6px; padding-top: 6px; }
+  #m15-route .m15-tile { min-height: 0; padding: 8px 12px; font-size: 16px; }
+  #m15-route .m15-tile .m15-when { margin-top: 2px; }
+  #m1-today .m1-trow { padding: 6px 0; }
+  #m1-today .m1-tdigit-check { width: auto; }
+  #m1-today .m1-trow.m1-tdigit .m15-i { margin: 0; }
+  #m1-today .card-title { margin-bottom: 4px; }
+  #m1-today .m1-what { display: none; }
+  /* ⓘ はカードの題の行（JS が作るときに題の行へ入れる） */
+  .card-title.m15-ttl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }   /* 折り返しても札の間は 8px（確かめ役の指摘・重さ A） */
+  .card-title.m15-ttl > .m15-i { margin: 0; font-size: 16px; }
+  .card-title.m15-ttl > .m15-i:first-of-type { margin-left: auto; }   /* ⓘ は題の右に寄せる（見本のとおり。題と続けて読まない） */
+  /* タッチペンの欄は、打つ画面（設定・撮影・評価）だけ */
+  body[data-curview]:not([data-curview="settings"]):not([data-curview="shoot"]):not([data-curview="eval"]) .input-help { display: none; }
+  /* 位置記録の「どちらの順番？」は ⓘ の中 */
+  #m15-route .m15-order-wrap.m15-closed { display: none; }
+  #m15-route #m15-order-i { margin: 0 0 6px; }
+  body.m15-info-all #m15-route .m15-order-wrap.m15-closed { display: block; }   /* 「ぜんぶ開く」では ⓘ が隠れるので、2つの札を本文に出す（確かめ役の指摘） */
+  /* 「今日の現場」の4つの値（会社・事業所・棟・区切り）は2列。並べ方は CSS だけ（部品の順と場所は変えない。桁数の行は下にまとめて1列） */
+  #m1-today { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; }
+  #m1-today > * { grid-column: 1 / -1; }
+  #m1-today > .m1-trow:not(.m1-tdigit) { grid-column: auto; flex-direction: column; align-items: flex-start; gap: 2px; padding: 6px 0; }
+  #m1-today > .m1-tdigit { order: 1; }
+  #m1-today > .m1-what { order: 2; }
+  /* 保存の画面の ⚠ の1行（未保存の数の行のすぐ下） */
+  #m15-save #m15-save-warn { margin: 0 0 10px; }
 </style>
 </head>
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 m-One Genba App v3.214 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-10-31）</span></span>
+  <span>📷 m-One Genba App v3.215 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-11-02）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -4743,7 +4923,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.214）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.215）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -6412,6 +6592,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   
   function updatePreview() {
+    try { syncNumKeep(); } catch (e) {}   // v3.215 ⑦⑥
     var fields = getAllFields();
     var parts = [];
     fields.forEach(function(f) {
@@ -7220,6 +7401,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   async function saveEquipmentRecord() {
     var fnEl = getFilename();
     if (!fnEl || !fnEl.value.trim()) { alert('番号（ファイル名）を入力してください'); if (fnEl) fnEl.focus(); return; }
+    if (isOnlyNumPrefix(fnEl.value)) { alert(numPrefixStopMsg()); fnEl.focus(); return; }   // v3.215 ⑦
     var val = fnEl.value.trim();
     // 桁チェックONなら数字を撮影と同じ桁にそろえる（写真担当のファイル名と一致させ、あとで合流できるようにする）
     if (isDigitCheckOn() && /^[0-9]+$/.test(val)) {
@@ -7280,7 +7462,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       showPinrecBanner();
       clearGutMemoInputs();
       var keepFilename = $('keep-filename-check');
-      if ((!keepFilename || !keepFilename.checked) && fnEl.value === eqFnStart) { fnEl.value = ''; }   // v3.206：登録の間に打ち直した番号は消さない
+      if ((!keepFilename || !keepFilename.checked) && fnEl.value === eqFnStart) { fnEl.value = ''; keepNumPrefix(String(eqFnStart).trim()); }   // v3.206：登録の間に打ち直した番号は消さない／v3.215 ⑦
       updatePreview();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
@@ -7932,9 +8114,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var dc = $('survey-digit-check');
         var rowsT = [['会社（クライアント会社）', f('client')], ['事業所', f('site')], ['棟', f('building')],
           ['番号の桁数', (dc && !dc.checked) ? '桁を確かめない' : ((g('survey-digit-count') || '4') + ' けた')], ['フォルダの区切り', (g('survey-bucket-size') || '100') + ' 件ごと']];
-        today.textContent = '';
-        today.appendChild(mk('p', 'card-title', '📍 今日の現場（撮る前に確かめる）'));
-        rowsT.forEach(function(r){ var row = mk('div', 'm1-trow'); row.appendChild(mk('span', 'm1-tkey', r[0])); row.appendChild(mk('span', 'm1-tval' + (r[1] ? '' : ' m1-empty'), r[1] || '（未入力）')); today.appendChild(row); });
+        var slot = window.__m1TodayDigit || null;   // v3.215 ⑥：桁数の行は打ち込める欄そのもの。これだけは作り直さない
+        Array.prototype.slice.call(today.childNodes).forEach(function(n){ if (n !== slot) today.removeChild(n); });
+        var past = false, put = function(el){ if (!past && slot && slot.parentNode === today) today.insertBefore(el, slot); else today.appendChild(el); };
+        put(mk('p', 'card-title', '📍 今日の現場（撮る前に確かめる）'));
+        rowsT.forEach(function(r){ if (slot && r[0] === '番号の桁数') { if (slot.parentNode !== today) today.appendChild(slot); past = true; return; } var row = mk('div', 'm1-trow'); row.appendChild(mk('span', 'm1-tkey', r[0])); row.appendChild(mk('span', 'm1-tval' + (r[1] ? '' : ' m1-empty'), r[1] || '（未入力）')); put(row); });
         today.appendChild(mk('p', 'm1-what', '直すときは、この下の欄で（いつも開いています）'));
       };
       if (setView) { setView.insertBefore(today, setView.firstChild); setView.addEventListener('input', renderToday); setView.addEventListener('change', renderToday); }
@@ -7987,6 +8171,495 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       ['continuous-banner-name', 'eval-bar-name', 'complete-bar-name', 'shoot-for-pin-name', 'badgeCount', 'eval-save-btn'].forEach(function(id){ var el = $(id); if (el) obs.observe(el, { childList: true, characterData: true, subtree: true }); });
       window.addEventListener('resize', measureTop);
       renderToday(); onView();
+    } catch (e) {}
+  })();
+  // v3.215 必達①〜⑧（CAM-102 の一部。土台は見本 v215）：① 下のタブとの重なり・⑥ 桁数の欄を「今日の現場」に・
+  //   ② 保存（目的のタイルと下から出るシート）・③ 読込（足す／入れ替える）・④ 説明（ⓘ）・⑤ 横向きの右側・⑧ 位置記録（段階の表示）。
+  //   見た目と画面を移る道だけ：写真の保存・撮影の流れ・図面のデータには書かない。今のボタンは、同じ押す操作の中で .click() を呼ぶだけ（待たない）。
+  //   字は textContent で入れ、写すときは cloneNode。新しい保存はしない（開け閉めはメモリだけ）。
+  //   見張り（MutationObserver）の中では、作るのは一度だけ・同じなら書き換えない（自分の書き換えに反応して繰り返さない）
+  (function setupScreenV215(){
+    try {
+      var mk = function(tag, cls, t){ var e = document.createElement(tag); if (cls) e.className = cls; if (t != null) e.textContent = t; return e; };
+      var shownEl = function(el){ return !!(el && el.style.display && el.style.display !== 'none'); };
+      var root = document.documentElement;
+
+      // ---- ① 下の帯（撮影・評価・位置記録）の高さを測って、中身の下の余白に足す ----
+      var bars = ['continuous-banner', 'eval-bar', 'complete-bar'].map($).filter(Boolean);
+      var lastBarH = -1;
+      var measureBars = function(){
+        var h = 0; bars.forEach(function(b){ if (shownEl(b)) h = Math.max(h, b.offsetHeight || 0); });
+        h = Math.round(h); if (h === lastBarH) return; lastBarH = h;
+        try { root.style.setProperty('--m1-bbar-h', h + 'px'); } catch (_) {}
+      };
+      var barObs = new MutationObserver(measureBars);
+      bars.forEach(function(b){ barObs.observe(b, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true, characterData: true }); });
+      window.addEventListener('resize', measureBars);
+      measureBars();
+
+      // ---- ⑥ 「今日の現場」の「番号の桁数」の行を、打ち込める欄そのものにする（同じ欄を動かす。id は変えない・二重にしない） ----
+      var dcnt = $('survey-digit-count'), dchk = $('survey-digit-check'), setView = $('view-settings');
+      if (dcnt && dchk && setView && !window.__m1TodayDigit) {
+        var oldRow = dcnt.closest('.survey-row'), oldLabel = oldRow ? oldRow.previousElementSibling : null, oldCheck = dchk.closest('label');
+        // 桁の確かめの説明は、確かめの欄のすぐ後ろ（「説明を見る」の札と説明の文）
+        var descT = oldCheck && oldCheck.nextElementSibling && oldCheck.nextElementSibling.classList.contains('desc-toggle') ? oldCheck.nextElementSibling : null;
+        var desc = (descT || oldCheck) && (descT || oldCheck).nextElementSibling; if (!(desc && desc.classList.contains('desc-collapsible'))) desc = null;
+        var slot = mk('div', 'm1-trow m1-tdigit'); slot.id = 'm1-today-digit';
+        slot.appendChild(mk('span', 'm1-tkey', '番号の桁数'));
+        var inW = mk('span', 'm1-tdigit-in'); inW.appendChild(dcnt); inW.appendChild(mk('span', 'survey-unit', 'けた')); slot.appendChild(inW);
+        var ck = mk('label', 'm1-tdigit-check'); ck.appendChild(dchk); ck.appendChild(mk('span', '', '撮る前に番号の桁を確かめる')); slot.appendChild(ck);
+        if (descT) slot.appendChild(descT); if (desc) slot.appendChild(desc);
+        [oldRow, oldLabel, oldCheck].forEach(function(e){ if (e && e.parentNode) e.style.display = 'none'; });
+        var sv = $('survey-card'); if (sv) { var kids = sv.children, last = kids[kids.length - 1]; if (last && last.classList.contains('survey-divider')) last.style.display = 'none'; }
+        window.__m1TodayDigit = slot;
+        try { setView.dispatchEvent(new Event('change')); } catch (_) {}   // 「今日の現場」を作り直す（桁数の行に欄を入れる）
+        if (typeof updatePreview === 'function') updatePreview();     // 番号の欄の例を桁数に合わせる
+      }
+
+      // ---- ⑦ 読み直したとき（iPad が画面を捨てて開き直したとき）：番号の欄が数字2けただけなら、頭の2けたとして扱い直す ----
+      setTimeout(function(){ try {
+        var f = getFilename();
+        if (f && !numKeep && /^\d{2}$/.test(f.value) && isDigitCheckOn() && getDigitCount() === 6) { numKeep = { prefix: f.value, client: numKeepField('client'), site: numKeepField('site') }; updatePreview(); if (typeof renderTracker === 'function') renderTracker(); }
+      } catch (_) {} }, 0);
+
+      // ---- 共通：押す・ボタン・下から出るシート（シートは1つ。作り直すのは開くときだけ） ----
+      var press = function(id){ var b = $(id); if (b && !b.disabled) { b.click(); return true; } return false; };   // 同じ押す操作の中ですぐ押す
+      var btn = function(cls, t, fn){ var b = mk('button', cls, t); b.type = 'button'; if (fn) b.addEventListener('click', fn); return b; };
+      var txt = function(id){ var el = $(id); return el ? (el.textContent || '').replace(/\s+/g, ' ').trim() : ''; };
+      var unsavedN = function(){ return parseInt(txt('badgeCount') || '0', 10) || 0; };
+      var setText = function(el, t){ if (el && el.textContent !== t) el.textContent = t; };   // 同じなら書き換えない
+      var sheetBack = mk('div'); sheetBack.id = 'm15-sheet-back';
+      var sheet = mk('div'); sheet.id = 'm15-sheet'; sheet.setAttribute('role', 'dialog');
+      document.body.appendChild(sheetBack); document.body.appendChild(sheet);
+      var closeSheet = function(){ sheet.classList.remove('show'); sheetBack.classList.remove('show'); };
+      sheetBack.addEventListener('click', closeSheet);
+      var openSheet = function(title, build){
+        sheet.textContent = ''; sheet.setAttribute('aria-label', title);
+        sheet.appendChild(mk('p', 'm15-sheet-title', title)); build(sheet);
+        sheet.appendChild(btn('m15-row m15-line', 'やめる', closeSheet));
+        sheet.classList.add('show'); sheetBack.classList.add('show');
+      };
+      var para = function(box, parts){ var e = mk('p', 'm15-sheet-p'); parts.forEach(function(x){ if (typeof x === 'string') e.appendChild(document.createTextNode(x)); else e.appendChild(mk('b', '', x[0])); }); box.appendChild(e); return e; };
+      var marks = function(box, list){ var w = mk('div', 'm15-marks'); list.forEach(function(m){ w.appendChild(mk('span', m[1] ? 'm15-yes' : 'm15-no', m[0])); }); box.appendChild(w); };
+
+      // ---- ② 保存：今の状態＋4つの目的のタイル → 下から出るシート（押すボタンは1つ）→「作る→タップ→保存」の段階。今のカードは畳む ----
+      var exView = $('view-export');
+      if (exView && $('exportIncBtn') && $('exportBtn')) {
+        var sw = mk('div'); sw.id = 'm15-save';
+        var sst = mk('div', 'm15-status'); var sstU = mk('span'), sstL = mk('span'); sst.appendChild(sstU); sst.appendChild(sstL); sw.appendChild(sst);
+        var swarn = mk('p', 'm15-keep m15-warn', '⚠ 撮った写真はこの端末の中だけにあります。こまめに保存（ZIP）を'); swarn.id = 'm15-save-warn'; sw.appendChild(swarn);   // 第3段：保存の画面の上の方に ⚠ の1行
+        var ssteps = mk('div', 'm15-steps'); ssteps.id = 'm15-save-steps'; ssteps.style.display = 'none'; sw.appendChild(ssteps);
+        sw.appendChild(mk('p', 'm15-card-title', '何をしますか？（1つ選ぶ）'));
+        var tiles = mk('div', 'm15-tiles'); sw.appendChild(tiles);
+        var tile = function(cls, t, when, tag, fn){ var b = btn('m15-tile ' + cls, t, fn); var w = mk('span', 'm15-when', when); b.appendChild(w); if (tag) b.appendChild(mk('span', 'm15-tag', tag)); tiles.appendChild(b); return w; };
+        var olds = Array.prototype.filter.call(exView.children, function(c){ return c.classList.contains('card') && c.tagName !== 'DETAILS'; });
+        var fold = btn('m15-fold', ''), opened = false;
+        var setOpen = function(on){ opened = on; olds.forEach(function(c){ c.classList.toggle('m15-folded', !opened); }); setText(fold, 'くわしい形で操作する（今までの保存のボタン・位置記録・容量） ' + (opened ? '▲' : '▼')); fold.setAttribute('aria-expanded', opened ? 'true' : 'false'); };
+        var LINKS = ['incLinks', 'exportLinks', 'splitLinks', 'incRebuildLinks', 'mapZipSave', 'mapPngSave'];
+        var firstLink = function(){ var f = null; LINKS.forEach(function(id){ var el = $(id); if (!f && el && el.childNodes.length) f = el; }); return f; };
+        fold.addEventListener('click', function(){
+          var lk = opened && firstLink();
+          if (lk) { try { lk.scrollIntoView({ block: 'center' }); } catch (_) {} return; }   // 保存の枠が出ている間は畳まない（枠を隠さない）
+          setOpen(!opened);
+        });
+        // 「作る → オレンジの枠をタップ → 『ファイル』に保存」の段階。保存の枠が出たら 2 に進め、その枠まで送る
+        var stage = -1;
+        var renderSteps = function(n){
+          if (n === stage) return; stage = n; ssteps.textContent = ''; ssteps.style.display = '';
+          ['1 作っています', '2 オレンジの枠をタップ', '3 「ファイル」に保存'].forEach(function(s, i){
+            ssteps.appendChild(mk('span', 'm15-st' + (i < n ? ' done' : (i === n ? ' cur' : '')), (i < n ? '✓ ' : (i === n ? '● ' : '○ ')) + s));
+            if (i < 2) ssteps.appendChild(mk('span', 'm15-arrow', '→'));
+          });
+        };
+        var go = function(id){ setOpen(true); if (press(id)) renderSteps(0); };
+        // どこから保存が始まっても（保存の案内のワンタップなど）、今のカードを開いて、保存の枠を見せる（保存の枠を畳んだ所に隠さない）
+        var linkObs = new MutationObserver(function(){
+          var link = firstLink();
+          if (!link) return;
+          if (!opened) setOpen(true);
+          if (stage !== 1) { renderSteps(1); try { link.scrollIntoView({ block: 'center' }); } catch (_) {} }
+        });
+        LINKS.forEach(function(id){ var el = $(id); if (el) linkObs.observe(el, { childList: true }); });
+        var BUSY = ['exportIncBtn', 'exportBtn', 'exportSplitBtn', 'incRebuildBtn', 'mapExportBtn', 'mapExportPngBtn'];
+        var busyObs = new MutationObserver(function(){ var busy = BUSY.some(function(id){ var b = $(id); return b && b.disabled; }); if (busy && !opened) setOpen(true); });
+        BUSY.forEach(function(id){ var b = $(id); if (b) busyObs.observe(b, { attributes: true, attributeFilter: ['disabled'] }); });
+        var t1w = tile('m15-main', '① 合間にこまめに残す', '', 'ふだん', function(){
+          openSheet('① 合間にこまめに残す', function(s){
+            para(s, ['いつ：休憩・作業の合間・毎日の終わり']);
+            para(s, ['入るもの：前回の保存のあとに撮った写真 ', [unsavedN() + ' 枚'], '・撮影記録・位置記録']);
+            marks(s, [['写真（新しく撮った分）', 1], ['撮影記録', 1], ['位置記録', 1]]);
+            para(s, ['次にすること：下のボタン → オレンジの枠をタップ → 「ファイル」に保存']);
+            s.appendChild(btn('m15-row m15-main', '① 新しく撮った ' + unsavedN() + ' 枚を保存する', function(){ closeSheet(); go('exportIncBtn'); }));
+          });
+        });
+        tile('', '② 今日の終わり・区切り', '全部を1つの ZIP に', '1日1回', function(){
+          openSheet('② 今日の終わり・区切り', function(s){
+            para(s, ['いつ：午前／午後の区切り・現場の終わり・端末を替える前']);
+            para(s, ['入るもの：この端末の写真 ', [(txt('exportCount') || '?') + ' 枚'], ' すべて・撮影記録・位置記録']);
+            marks(s, [['写真（全部）', 1], ['撮影記録', 1], ['位置記録', 1]]);
+            s.appendChild(btn('m15-row m15-main', '② 全部を1つの ZIP に保存する', function(){ closeSheet(); go('exportBtn'); }));
+            s.appendChild(mk('p', 'm15-sep', '重い・途中で止まったとき'));
+            s.appendChild(btn('m15-row m15-line', '小分けにして保存する（写真が多くて重いとき）', function(){ closeSheet(); setOpen(true); var spp = $('splitPanel'); if (!spp || spp.style.display === 'none') press('splitToggleBtn'); var sp = $('splitPanel'); if (sp) try { sp.scrollIntoView({ block: 'start' }); } catch (_) {} }));
+          });
+        });
+        tile('', '③ 別の端末・PC に渡す', '全部／位置記録だけ', '', function(){
+          openSheet('③ 別の端末・PC に渡す', function(s){
+            var a = btn('m15-row m15-main', '全部を渡す（写真も）', function(){ closeSheet(); go('exportBtn'); });
+            a.appendChild(mk('span', 'm15-when', '②と同じ ZIP。渡した先の「📥 読込」で足して戻せます')); s.appendChild(a);
+            var b = btn('m15-row m15-line', '位置記録だけ渡す（棟・図面・ピン）', function(){ closeSheet(); go('mapExportBtn'); });
+            var w = mk('span', 'm15-when'); w.appendChild(mk('span', 'm15-no', '写真は入りません')); w.appendChild(document.createTextNode('　前日の準備・事前の配布に')); b.appendChild(w); s.appendChild(b);
+          });
+        });
+        tile('', '④ 印刷・報告に使う', '図面の画像・CSV', '', function(){
+          openSheet('④ 印刷・報告に使う', function(s){
+            para(s, ['ピン入り図面の画像（ピンの大きさを選ぶ）']);
+            var sizes = mk('div', 'm15-tiles m15-tiles3');
+            [['小', '1.2'], ['標準', '1.8'], ['大', '2.4']].forEach(function(o){ sizes.appendChild(btn('m15-row m15-line', '🖼 ' + o[0], function(){ var sel = $('mapPngPinSize'); if (sel) sel.value = o[1]; closeSheet(); go('mapExportPngBtn'); })); });
+            s.appendChild(sizes);
+            var c = btn('m15-row m15-line', '📄 撮影記録の CSV を保存', function(){ closeSheet(); press('exportCsvBtn'); });
+            var w = mk('span', 'm15-when'); w.appendChild(mk('span', 'm15-no', '写真は入りません')); w.appendChild(document.createTextNode('　台帳の入力・数の確認に')); c.appendChild(w); s.appendChild(c);
+          });
+        });
+        sw.appendChild(mk('p', 'm15-sep', '片付け（危ない）'));
+        sw.appendChild(btn('m15-row m15-danger-line', '🗑 アプリ内の写真を全部消す…（確かめの小窓が出ます）', function(){ press('clearAllBtn'); }));
+        sw.appendChild(fold);
+        var sos = exView.querySelector(':scope > details.card');
+        exView.insertBefore(sw, sos && sos.nextSibling ? sos.nextSibling : exView.firstChild);
+        var cta = $('m1-save-cta'); if (cta) cta.style.display = 'none';   // 役目が同じなので隠す（v3.214 のシートの処理は残す）
+        setOpen(false);
+        var syncSave = function(){
+          var n = unsavedN();
+          setText(sstU, n > 0 ? '⚠ 未保存 ' + n + ' 枚' : '✓ 未保存 0 枚'); sstU.className = n > 0 ? 'm15-bad' : 'm15-ok';
+          var lb = txt('lastBackupInfo'); setText(sstL, '最後の保存：' + (lb ? lb.replace(/^[^：]*：/, '') : 'まだ'));
+          setText(t1w, '新しく撮った ' + n + ' 枚だけ');
+        };
+        var sObs = new MutationObserver(syncSave);
+        ['badgeCount', 'lastBackupInfo'].forEach(function(id){ var el = $(id); if (el) sObs.observe(el, { childList: true, subtree: true, characterData: true }); });
+        syncSave();
+      }
+
+      // ---- ③ 読込：「今の写真に足す」と「入れ替える（今の写真が消える）」を形で分ける。入れ替えは「消えてよい」の印を入れないと押せない。
+      //      どちらも、今のファイルを選ぶ欄を同じ押す操作の中で開くだけ（読み込みの処理・確かめの窓は今のまま） ----
+      var imView = $('view-import'), impIn = $('photoImportInput'), impBtn = $('photoImportBtn');
+      var impMode = null;   // 'add' | 'replace'（メモリだけ。小窓に「次の窓でどちらを押すか」を出すため）
+      if (imView && impIn && impBtn) {
+        var ic = mk('div', 'card'); ic.id = 'm15-import';
+        ic.appendChild(mk('p', 'm15-card-title', 'ZIP から戻す（このアプリで作った ZIP）'));
+        var inow = mk('p', 'm15-sheet-p'); ic.appendChild(inow);
+        var itl = mk('div', 'm15-tiles'); ic.appendChild(itl);
+        var addT = btn('m15-tile m15-main', '＋ 今の写真に足す'); addT.id = 'm15-import-add'; addT.appendChild(mk('span', 'm15-when', '今の写真は消えない。別の端末・仲間の分の合流、前日の準備に'));
+        var repT = btn('m15-tile m15-danger-line', '⚠ ⇄ 入れ替える'); repT.id = 'm15-import-replace'; var repW = mk('span', 'm15-when'); repT.appendChild(repW);
+        itl.appendChild(addT); itl.appendChild(repT);
+        ic.appendChild(mk('p', 'm15-keep', 'ファイルを直接開かず、必ずこの画面のボタンから選んでください（iPad 対策）'));
+        addT.addEventListener('click', function(){
+          openSheet('＋ 今の写真に足す', function(s){
+            para(s, ['今の写真は ', ['消えません'], '。同じ写真は自動で飛ばします']);
+            para(s, ['このあと確かめの窓が出ます。「このZIPから写真」の窓では ', ['［キャンセル］＝足す'], ' を押します']);
+            s.appendChild(btn('m15-row m15-main', '足す ZIP を選ぶ', function(){ closeSheet(); impMode = 'add'; impIn.click(); }));   // 待たずに選ぶ画面を開く
+          });
+        });
+        repT.addEventListener('click', function(){
+          openSheet('⇄ 入れ替える（今の写真が消える）', function(s){
+            var u = unsavedN();
+            para(s, ['今の写真 ', [(txt('exportCount') || '?') + ' 枚'], ' が全部消えて、ZIP の中身に置き換わります（未保存 ', [u + ' 枚'], '）']);
+            if (u > 0) s.appendChild(btn('m15-row m15-main', '先に ① で未保存の ' + u + ' 枚を保存する（保存へ）', function(){ closeSheet(); var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click(); }));
+            var lab = mk('label', 'm15-check'); var cb = mk('input'); cb.type = 'checkbox'; cb.id = 'm15-import-ok'; lab.appendChild(cb); lab.appendChild(document.createTextNode('今の写真が消えてよい（保存を確かめた）')); s.appendChild(lab);
+            var goB = btn('m15-row m15-danger-fill', '🗑 入れ替える ZIP を選ぶ', function(){ if (!cb.checked) return; closeSheet(); impMode = 'replace'; impIn.click(); });
+            goB.id = 'm15-import-replace-go'; goB.disabled = true; cb.addEventListener('change', function(){ goB.disabled = !cb.checked; });
+            s.appendChild(goB);
+          });
+        });
+        var syncImp = function(){ var n = txt('exportCount') || '?'; setText(inow, '今この端末に 写真 ' + n + ' 枚（未保存 ' + unsavedN() + ' 枚）'); setText(repW, '今の ' + n + ' 枚が消える。端末を作り直したとき・救出の ZIP で戻すときだけ'); };
+        var iObs = new MutationObserver(syncImp);
+        ['exportCount', 'badgeCount'].forEach(function(id){ var el = $(id); if (el) iObs.observe(el, { childList: true, subtree: true, characterData: true }); });
+        syncImp();
+        var first = imView.querySelector('.card'); imView.insertBefore(ic, first ? first.nextSibling : imView.firstChild);
+        impBtn.style.display = 'none';   // 今の「データを読み込む」は、上の2つのタイルに置き換える
+        ['importProgress', 'photoImportStatus'].forEach(function(id){ var el = $(id); if (el) ic.appendChild(el); });   // 読み込みの進み具合と結果の欄は、同じ物を上のカードへ動かす（id は同じ）
+        var oldImpCard = impBtn.closest('.card'); if (oldImpCard) oldImpCard.style.display = 'none';
+        var rn = imView.querySelector('.import-replace-note'); if (rn) rn.style.display = 'none';
+        var other = mk('p', 'm15-sep', 'ほかの読み込み（写真ファイル・位置記録だけ・図面からマップ）'); imView.insertBefore(other, ic.nextSibling);
+        var pcard = $('photo-import-btn') && $('photo-import-btn').closest('.card'); if (pcard) imView.insertBefore(pcard, other.nextSibling);
+        // 読み込みの前の小窓に、選んだ方と「次の窓でどちらを押すか」の札を一度だけ足す（小窓の出し入れ＝class だけを見張る）
+        var hookNotice = function(m){
+          var check = function(){
+            if (!m.classList.contains('show') || !impMode || $('m15-notice-hint')) return;
+            var bx = m.querySelector('.delguard-content'); if (!bx) return;
+            var title = bx.querySelector('.delguard-title');
+            var h = mk('div', 'm15-hint' + (impMode === 'replace' ? ' m15-hint-danger' : '')); h.id = 'm15-notice-hint';
+            h.appendChild(document.createTextNode(impMode === 'add' ? 'あなたは「＋ 足す」を選びました。次の窓では ［キャンセル］＝足す を押してください' : 'あなたは「⇄ 入れ替える」を選びました。次の窓では ［OK］ を押します（今の写真が消えます）'));
+            bx.insertBefore(h, title ? title.nextSibling : bx.firstChild);
+          };
+          new MutationObserver(check).observe(m, { attributes: true, attributeFilter: ['class'] });
+          check();   // 見張りを始める前に、もう出ていた場合（初めて小窓を作ったとき）
+        };
+        var nm0 = $('importNoticeModal');
+        if (nm0) hookNotice(nm0);
+        else { var bObs = new MutationObserver(function(){ var m = $('importNoticeModal'); if (m) { bObs.disconnect(); hookNotice(m); } }); bObs.observe(document.body, { childList: true }); }
+      }
+
+      // ---- ④ 説明：補足は ⓘ（押すと出て、もう一度押すか外を押すと消える。同時に開くのは1つ）。写真を失わないための注意は ⚠ の1行で残す。
+      //      振り分け：やり方・しくみ・中身の説明＝ⓘ／判断や台帳に関わる説明＝要点1行＋ⓘ／写真を失う注意＝⚠ の1行＋ⓘ。
+      //      評価参考・Q&A・決める場面の小窓（削除の確認・設定を戻す・救出の案内など）・救出の 🆘 の欄は今のまま ----
+      var infos = [], openInfo = null;
+      window.__m15InfoChange = null;   // ⑤ 横向きの右側が受け取る（開いている補足を右に写す）
+      var asideTakes = function(){ return typeof window.__m15AsideOpen === 'function' && window.__m15AsideOpen(); };
+      var setInfo = function(it, on){
+        it.btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+        it.btn.classList.toggle('m15-i-open', on);
+        var side = on && asideTakes();
+        it.el.classList.toggle('m15-hid', !on || side);
+        it.el.classList.toggle('m15-pop', on && !side);
+        if (on) openInfo = it; else if (openInfo === it) openInfo = null;
+        if (window.__m15InfoChange) window.__m15InfoChange(openInfo);
+      };
+      var addInfo = function(el, label, keep, warn){
+        if (!el || el.__m15i || !el.parentNode) return;
+        var prev = el.previousElementSibling;
+        if (prev && prev.classList.contains('desc-toggle')) prev.classList.add('m15-hid-toggle');   // 今の「説明を見る」の札は隠す（仕組みはそのまま）
+        el.classList.remove('collapsed');
+        var b = btn('m15-i', 'ⓘ ' + label); b.setAttribute('aria-expanded', 'false');
+        var it = { el: el, btn: b, label: label };
+        if (keep) { var k = mk('p', 'm15-keep' + (warn ? ' m15-warn' : ''), (warn ? '⚠ ' : '') + keep); el.parentNode.insertBefore(k, el); }
+        var card = el.closest('.card'), ttl = card && card.querySelector(':scope > .card-title');
+        // 第3段：ⓘ は、作るときからカードの題の行に置く。アプリが字を書き換える題（id のある題：位置記録の棟・図面の名前）には入れない（書き換えで ⓘ が消えるため。今の場所のまま）
+        var more = card && card.querySelector(':scope > .m1-more-toggle');   // 「その他の設定」で閉じる所の補足は、閉じたときに ⓘ も一緒に隠れるよう、今の場所のまま（確かめ役の指摘）
+        if (ttl && !ttl.id && !el.closest('#m1-today-digit') && !ttl.closest('button, summary, a, label') && !(more && (more.compareDocumentPosition(el) & 4))) { ttl.classList.add('m15-ttl'); ttl.appendChild(b); }
+        else el.parentNode.insertBefore(b, el);
+        el.classList.add('m15-hid', 'm15-info'); el.__m15i = it;
+        b.addEventListener('click', function(){ var on = openInfo !== it; if (openInfo && openInfo !== it) setInfo(openInfo, false); setInfo(it, on); });
+        infos.push(it);
+      };
+      window.__m15ReflowInfo = function(){ if (openInfo) setInfo(openInfo, true); };
+      document.addEventListener('click', function(e){   // 外を押したら閉じる（閉じるだけ。押した所の動きは止めない）
+        if (!openInfo) return; var t = e.target;
+        if (openInfo.btn.contains(t) || openInfo.el.contains(t)) return;
+        var side = $('m15-aside'); if (side && side.contains(t)) return;
+        setInfo(openInfo, false);
+      }, true);
+      // 振り分けは、アプリの立ち上げ（説明の開け閉めの札を作る setupDescCollapsibles）が終わってから行う
+      setTimeout(function(){ try {
+      var descs = {}; Array.prototype.forEach.call(document.querySelectorAll('.desc-collapsible'), function(p){ var k = p.getAttribute('data-desc'); if (k) descs[k] = p; });
+      var D = function(k, label, keep, warn){ var p = descs[k]; if (p) addInfo(p, label || p.getAttribute('data-desc-label') || '説明', keep, warn); };
+      var Q = function(sel){ return document.querySelector(sel); };
+      // 撮影
+      ['shoot-target', 'shoot-dummy', 'shoot-branch', 'shoot-help', 'shoot-bulk'].forEach(function(k){ D(k); });
+      addInfo(Q('#view-shoot > .info-box'), '写真の置き場所と保存', '撮った写真はこの端末の中だけにあります。こまめに保存（ZIP）を', true);
+      // 評価
+      var ev0 = Q('#view-eval .card > p.card-title + p'); if (ev0 && !ev0.classList.contains('desc-collapsible')) addInfo(ev0, '評価の画面の使い方');
+      D('shoot-cls', '分類', '分類を選ぶと G・U の初めの値が入ります（台帳に渡ります）');
+      D('shoot-gut'); D('shoot-nophoto');
+      // 設定
+      ['set-survey', 'set-numbers', 'set-dummy', 'set-backup-note', 'set-fields'].forEach(function(k){ D(k); }); D('set-digit', '番号の桁の確かめ');
+      var sfi = $('survey-folder-info'); if (sfi && sfi.nextElementSibling && sfi.nextElementSibling.tagName === 'P') addInfo(sfi.nextElementSibling, 'フォルダの分け方の優先');
+      // 撮影リスト
+      D('link-status');
+      // 保存（今のカードの中）
+      var full = $('export-full-card');
+      if (full) {
+        var ibs = full.querySelectorAll(':scope > .info-box'); if (ibs[0]) addInfo(ibs[0], '保存の動き・ZIP の中身'); if (ibs[1]) addInfo(ibs[1], '①②③の使い分け');
+        ['exp-inc', 'exp-backup', 'exp-split'].forEach(function(k){ D(k); });
+      }
+      var mapCard = $('mapExportBtn') && $('mapExportBtn').closest('.card');
+      if (mapCard) addInfo(mapCard.querySelector('.info-box'), '位置記録の ZIP について', '位置記録の ZIP に写真は入りません（写真も残すときは②か③）', true);
+      Array.prototype.forEach.call(document.querySelectorAll('#view-export .port-block-desc'), function(p, i){ addInfo(p, i ? '図面の画像について' : '位置記録の ZIP の使い道'); });
+      var stc = $('storageUsed') && $('storageUsed').closest('.card'); if (stc) addInfo(stc.querySelector(':scope > p:not(.card-title)'), '容量について');
+      // 読込
+      if (imView) {
+        var c0 = imView.querySelector('.card'); if (c0) { addInfo(c0.querySelector(':scope > p:not(.card-title)'), '読込でできること'); addInfo(c0.querySelector('.info-box'), 'ZIP と写真ファイルの違い'); }
+        var pc = $('photo-import-btn') && $('photo-import-btn').closest('.card'); if (pc) addInfo(pc.querySelector(':scope > p:not(.card-title)'), '写真ファイルの取り込み');
+        var mc = $('mapImportBtn') && $('mapImportBtn').closest('.card');
+        if (mc) {
+          addInfo(mc.querySelector('.info-box'), '位置記録だけの読み込み', '位置記録だけを読み込みます（写真は入りません）。必ず下のボタンから選んでください', true);
+          addInfo(mc.querySelector('.port-block-hint'), 'ファイルを選ぶ画面の使い方');
+          var mib = $('mapImgImportBtn'); if (mib) addInfo(mib.parentNode.querySelector(':scope > p:nth-of-type(2)'), '図面からマップを作る');
+        }
+      }
+      // 位置記録
+      addInfo(Q('#pin-section-body > p'), '図面に記録とは');
+      D('map-building', '棟の登録');
+      var bcd = $('map-buildings-card'); if (bcd) addInfo(bcd.querySelector(':scope > p[style*="font-size:11px"]'), '写真の棟をまとめて登録とは');
+      Array.prototype.forEach.call(document.querySelectorAll('#view-floorplan .map-section-hint'), function(p){
+        var nb = p.nextElementSibling; while (nb && nb.tagName !== 'BUTTON' && !nb.querySelector('button')) nb = nb.nextElementSibling;
+        var bt = nb ? (nb.tagName === 'BUTTON' ? nb : nb.querySelector('button')) : null;
+        var name = bt ? (bt.textContent || '').replace(/^[^぀-ヿ一-鿿]+/, '').replace(/[（(].*$/, '').trim().slice(0, 14) : '';
+        addInfo(p, name ? '「' + name + '」について' : 'このカードについて');
+      });
+      ['map-intro', 'map-howto', 'map-save'].forEach(function(k){ D(k); });
+      // 設定の「説明文の表示」：ぜんぶ開く＝すべての補足を本文に出す・ぜんぶ閉じる＝ⓘ に戻す（メモリだけ）
+      var dOpen = $('descOpenAllBtn'), dClose = $('descCloseAllBtn');
+      if (dOpen && dClose) {
+        var dp = dOpen.parentNode && dOpen.parentNode.previousElementSibling;
+        if (dp && dp.tagName === 'P') { dp.style.display = 'none'; dp.parentNode.insertBefore(mk('p', 'm15-keep', '各画面の補足は ⓘ を押すと出ます。「ぜんぶ開く」で、すべての補足を本文に出します（「ぜんぶ閉じる」で ⓘ に戻ります）'), dp); }
+        dOpen.addEventListener('click', function(){ if (openInfo) setInfo(openInfo, false); document.body.classList.add('m15-info-all'); });
+        dClose.addEventListener('click', function(){ document.body.classList.remove('m15-info-all'); });
+      }
+      } catch (_) {} }, 0);
+
+      // ---- ⑤ 横向きの右側（横で幅 1024px 以上のときだけ。縦では作らない）：今の作業（上の一覧を右へ）・今日の現場・この画面の補足・失わないために。
+      //      読んで写すだけ（記録には書かない）。ボタンは元のボタンを押すだけ。評価と撮影の画面では初めは畳む。開け閉めはメモリだけ ----
+      var wide = function(){ try { return window.matchMedia('(orientation: landscape) and (min-width: 1024px)').matches; } catch (_) { return false; } };
+      var curV = function(){ var a = document.querySelector('.tab.active'); return a ? a.dataset.view : ''; };
+      var aside = mk('aside'); aside.id = 'm15-aside'; aside.setAttribute('aria-label', '今の作業と補足');
+      var ahead = mk('div', 'm15-aside-head'); ahead.appendChild(mk('span', 'm15-aside-title', '今の作業と補足'));
+      var afold = btn('m15-aside-fold', '畳む ▶'); ahead.appendChild(afold); aside.appendChild(ahead);
+      var abody = mk('div', 'm15-aside-body'); aside.appendChild(abody);
+      var arail = btn('m15-aside-rail', 'ⓘ 補足 ◀'); arail.id = 'm15-aside-rail';
+      document.body.appendChild(aside); document.body.appendChild(arail);
+      var CLOSED0 = { shoot: 1, 'eval': 1 }, closedBy = {};
+      var asideClosed = function(){ var v = curV(); return Object.prototype.hasOwnProperty.call(closedBy, v) ? closedBy[v] : !!CLOSED0[v]; };
+      window.__m15AsideOpen = function(){ return wide() && !asideClosed(); };
+      var sec = function(title){ var s = mk('section', 'm15-sec'); s.appendChild(mk('p', 'm15-sec-title', title)); abody.appendChild(s); return s; };
+      var kv = function(s, k, v, cls){ var r = mk('div', 'm15-kv' + (cls ? ' ' + cls : '')); r.appendChild(mk('span', 'm15-k', k)); r.appendChild(mk('span', 'm15-v', v)); s.appendChild(r); };
+      var infoHolder = null;
+      var putInfo = function(it){
+        if (!infoHolder) return; infoHolder.textContent = '';
+        if (!it || !window.__m15AsideOpen()) { infoHolder.appendChild(mk('p', 'm15-muted', 'ⓘ を押すと、ここに説明が出ます')); return; }
+        infoHolder.appendChild(mk('p', 'm15-side-info-title', 'ⓘ ' + it.label));
+        var c = it.el.cloneNode(true); c.removeAttribute('id'); c.classList.remove('m15-hid', 'm15-pop', 'collapsed', 'desc-collapsible', 'm15-info');
+        Array.prototype.forEach.call(c.querySelectorAll('[id]'), function(x){ x.removeAttribute('id'); });
+        infoHolder.appendChild(c);
+      };
+      window.__m15InfoChange = putInfo;
+      var steps215 = $('m1-steps');
+      var fillAside = function(){
+        abody.textContent = '';
+        var s1 = sec('今の作業');
+        var rowsS = steps215 ? Array.prototype.filter.call(steps215.querySelectorAll('.m1-row'), function(r){ return r.style.display !== 'none' && !r.classList.contains('m15-hid'); }) : [];
+        if (!rowsS.length) s1.appendChild(mk('p', 'm15-muted', '途中の設備はありません'));
+        rowsS.forEach(function(r){
+          var c = r.cloneNode(true); c.removeAttribute('id'); c.className = 'm15-side-row';
+          var ob = r.querySelectorAll('button'), cbs = c.querySelectorAll('button');
+          Array.prototype.forEach.call(cbs, function(b, i){ b.className = 'm15-side-btn' + (/あとで|やめる|解除/.test(b.textContent) ? ' sub' : ''); b.addEventListener('click', function(){ if (ob[i]) ob[i].click(); }); });
+          s1.appendChild(c);
+        });
+        var s2 = sec('今日の現場');
+        var fv = function(k){ var e = document.querySelector('#fixedFields .field-row[data-key="' + k + '"] .field-input'); return e ? e.value.trim() : ''; };
+        kv(s2, '会社', fv('client') || '（未入力）', fv('client') ? '' : 'm15-bad'); kv(s2, '事業所', fv('site') || '（未入力）', fv('site') ? '' : 'm15-bad'); kv(s2, '棟', fv('building') || '（未入力）', fv('building') ? '' : 'm15-bad');
+        var dck = $('survey-digit-check'); kv(s2, '番号の桁数', (dck && !dck.checked) ? '桁を確かめない' : ((($('survey-digit-count') || {}).value || '4') + ' けた'));
+        infoHolder = mk('div', 'm15-side-info'); sec('この画面の補足').appendChild(infoHolder); putInfo(openInfo);
+        var s4 = sec('失わないために'); var n = unsavedN();
+        kv(s4, '未保存', n > 0 ? ('⚠ ' + n + ' 枚（まだ ZIP にしていない）') : '✓ 0 枚', n > 0 ? 'm15-bad' : 'm15-ok');
+        var lb = txt('lastBackupInfo'); kv(s4, '最後の保存', lb ? lb.replace(/^[^：]*：/, '') : 'まだ保存していません');
+        if (curV() !== 'export') s4.appendChild(btn('m15-side-btn sub', '💾 保存へ ▶', function(){ var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click(); }));
+      };
+      var lastAsideKey = null;
+      var syncAside = function(){
+        var w = wide(), closed = asideClosed();
+        document.body.classList.toggle('m15-aside-on', w && !closed);
+        document.body.classList.toggle('m15-aside-rail', w && closed);
+        var top = 0; ['.app-bar', '#unsavedBar'].forEach(function(s){ var el = document.querySelector(s); if (!el) return; var r = el.getBoundingClientRect(); if (r.height > 0 && r.top < innerHeight / 2) top = Math.max(top, r.bottom); });
+        try { root.style.setProperty('--m15-aside-top', Math.round(top) + 'px'); } catch (_) {}
+        if (w && !closed) {
+          var key = JSON.stringify([curV(), steps215 ? steps215.textContent : '', txt('badgeCount'), txt('lastBackupInfo')]);
+          if (key !== lastAsideKey) { lastAsideKey = key; fillAside(); }   // 中身が同じなら作り直さない
+        } else lastAsideKey = null;
+        if (window.__m15ReflowInfo) window.__m15ReflowInfo();
+      };
+      afold.addEventListener('click', function(){ closedBy[curV()] = true; syncAside(); });
+      arail.addEventListener('click', function(){ closedBy[curV()] = false; lastAsideKey = null; syncAside(); });
+      var aTimer = null, aObs = new MutationObserver(function(){ clearTimeout(aTimer); aTimer = setTimeout(syncAside, 60); });
+      document.querySelectorAll('.tab').forEach(function(t){ aObs.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+      [steps215, $('badgeCount'), $('lastBackupInfo')].forEach(function(el){ if (el) aObs.observe(el, { childList: true, subtree: true, characterData: true, attributes: true }); });
+      if (setView) setView.addEventListener('input', function(){ lastAsideKey = null; clearTimeout(aTimer); aTimer = setTimeout(syncAside, 60); });
+      window.addEventListener('resize', function(){ lastAsideKey = null; syncAside(); });
+      syncAside();
+
+      // ---- ⑧ 位置記録：①棟 → ②図面 → ③ピン の段階と、次にすること（主のボタン1つ）・「どちらの順番？」・
+      //      先行ピンの帯は上の一覧の1行に（B3）・ピンの詳細は「この位置で撮影」を先頭の青に。図面のデータには書かない（今のボタンを押すだけ） ----
+      var fpv = $('view-floorplan');
+      var mapCards = ['map-buildings-card', 'map-inside-card', 'map-area-card', 'map-sheet-card'].map($);
+      if (fpv && mapCards[0] && mapCards[3]) {
+        var route = mk('div', 'card'); route.id = 'm15-route'; fpv.insertBefore(route, fpv.firstChild);
+        var pinCard = $('pin-section-toggle') && $('pin-section-toggle').closest('.card'), pinBody = $('pin-section-body');
+        var emptyList = function(id){ var el = $(id); return !!el && el.children.length === 1 && el.firstElementChild.classList.contains('map-empty'); };   // アプリの「まだ〜ありません」だけのとき
+        var stageOf = function(){ return shownEl(mapCards[3]) ? 3 : ((shownEl(mapCards[1]) || shownEl(mapCards[2])) ? 2 : 1); };
+        var backTo = function(n){ if (n <= 2 && shownEl(mapCards[3])) press('map-sheet-back-btn'); if (n <= 1) { if (shownEl(mapCards[2])) press('map-area-back-btn'); if (shownEl(mapCards[1])) press('map-back-btn'); } };
+        var lastRoute = null, orderOpen = false;
+        var renderRoute = function(){
+          var stg = stageOf(), afterShot = shownEl($('complete-bar')) || shownEl($('pinrec-banner'));
+          var bname = txt('map-inside-title') || txt('map-area-title'), sname = txt('map-sheet-title');
+          var inArea = shownEl(mapCards[2]);
+          var none = stg === 1 ? emptyList('map-buildings-list') : (stg === 2 ? emptyList(inArea ? 'map-area-sheets-list' : 'map-sheets-list') : false);
+          var key = JSON.stringify([stg, bname, sname, none, afterShot, txt('complete-bar-name')]);
+          // 撮った直後（下の帯が出ている）か、図面に記録の欄が開いているときだけ、上の「撮影位置を図面に記録」のカードを出す
+          if (pinCard) pinCard.classList.toggle('m15-hid', !(afterShot || (pinBody && pinBody.style.display !== 'none')));
+          if (key === lastRoute) return; lastRoute = key;   // 同じなら作り直さない
+          route.textContent = '';
+          var st = mk('div', 'm15-steps');
+          [['① 棟', bname], ['② 図面', sname], ['③ ピン', '']].forEach(function(s, i){
+            var n = i + 1, cls = n < stg ? 'done' : (n === stg ? 'cur' : '');
+            var b = btn('m15-st' + (cls ? ' ' + cls : ''), (cls === 'done' ? '✓ ' : (cls === 'cur' ? '● ' : '○ ')) + s[0] + (s[1] && n < stg ? ' ' + s[1] : '') + (cls === 'cur' ? '（今）' : ''));
+            if (cls === 'done') b.addEventListener('click', function(){ backTo(n); }); else b.disabled = true;
+            st.appendChild(b); if (i < 2) st.appendChild(mk('span', 'm15-arrow', '▶'));
+          });
+          route.appendChild(st);
+          var main = null, next;
+          if (stg === 1) { next = none ? '棟（建物）を登録する' : '下の一覧で、棟の「開く」を押す'; if (none) main = btn('m15-row m15-main', '＋ 棟（建物）を登録する', function(){ press('map-add-building-btn'); }); }
+          else if (stg === 2) { next = none ? '図面（マップ）を読み込む' : '下の一覧で、図面を選ぶ'; if (none) main = btn('m15-row m15-main', '＋ 図面を読み込む（写真・画像／複数可）', function(){ press(inArea ? 'map-area-add-sheet-btn' : 'map-add-sheet-btn'); }); }
+          else { next = 'ピンを置く'; main = btn('m15-row m15-main', '📍 この図面でピンを置く ▶', function(){ press('map-sheet-pin-btn'); }); }
+          route.appendChild(mk('p', 'm15-next', '次にすること：' + next)); if (main) route.appendChild(main);
+          if (stg === 3) {   // 第3段：「どちらの順番？」の2つの札は ⓘ を押したときだけ出す
+            var ow = mk('div', 'm15-order-wrap' + (orderOpen ? '' : ' m15-closed')); ow.id = 'm15-order-wrap';
+            var ob = btn('m15-i' + (orderOpen ? ' m15-i-open' : ''), 'ⓘ どちらの順番？（撮ってから置く／先に置いて撮る）'); ob.id = 'm15-order-i'; ob.setAttribute('aria-expanded', orderOpen ? 'true' : 'false');
+            ob.addEventListener('click', function(){ orderOpen = !orderOpen; ow.classList.toggle('m15-closed', !orderOpen); ob.classList.toggle('m15-i-open', orderOpen); ob.setAttribute('aria-expanded', orderOpen ? 'true' : 'false'); });
+            route.appendChild(ob); route.appendChild(ow);
+            ow.appendChild(mk('p', 'm15-sep', 'どちらの順番？'));
+            var od = mk('div', 'm15-tiles');
+            var a1 = mk('div', 'm15-tile m15-card-info', '📷→📍 撮ってから置く'); a1.appendChild(mk('span', 'm15-when', '上のボタンで図面を開き、「写真を選ぶ」で撮った写真を置く。ふつうはこちら'));
+            var a2 = mk('div', 'm15-tile m15-card-info', '📍→📷 先に置いて撮る'); a2.appendChild(mk('span', 'm15-when', '上のボタンで図面を開いてピンを置き、ピンの「📷 この位置で撮影」で撮る（先行ピン）'));
+            od.appendChild(a1); od.appendChild(a2); ow.appendChild(od);
+          }
+          if (afterShot) route.appendChild(mk('p', 'm15-keep', '📷 ' + (txt('complete-bar-name') || '今撮った写真') + 'の位置は、下の「撮影位置を図面に記録」で図面を選んで置けます'));
+        };
+        var bcr = $('map-breadcrumb'); if (bcr) bcr.style.display = 'none';   // 今いる所は、上の段階の表示で出す
+        var rTimer = null, rObs = new MutationObserver(function(){ clearTimeout(rTimer); rTimer = setTimeout(renderRoute, 30); });
+        mapCards.forEach(function(c){ if (c) rObs.observe(c, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true, characterData: true }); });
+        [$('complete-bar'), $('pinrec-banner'), pinBody].forEach(function(el){ if (el) rObs.observe(el, { attributes: true, attributeFilter: ['style'] }); });
+        renderRoute();
+      }
+      // ピンの詳細：「📷 この位置で撮影」を先頭の青いボタンに。見た目を変える操作は畳む。削除は赤い枠
+      var pdc = document.querySelector('#pin-detail-modal .pin-detail-content');
+      if (pdc) {
+        pdc.classList.add('m15-pd');
+        var looks = ['pin-detail-move', 'pin-detail-color', 'pin-detail-dir', 'pin-detail-len', 'pin-detail-thickness'].map($).filter(Boolean);
+        if (looks.length) {
+          var lt = btn('m15-i m15-pd-more', ''); pdc.insertBefore(lt, looks[0]);
+          var lc = true; var sl = function(){ looks.forEach(function(x){ x.classList.toggle('m15-hid', lc); }); setText(lt, 'ほかの操作（移動・色・向き・長さ・太さ） ' + (lc ? '▼' : '▲')); lt.setAttribute('aria-expanded', lc ? 'false' : 'true'); };
+          lt.addEventListener('click', function(){ lc = !lc; sl(); }); sl();
+          var pdm = $('pin-detail-modal'); if (pdm) new MutationObserver(function(){ if (!pdm.classList.contains('show') && !lc) { lc = true; sl(); } }).observe(pdm, { attributes: true, attributeFilter: ['class'] });   // 閉じたら畳み直す
+        }
+      }
+      // B3：先行ピンで撮っている間は、上の一覧を1行（先行ピンの行）にまとめ、「図面に記録 ▶」の行は出さない
+      var sfp = $('shoot-for-pin-banner');
+      if (sfp && steps215) {
+        var syncPin = function(){
+          var on = shownEl(sfp);
+          if (document.body.classList.contains('m15-pinshoot') !== on) {
+            document.body.classList.toggle('m15-pinshoot', on);
+            try { window.dispatchEvent(new Event('resize')); } catch (_) {}   // 隠した帯の高さを、上に貼り付く物の高さから外す（v3.214 の測り直し）
+          }
+          var row = $('m15-pin-row');
+          if (!on) {
+            if (row) row.parentNode.removeChild(row);
+            Array.prototype.forEach.call(steps215.querySelectorAll('.m1-row.m15-hid'), function(r){ r.classList.remove('m15-hid'); });
+            if (!steps215.querySelector('.m1-row')) document.body.removeAttribute('data-steps');
+            return;
+          }
+          Array.prototype.forEach.call(steps215.querySelectorAll('.m1-row'), function(r){ if (r.id !== 'm15-pin-row' && /図面に記録/.test(r.textContent)) r.classList.add('m15-hid'); });
+          var want = '📍 先行ピン「' + txt('shoot-for-pin-name') + '」用に撮影中 → 撮ると自動で紐づく';
+          if (!row) {
+            row = mk('div', 'm1-row'); row.id = 'm15-pin-row';
+            row.appendChild(mk('span', 'm1-name', want));
+            row.appendChild(btn('m1-act sub', 'やめる', function(){ press('shoot-for-pin-cancel'); }));
+            steps215.insertBefore(row, steps215.firstChild);
+          } else setText(row.firstChild, want);
+          if (!document.body.hasAttribute('data-steps')) document.body.setAttribute('data-steps', '1');
+        };
+        new MutationObserver(syncPin).observe(sfp, { attributes: true, attributeFilter: ['style'], childList: true, subtree: true, characterData: true });
+        new MutationObserver(function(){ if (shownEl(sfp)) syncPin(); }).observe(steps215, { childList: true });   // 上の一覧が作り直されたら、もう一度まとめる（2回目は何も変えない）
+        syncPin();
+      }
     } catch (e) {}
   })();
 
@@ -8311,6 +8984,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (fnEl) fnEl.focus();
       return;
     }
+    if (isOnlyNumPrefix(fnEl.value)) { alert(numPrefixStopMsg()); fnEl.focus(); return; }   // v3.215 ⑦
     var val = fnEl.value.trim();
     // 桁チェック：数字だけのファイル名のとき、決めた桁数と照合
     if (isDigitCheckOn() && /^[0-9]+$/.test(val)) {
@@ -8342,8 +9016,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   if (continuousEndBtn) {
     continuousEndBtn.addEventListener('click', function() {
+      var __prevNo = unitNumberOf(currentEquipP0());   // v3.215 ⑦
       endContinuousMode();
       advanceToNextEquipment('撮影を終了しました。次の設備の番号を入力して撮影してください。');
+      keepNumPrefix(__prevNo);
     });
   }
   // 連続撮影を終了して、その設備の代表写真のG.U.T評価へ進む（評価モードに入る）
@@ -8409,6 +9085,54 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   // 次の設備へ：入力とファイル名をクリアして最上部へ戻す
+  // v3.215 ⑦：1台を完了したら、前の番号の頭の2けたを番号の欄に残す（続きの4けただけ打てばよい）。
+  //   働くのは、桁数が6・桁の確かめが入・前の番号が数字6けた・「撮影後もファイル名を保持する」が切 のすべてのときだけ。覚えるのはメモリだけ。
+  //   会社・事業所を変えたら消す。欄が頭の2けただけのときは「まだ打っていない」と同じ扱いにして、撮影・写真なし登録・まとめて読み込みを止める
+  var numKeep = null;   // { prefix, client, site }
+  function numKeepField(k) { var e = document.querySelector('#fixedFields .field-row[data-key="' + k + '"] .field-input'); return e ? e.value.trim() : ''; }
+  function unitNumberOf(photo) {   // 設備の番号（番号の欄に打った値）
+    var f = photo && (photo.fields || []).find(function(x){ return x && x.key === '__filename__'; });
+    return f && f.value != null ? String(f.value).trim() : '';
+  }
+  function keepNumPrefix(prevNo) {
+    numKeep = null;
+    var fnEl = getFilename(); if (!fnEl) return;
+    var kf = $('keep-filename-check'); if (kf && kf.checked) return;
+    if (!isDigitCheckOn() || getDigitCount() !== 6 || !/^\d{6}$/.test(prevNo || '') || fnEl.value !== '') return;
+    numKeep = { prefix: prevNo.slice(0, 2), client: numKeepField('client'), site: numKeepField('site') };
+    fnEl.value = numKeep.prefix;
+    updatePreview();
+    if (typeof renderTracker === 'function') renderTracker();   // 上の工程の札も「まだ打っていない」に
+  }
+  function isOnlyNumPrefix(v) { return !!numKeep && String(v == null ? '' : v).trim() === numKeep.prefix; }
+  function numPrefixStopMsg() { return '番号が頭の2けた（' + (numKeep ? numKeep.prefix : '') + '）だけです。続きの4けたを打ってください'; }
+  function syncNumKeep() {   // updatePreview のたびに呼ぶ。消す決まりと、案内の文と、番号の欄の例（桁数に合わせる）
+    var fnEl = getFilename();
+    if (numKeep && fnEl) {
+      var only = fnEl.value === numKeep.prefix;
+      if (fnEl.value.indexOf(numKeep.prefix) !== 0) numKeep = null;
+      else if (numKeepField('client') !== numKeep.client || numKeepField('site') !== numKeep.site || !isDigitCheckOn() || getDigitCount() !== 6) { if (only) fnEl.value = ''; numKeep = null; }
+    }
+    if (fnEl) {
+      var n = isDigitCheckOn() ? getDigitCount() : 4;
+      var ph = n >= 4 ? (new Array(n).join('0') + '1や' + new Array(n - 2).join('0') + '123等の' + n + '桁の番号を入れてください。') : (n + '桁の番号を入れてください。');
+      if (fnEl.placeholder !== ph) fnEl.placeholder = ph;
+      var note = $('m1-numkeep-note'), show = !!numKeep && fnEl.value === numKeep.prefix;
+      if (show && !note) {
+        note = document.createElement('div'); note.id = 'm1-numkeep-note'; note.setAttribute('role', 'status');
+        var t = document.createElement('span'); t.className = 'm1-numkeep-text'; note.appendChild(t);
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = '頭の2けたを消して、6けたを打つ';
+        b.addEventListener('click', function(){ var f = getFilename(); if (f) { f.value = ''; numKeep = null; updatePreview(); try { f.focus(); } catch (e) {} } });
+        note.appendChild(b);
+        var row = fnEl.closest ? (fnEl.closest('.field-row') || fnEl.parentNode) : fnEl.parentNode; row.appendChild(note);
+      }
+      if (note) {
+        note.style.display = show ? '' : 'none';
+        var tx = show ? ('前の番号の頭の「' + numKeep.prefix + '」を残しました。続きの4けたを打ってください（6けたの確かめは今までどおり）') : '';
+        var te = note.querySelector('.m1-numkeep-text'); if (te && te.textContent !== tx) te.textContent = tx;
+      }
+    }
+  }
   function advanceToNextEquipment(msg) {
     if (evalBar) evalBar.style.display = 'none';
     var __cbar = $('complete-bar'); if (__cbar) __cbar.style.display = 'none';
@@ -8652,7 +9376,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     bar.style.display='flex';
     if(!st){
       var fnEl=getFilename(); var typed=fnEl?fnEl.value.trim():'';
-      bar.innerHTML='<span class="trk-name">'+(typed?('🔧 '+trkEsc(typed)):'設備を選んで撮影してください')+'</span>'+
+      bar.innerHTML='<span class="trk-name">'+(isOnlyNumPrefix(typed)?('番号はまだ打っていません（頭の「'+trkEsc(typed)+'」だけ）'):(typed?('🔧 '+trkEsc(typed)):'設備を選んで撮影してください'))+'</span>'+
         '<span class="trk-steps">'+trkChip('撮影',v==='shoot'?'cur':'todo')+trkChip('評価',v==='eval'?'cur':'todo')+trkChip('位置記録',v==='floorplan'?'cur':'todo')+'</span>';
       return;
     }
@@ -8694,6 +9418,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (completeDoneBtn) {
     completeDoneBtn.addEventListener('click', function(){
       var st=currentStages(); var nm=st?st.name:'';
+      var __prevNo = unitNumberOf(currentEquipP0());   // v3.215 ⑦：完了する設備の番号（次の設備へ進んだあと、頭の2けたを残すため）
       if (st && (!st.shoot || !st.eval || !st.pin)) {
         var miss=[]; if(!st.shoot)miss.push('撮影'); if(!st.eval)miss.push('評価'); if(!st.pin)miss.push('位置記録');
         // v3.199 S2：位置記録（任意）だけが抜けているときは「未完了」と言わない
@@ -8716,6 +9441,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return;
       }
       advanceToNextEquipment('✅ ' + (nm||'設備') + ' を完了しました。次の設備の番号を入力して撮影してください。');
+      keepNumPrefix(__prevNo);   // v3.215 ⑦
     });
   }
 
@@ -8806,6 +9532,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (fnEl) fnEl.focus();
         return;
       }
+      if (isOnlyNumPrefix(fnEl.value)) { alert(numPrefixStopMsg()); fnEl.focus(); return; }   // v3.215 ⑦
       bulkCamera.click();
     });
   }
@@ -8935,6 +9662,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var keepFilename = $('keep-filename-check');
       if ((!keepFilename || !keepFilename.checked) && ((getFilename() || {}).value || '') === bulkFnStart) {   // v3.206
         var fnEl2 = getFilename(); if (fnEl2) fnEl2.value = '';
+        keepNumPrefix(String(bulkFnStart).trim());   // v3.215 ⑦
       }
       if (memo.value === memoVal) memo.value = '';   // v3.206：取り込みの間に打ったメモは消さない
       if ([gInput ? gInput.value : '', uInput ? uInput.value : '', tInput ? tInput.value : ''].join('|') === bulkGutStart) {   // v3.206
@@ -17141,7 +17869,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       showToast('📷 撮影タブへ：番号 ' + num + ' をセットしました');
     } else if (pendingShootPin) {
-      showToast((sfpEndedCont ? '前の設備の「続けて撮る」を終えました。' : '') + '📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）');
+      showToast((sfpEndedCont ? '前の設備の「続けて撮る」を終えました。' : '') + (isOnlyNumPrefix((getFilename() || {}).value) ? '📷 撮影タブへ。番号の続きの4けたを打ってから撮ってください（撮ると先行ピンに自動で紐づきます）' : '📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）'));   // v3.215 ⑦
     } else {
       showToast('📷 撮影タブへ移動しました。番号を入力して撮影してください');
     }
