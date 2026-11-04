@@ -134,6 +134,33 @@ function getAllKeys(db,store){
     rq.onerror=function(){reject(rq.error||new Error('getAllKeys error'));};
   });
 }
+// v3.216 必達2：保存場所が20秒たっても開かないときは、待ち続けずに案内を出す（あとで開けたら、その接続は閉じる）
+var OPEN_LIMIT_MS=20000;
+function openDBWithLimit(maxTry){
+  var timedOut=false;
+  var p=openDBRetry(maxTry);
+  p.then(function(d){ if(timedOut){ try{ d.close(); }catch(_){} } }, function(){});
+  return Promise.race([p, new Promise(function(_,reject){ setTimeout(function(){ timedOut=true; var e=new Error('open timeout'); e.name='OpenTimeout'; reject(e); }, OPEN_LIMIT_MS); })]);
+}
+// v3.216 必達2：読めなかった（null）と、本当に0件（[]）を分けて返す
+function getAllChecked(db,store){
+  return new Promise(function(resolve){
+    if(!db.objectStoreNames.contains(store)){resolve([]);return;}
+    var tx,os,rq;
+    try{ tx=db.transaction(store,'readonly'); os=tx.objectStore(store); rq=os.getAll();}catch(e){resolve(null);return;}
+    rq.onsuccess=function(){resolve(rq.result||[]);};
+    rq.onerror=function(){resolve(null);};
+    tx.onabort=function(){resolve(null);};
+  });
+}
+// v3.216 必達2：作った保存のリンク（Blob の URL）を覚えておき、作り直すとき・ページを離れるときに片付ける
+var madeUrls=[];
+function revokeUrlsIn(holderId){
+  var h=document.getElementById(holderId); if(!h) return;
+  Array.prototype.forEach.call(h.querySelectorAll('a[href^="blob:"]'), function(a){ try{ URL.revokeObjectURL(a.href); }catch(_){} var i=madeUrls.indexOf(a.href); if(i>=0) madeUrls.splice(i,1); });
+  h.innerHTML='';
+}
+window.addEventListener('pagehide', function(){ madeUrls.forEach(function(u){ try{ URL.revokeObjectURL(u); }catch(_){} }); madeUrls=[]; });
 function getAllSafe(db,store){
   return new Promise(function(resolve){
     if(!db.objectStoreNames.contains(store)){resolve([]);return;}
@@ -148,22 +175,22 @@ function getAllSafe(db,store){
 $('runBtn').addEventListener('click', async function(){
   logEl.textContent='';
   $('runBtn').disabled=true;
+  revokeUrlsIn('saveLinks'); revokeUrlsIn('saveLinkJson'); chunkIndex=0; $('nextChunkBtn').disabled=false; $('chunkInfo').innerHTML=''; $('rescueStatus').textContent='';   // v3.216 必達2
   setResult('pend','…','保存場所を開いています…'); setBar(2);
   var db=null;
   try{
     log('保存場所（'+DB_NAME+'）を開いています…');
-    db=await openDBRetry(5);
+    db=await openDBWithLimit(5);   // v3.216 必達2
     log('開けました。ストア：'+Array.prototype.join.call(db.objectStoreNames,', '));
 
     // 写真のキー一覧を取得（getAllKeysは軽いので内部エラーになりにくい）
-    var keys=[];
+    var keys=[], readFailed=false, fail=0;   // v3.216 必達2：読めなかった印と、読めなかった写真の数
     try{ keys=await getAllKeys(db,'photos'); log('写真の見出し（キー）：'+keys.length+'件'); }
-    catch(e){ log('キー取得エラー：'+(e&&e.message?e.message:e)+' → 別方式を試します'); }
+    catch(e){ readFailed=true; log('キー取得エラー：'+(e&&e.message?e.message:e)+' → 別方式を試します'); }
 
     var photos=[];
     if(keys.length>0){
       setResult('pend','0 / '+keys.length,'写真を1枚ずつ取り出しています…');
-      var fail=0;
       for(var i=0;i<keys.length;i++){
         var r=await getOne(db,'photos',keys[i]);
         if(r.ok && r.value){ photos.push(r.value); }
@@ -184,7 +211,9 @@ $('runBtn').addEventListener('click', async function(){
     } else {
       // キーが取れない場合のフォールバック：getAllを一発
       log('キーが取れないため getAll を試します…');
-      photos=await getAllSafe(db,'photos');
+      var all=await getAllChecked(db,'photos');   // v3.216 必達2
+      if(all===null){ log('getAll も読めませんでした'); photos=[]; } else { photos=all; if(readFailed && all.length>0) readFailed=false; }
+      if(all===null) readFailed=true;
       log('getAll 結果：'+photos.length+'件');
     }
 
@@ -195,20 +224,29 @@ $('runBtn').addEventListener('click', async function(){
     if(mapdataRecs&&mapdataRecs.length){ for(var m=0;m<mapdataRecs.length;m++){ if(mapdataRecs[m]&&mapdataRecs[m].data){loadedMapData=mapdataRecs[m].data;break;} } }
 
     loadedPhotos=photos;
+    var pend=pendingShotsIn(loadedFloorplan).length;   // v3.216 必達2：書きかけの写真（記録の途中で止まった写真）
+    var pendNote=pend?('　書きかけの写真 '+pend+' 枚（記録の途中で止まった写真）は、STEP 2 の予備JSON に入ります。'):'';
     try{ db.close(); }catch(_){}
     setBar(100);
     var bldgs=(loadedMapData&&loadedMapData.buildings)?loadedMapData.buildings.length:0;
     if(photos.length>0){
-      setResult('ok',photos.length+' 件','写真を救い出せました。STEP 2で今すぐ保存してください。'+(bldgs?('（位置記録：棟'+bldgs+'）'):''));
+      setResult('ok',photos.length+' 件','写真を救い出せました'+(fail>0?('（読めなかった写真 '+fail+' 件）'):'')+'。STEP 2で今すぐ保存してください。'+(bldgs?('（位置記録：棟'+bldgs+'）'):'')+pendNote);   // v3.216 必達2：数のずれを書く
       $('rescueCard').classList.remove('hidden');
     } else if(bldgs>0){
-      setResult('ok','棟 '+bldgs,'写真は取り出せませんでしたが、位置記録が残っています。STEP 2で保存できます。');
+      setResult('ok','棟 '+bldgs,'写真は取り出せませんでしたが、位置記録が残っています。STEP 2で保存できます。'+pendNote);
+      $('rescueCard').classList.remove('hidden');
+    } else if(readFailed || fail>0){   // v3.216 必達2：0件ではなく、読めなかった
+      setResult('bad','—','写真を読み出せませんでした（0件ではなく、読めなかっただけです）。サイトデータは消さないでください。ほかのタブを閉じる→ブラウザを完全に終わらせる→端末を再起動、のあと、このページだけを開いてもう一度お試しください。'+pendNote);
+      if(pend) $('rescueCard').classList.remove('hidden');
+    } else if(pend>0){   // v3.216 必達2：写真は0件でも、書きかけの写真がある
+      setResult('ok','書きかけ '+pend+' 枚','写真の保存場所に写真はありませんが、記録の途中で止まった書きかけの写真が '+pend+' 枚あります。STEP 2 のいちばん下の「（予備）…JSONで保存」で保存してください（予備JSON に入っています）。');
       $('rescueCard').classList.remove('hidden');
     } else {
-      setResult('bad','0 件','読み出せるデータが見つかりませんでした。他タブを閉じる→完全終了→再起動の後、もう一度お試しください。');
+      setResult('bad','0 件','この保存場所には写真がありません（0件）。撮影に使ったのと同じブラウザ・同じアドレスで開いているかを確かめてください。');
     }
   }catch(e){
     log('エラー：'+(e&&e.message?e.message:e));
+    if(e && e.name==='OpenTimeout'){ setResult('bad','—','保存場所が20秒たっても開きません。写真はまだ消えていません。サイトデータは消さないでください。ほかのタブでアプリを開いていたら閉じて、もう一度［🛟 救出をはじめる］を押してください。直らないときは、ブラウザを完全に終わらせ、端末を再起動して、このページだけを開いてください。'); return; }   // v3.216 必達2
     setResult('bad','—','保存場所を開けませんでした。他タブを閉じる→ブラウザ完全終了→端末再起動の後、診断ページだけを開いて再度お試しください。');
   }finally{
     try{ if(db) db.close(); }catch(_){}
@@ -223,6 +261,8 @@ function sB(s){return new TextEncoder().encode(s);}
 function u16(n){return [n&0xFF,(n>>>8)&0xFF];}
 function u32(n){return [n&0xFF,(n>>>8)&0xFF,(n>>>16)&0xFF,(n>>>24)&0xFF];}
 function buildZip(files){var L=[],C=[],off=0;for(var i=0;i<files.length;i++){var nb=sB(files[i].name);var d=files[i].bytes;var crc=crc32(d);var h=[].concat(u32(0x04034b50),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(d.length),u32(d.length),u16(nb.length),u16(0));var lo=new Uint8Array(h.length+nb.length+d.length);lo.set(h,0);lo.set(nb,h.length);lo.set(d,h.length+nb.length);L.push(lo);var ce=[].concat(u32(0x02014b50),u16(20),u16(20),u16(0x0800),u16(0),u16(0),u16(0),u32(crc),u32(d.length),u32(d.length),u16(nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(off));var cb=new Uint8Array(ce.length+nb.length);cb.set(ce,0);cb.set(nb,ce.length);C.push(cb);off+=lo.length;}var cs=0;for(var j=0;j<C.length;j++)cs+=C[j].length;var co=off;var eo=[].concat(u32(0x06054b50),u16(0),u16(0),u16(files.length),u16(files.length),u32(cs),u32(co),u16(0));var tot=off+cs+eo.length;var out=new Uint8Array(tot),p=0;for(var a=0;a<L.length;a++){out.set(L[a],p);p+=L[a].length;}for(var b=0;b<C.length;b++){out.set(C[b],p);p+=C[b].length;}out.set(eo,p);return out;}
+// v3.216 必達2：アプリが floorplan に書く「書きかけの写真」（印つき）だけを選ぶ。形の違う物（旧図面）は数えない
+function pendingShotsIn(fp){ return (fp||[]).filter(function(r){ return r&&typeof r.key==='string'&&r.key.indexOf('camera-app-pending-shot:')===0&&r.kind==='camera-app-pending-shot-v1'&&r.photo&&typeof r.photo.dataUrl==='string'; }); }
 function dataUrlToBytes(u){var i=u.indexOf(',');var bin=atob(u.slice(i+1));var len=bin.length;var by=new Uint8Array(len);for(var k=0;k<len;k++)by[k]=bin.charCodeAt(k);return by;}
 // 救出ZIPのフォルダ階層を浅くする：client/site/building のうち「先頭から続く未分類／空」だけを取り除き、
 // 最初の意味ある値で止める。末尾側は触らない。
@@ -280,6 +320,7 @@ function stamp(){var d=new Date();var p=function(n){return (n<10?'0':'')+n;};ret
 function appendSaveLink(bytes,filename,mime,holderId){
   var blob=new Blob([bytes],{type:mime||'application/octet-stream'});
   var url=URL.createObjectURL(blob);
+  madeUrls.push(url);   // v3.216 必達2
   var holder=document.getElementById(holderId);
   var a=document.createElement('a');
   a.href=url; a.download=filename; a.textContent='⬇ '+filename+'（タップして保存）';
@@ -340,9 +381,13 @@ $('jsonBtn').addEventListener('click', function(){
     var dump={version:1,app:'camera-app',rescued:true,kind:'mapdata-only',exportedAt:new Date().toISOString(),mapData:mapDataWithPhotoKeysRescued(loadedMapData)};
     var hasFp=!!(loadedFloorplan&&loadedFloorplan.length);
     if(hasFp){ dump.kind='mapdata-and-floorplan'; dump.floorplan=loadedFloorplan; }
-    appendSaveLink(sB(JSON.stringify(dump)),(hasFp?'位置記録と旧図面_':'位置記録のみ_')+stamp()+'.json','application/json','saveLinkJson');
+    revokeUrlsIn('saveLinkJson');   // v3.216 必達2：前の予備JSON のリンクを片付ける
+    var nPend=pendingShotsIn(loadedFloorplan).length, nOld=hasFp?loadedFloorplan.length-nPend:0;   // v3.216 必達2：書きかけの写真と旧図面を分けて数える（JSON の中身は今までどおり）
+    appendSaveLink(sB(JSON.stringify(dump)),(nOld?'位置記録と旧図面':'位置記録')+(nPend?'と書きかけの写真':'')+(hasFp?'':'のみ')+'_'+stamp()+'.json','application/json','saveLinkJson');
     $('rescueStatus').innerHTML=hasFp
-      ? '✅ 予備JSONを用意しました。下のオレンジ枠を保存してください。<br><span class="warnline">※このファイルには位置記録のほかに<strong>旧図面データ</strong>も含まれます。人に渡すときはご注意ください。</span>'
+      ? '✅ 予備JSONを用意しました。下のオレンジ枠を保存してください。'
+        +(nPend?'<br><span class="warnline">※このファイルには、<strong>書きかけの写真 '+nPend+' 枚</strong>（記録の途中で止まった写真）が入っています。</span>':'')
+        +(nOld?'<br><span class="warnline">※このファイルには位置記録のほかに<strong>旧図面データ</strong>も含まれます。人に渡すときはご注意ください。</span>':'')
       : '✅ 位置記録（棟・マップ）の予備JSONを用意しました。下のオレンジ枠を保存してください。';
   }catch(e){ $('rescueStatus').textContent='⚠️ JSON保存エラー：'+(e&&e.message?e.message:e); }
 });

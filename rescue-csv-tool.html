@@ -147,14 +147,38 @@ function mergeRecord(dst, src){
     });
   }
 }
-function addPhotoRecord(p){
+// v3.216 必達3：評価・メモの項目（食い違ったら、あとの方を使う）
+var EVAL_KEYS = ['memo','gValue','uValue','tValue','tTarget','tBasis','guEdited','tChecked','clsCode','clsBig','clsMid','clsSmall','clsGInit','clsUInit'];
+var mergeNote = { split: 0, evalNewer: 0 };   // 1回の読み込みで数える（別の行に残した数・あとの評価・メモを使った数）
+// 同じ写真か：撮った時刻と大きさが両方わかって、どちらかが違えば別の写真。写真なしの記録（noPhoto）は、今までどおり補い合う
+function sameShot(a, b){
+  if (a.noPhoto || b.noPhoto) return true;
+  if (isEmpty(a.time) || isEmpty(b.time) || isEmpty(a.size) || isEmpty(b.size)) return true;
+  return String(a.time) === String(b.time) && String(a.size) === String(b.size);
+}
+function takeNewerEval(dst, src, srcAt){
+  var dstAt = dst.__exportedAt || '';
+  if (dstAt && srcAt && srcAt < dstAt) return;   // 前に読んだ方が新しい ZIP → 今の値のまま
+  var changed = false;
+  EVAL_KEYS.forEach(function(k){ if (!isEmpty(src[k]) && !isEmpty(dst[k]) && String(src[k]) !== String(dst[k])) { dst[k] = src[k]; changed = true; } });
+  if (changed) { mergeNote.evalNewer++; if (srcAt) dst.__exportedAt = srcAt; }
+}
+function addPhotoRecord(p, exportedAt){
   if (!p) return false;
   var k = keyOf(p);
-  if (byKey[k]) { mergeRecord(byKey[k], p); return false; } // 既存に補い合い（新規件数には数えない）
+  if (byKey[k]) {
+    var hit = null, list = byKey[k].__same || [byKey[k]];
+    for (var i = 0; i < list.length; i++) { if (sameShot(list[i], p)) { hit = list[i]; break; } }
+    if (hit) { takeNewerEval(hit, p, exportedAt || ''); mergeRecord(hit, p); return false; } // 既存に補い合い（新規件数には数えない）
+    mergeNote.split++;   // v3.216 必達3：同じ名前の別の写真 → まとめずに別の行に残す
+  }
   var copy = {};
   for (var kk in p) { if (Object.prototype.hasOwnProperty.call(p, kk)) copy[kk] = p[kk]; }
   if (Array.isArray(p.fields)) copy.fields = p.fields.map(function(f){ return { key: f.key, label: f.label, value: f.value }; });
-  byKey[k] = copy; photos.push(copy); return true;
+  copy.__exportedAt = exportedAt || '';
+  if (byKey[k]) { byKey[k].__same = byKey[k].__same || [byKey[k]]; byKey[k].__same.push(copy); }
+  else byKey[k] = copy;
+  photos.push(copy); return true;
 }
 
 /* ---- JSON台帳テキスト → レコード取り込み ---- */
@@ -166,7 +190,8 @@ function addPhotosFromLedgerText(txt, fname){
   var arr = (obj && obj.photos) ? obj.photos : (Array.isArray(obj) ? obj : null);
   if (!arr) return { ok:false, msg:fname + '：写真データ(photos)が見つかりません' };
   var added = 0;
-  arr.forEach(function(p){ if (addPhotoRecord(p)) added++; });
+  var exp = (obj && typeof obj.exportedAt === 'string') ? obj.exportedAt : '';
+  arr.forEach(function(p){ if (addPhotoRecord(p, exp)) added++; });
   return { ok:true, added:added, seen:arr.length };
 }
 
@@ -536,6 +561,7 @@ async function handleFiles(list){
   busy = true;
   $('status').textContent = '読み込み中…';
   var total = 0, errs = 0;
+  mergeNote.split = 0; mergeNote.evalNewer = 0;   // v3.216 必達3
   for (var i = 0; i < list.length; i++) {
     var f = list[i];
     var r = await readFile(f);
@@ -545,6 +571,8 @@ async function handleFiles(list){
   render();
   var s = '✅ ' + total + ' 件を新たに取り込みました（統合後の合計 ' + photos.length + ' 件）。';
   if (errs) s += '　⚠️ 読めなかったファイル：' + errs + ' 件';
+  if (mergeNote.split) s += '　⚠️ 名前が同じで、撮った時刻か大きさが違う写真が ' + mergeNote.split + ' 件ありました。まとめずに別の行に残しました（同じファイル名の行を確かめてください）。';
+  if (mergeNote.evalNewer) s += '　評価・メモが食い違う写真が ' + mergeNote.evalNewer + ' 件ありました。あとから書き出した ZIP の評価・メモを使いました。';
   $('status').textContent = s;
   busy = false;
 }
