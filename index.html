@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="m-One Genba App">
 <meta name="theme-color" content="#007aff">
-<title>m-One Genba App v3.216</title>
+<title>m-One Genba App v3.217</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2690,6 +2690,24 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   .app-bar span[style] { color: #575e68 !important; }
   details.input-help { background: #ffffff; border: 1px solid #767c86; }
   .badge-count.zero { display: none; }
+  /* v3.217 段4：自前の確認の部品（下から出るシート）。ピンの画面（1000）・削除の確かめ（2200）より上、知らせ（12000）より下 */
+  .m17-ask { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2300; background: rgba(0,0,0,0.55); display: flex; align-items: flex-end; justify-content: center; }
+  .m17-ask[hidden] { display: none; }
+  .m17-ask-sheet { background: #ffffff; width: 100%; max-width: 720px; box-sizing: border-box; border-radius: 16px 16px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom)); max-height: 85vh; overflow-y: auto; }
+  .m17-ask-title { margin: 0 0 8px; font-size: 20px; font-weight: 800; line-height: 1.4; color: #1d1d1f; }
+  .m17-ask-body { margin: 0 0 12px; font-size: 16px; line-height: 1.6; color: #3a3a3c; white-space: pre-line; }
+  .m17-ask-body[hidden] { display: none; }
+  .m17-ask-list { margin: 0; }
+  .m17-ask .m17-ask-btn { display: block; width: 100%; min-height: 56px; margin: 0 0 10px; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; text-align: left; cursor: pointer; }
+  .m17-ask .m17-ask-btn.m17-two { min-height: 72px; }
+  .m17-ask .m17-ask-btn.m17-main { background: #3460fb; color: #ffffff; border: 2px solid #3460fb; }
+  .m17-ask .m17-ask-btn.m17-danger { background: #ffffff; color: #b00020; border: 2px solid #c62828; }
+  .m17-ask .m17-ask-btn.m17-plain { background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; }
+  .m17-ask-do { display: block; font-size: 20px; font-weight: 700; line-height: 1.4; }
+  .m17-ask-then { display: block; margin-top: 2px; font-size: 16px; font-weight: 400; line-height: 1.5; }
+  .m17-ask .m17-ask-cancel { display: block; width: 100%; min-height: 56px; margin: 6px 0 0; padding: 10px 14px; box-sizing: border-box; border-radius: 12px; background: #f2f2f7; color: #1d1d1f; border: 1px solid #767c86; font-size: 18px; font-weight: 700; text-align: center; cursor: pointer; }
+  @media (orientation: landscape) { .m17-ask-sheet { border-radius: 16px; margin-bottom: 24px; } }
+  .badge-count:not(.zero)::before { content: '未保存 '; font-size: 16px; }   /* v3.217 段3：何の数かを書く */
 
   /* ---- A タブ：縦向きは画面の下に横一列で固定（ホームに戻る線の上）。横向きは今のまま左に縦一列 ---- */
   @media (orientation: portrait) {
@@ -2741,10 +2759,71 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   #m1-steps .m1-name { font-size: 18px; font-weight: 700; color: #1d1d1f; min-width: 120px; }
   #m1-steps .m1-what { flex: 0 0 100%; font-size: 16px; color: #3a3a3c; }
   #m1-steps .m1-go { margin-left: auto; }
-  .m1-step { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 999px; font-size: 16px; font-weight: 700; color: #575e68; background: #ffffff; border: 2px dotted #767c86; }
-  .m1-step.done { color: #17703a; background: #e3f4e8; border: 1px solid #17703a; }
-  .m1-step.cur { color: #1d1d1f; background: #eaf0ff; border: 3px solid #3460fb; }
-  .m1-step.skip { color: #3a3a3c; background: #f6f7f9; border: 1px solid #767c86; }
+  /* v3.217 段2：状態の札の色（全部の場所で同じ。● 今／✓ 済み／− なし／○ まだ／✎ 打ちかけ） */
+  :root { --m17-cur-fg: #1d1d1f; --m17-cur-bg: #eaf0ff; --m17-cur-bd: #3460fb; --m17-done-fg: #17703a; --m17-done-bg: #e3f4e8; --m17-none-fg: #8a3b00; --m17-none-bg: #fff3e6; --m17-none-bd: #b85c00;
+    --m17-todo-fg: #575e68; --m17-todo-bg: #ffffff; --m17-todo-bd: #767c86; --m17-draft-fg: #8a3b00; --m17-draft-bg: #fff8ee; --m17-draft-bd: #b85c00; }
+  .m1-step { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 999px; font-size: 16px; font-weight: 700; color: var(--m17-todo-fg); background: var(--m17-todo-bg); border: 2px dotted var(--m17-todo-bd); }
+  .m1-step.done { color: var(--m17-done-fg); background: var(--m17-done-bg); border: 1px solid var(--m17-done-fg); }
+  .m1-step.cur { color: var(--m17-cur-fg); background: var(--m17-cur-bg); border: 3px solid var(--m17-cur-bd); }
+  .m1-step.skip { color: var(--m17-none-fg); background: var(--m17-none-bg); border: 1px solid var(--m17-none-bd); }
+  /* v3.217 段7：位置記録の段階の下の帯（主・控え・評価を直す）。場所は動かさず、強く見せる class だけを替える */
+  /* v3.217 段17：ZIP を保存するまで「保存を確かめた」を押せなくする（色は変えず薄くする） */
+  button.m17-save-wait { opacity: 0.45; cursor: not-allowed; }
+  .m17-save-note { margin: 6px 0 0; font-size: 16px; font-weight: 700; line-height: 1.5; color: #8a3b00; }
+  /* v3.217 段15：評価の帯の下の小さな字（E2・E3）と、分類の上の1行（E5） */
+  #eval-bar .m17-skip-note { flex: 0 0 100%; margin: 4px 0 0; font-size: 16px; line-height: 1.4; color: #1d1d1f; text-align: center; }
+  .m17-cls-hint { margin: 0 0 8px; font-size: 16px; line-height: 1.5; color: #1d1d1f; }
+  /* v3.217 段19（小1）：図面の画面の完了は上の帯の右の端（主なボタンの色は .pin-editor-done のまま）。押せる高さ 48px 以上 */
+  #pin-editor-done { width: auto; flex-shrink: 0; min-height: 48px; margin: 0 0 0 12px; padding: 8px 14px; font-size: 16px; white-space: nowrap; }
+  /* v3.217 段18（小5）：評価の寄り道の1行 */
+  /* v3.217 段20（小6）：図面の画面の戻る。押せる高さ 48px 以上 */
+  #pin-editor-close { min-height: 48px; }
+  .m18-aside { margin-top: 8px; padding: 10px 12px; background: #fff5e6; border: 1px solid #6e6e73; border-radius: 10px; }
+  .m18-aside[hidden] { display: none; }
+  .m18-aside-text { margin: 0; font-size: 16px; font-weight: 700; line-height: 1.6; color: #1d1d1f; }
+  .m18-aside-back { display: block; width: 100%; min-height: 48px; margin: 8px 0 0; font-size: 16px; font-weight: 700; }
+  .m18-aside-back[hidden] { display: none; }
+  .m17-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  #complete-bar .m17-cb-back { flex: 0 0 auto; min-width: 150px; background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  #complete-bar .m17-pri { background: #3460fb; color: #ffffff; border: 2px solid #3460fb; font-weight: 700; }
+  #complete-bar .m17-sec { background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  /* v3.217 段10：縦の上の1行。横では出さない（右の欄が開いたまま） */
+  #m17-line { display: none; }
+  @media (orientation: portrait) {
+    #m17-line { display: flex; align-items: center; gap: 8px; position: sticky; z-index: 45; top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + var(--m1-ban-h, 0px));
+      box-sizing: border-box; min-height: 56px; max-height: 72px; overflow: hidden; padding: 6px 12px; background: #f6f7f9; border-bottom: 1px solid #767c86; }
+    body[data-steps] #m1-steps { display: none; }
+    body.m15-pinshoot[data-steps] #m1-steps { display: block; }   /* 先行ピンで撮っている間は、今までどおり先行ピンの行 */
+    body.m15-pinshoot #m17-line { display: none; }
+  }
+  #m17-line .m17-l-name { font-size: 18px; font-weight: 700; color: #1d1d1f; white-space: nowrap; }
+  #m17-line .m17-l-muted { font-size: 16px; color: #3a3a3c; }
+  #m17-line .m17-l-here { margin-left: auto; font-size: 16px; font-weight: 700; color: #3a3a3c; white-space: nowrap; }
+  #m17-line .m17-l-chip { margin: 0; padding: 2px 8px; }   /* v3.217 段21（小7）：1行に3つの札 */
+  #m17-line .m17-l-go { margin-left: auto; width: auto; min-height: 44px; margin-top: 0; margin-bottom: 0; padding: 6px 12px; font-size: 16px; white-space: nowrap; }
+  /* v3.217 段11：今の状態（横の右の欄・縦の板で同じ中身） */
+  .m17-s-no { margin: 0 0 4px; font-size: 22px; font-weight: 800; color: #1d1d1f; }
+  .m17-s-chips { margin: 0 0 6px; }
+  .m17-s-line { margin: 4px 0; font-size: 16px; line-height: 1.5; color: #1d1d1f; }
+  .m17-s-muted { margin: 4px 0; font-size: 16px; line-height: 1.5; color: #3a3a3c; }
+  .m17-s-row { margin: 4px 0; font-size: 16px; line-height: 1.5; color: #1d1d1f; }
+  .m17-s-btn { display: block; width: 100%; min-height: 56px; margin: 6px 0 0; font-size: 16px; }
+  .m17-s-btn.m17-s-sub { background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; }
+  /* v3.217 段12：縦の板（右から・覆い付き） */
+  .m17-panel { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 990; background: rgba(0,0,0,0.4); display: flex; justify-content: flex-end; }
+  .m17-panel[hidden] { display: none; }
+  .m17-panel-sheet { box-sizing: border-box; width: 360px; max-width: 90vw; height: 100%; overflow-y: auto; background: #ffffff; padding: 12px 16px calc(16px + env(safe-area-inset-bottom)); border-left: 1px solid #767c86; }
+  .m17-panel-head { display: flex; align-items: center; gap: 8px; margin: 0 0 8px; }
+  .m17-panel-title { flex: 1 1 auto; margin: 0; font-size: 20px; font-weight: 800; color: #1d1d1f; }
+  .m17-panel .m17-panel-close { flex: 0 0 auto; width: auto; min-height: 44px; margin: 0; padding: 6px 12px; background: #ffffff; color: #1d1d1f; border: 2px solid #6e6e73; font-size: 16px; }
+  #m17-line .m17-l-status { flex: 0 0 auto; width: auto; min-height: 44px; margin: 0; padding: 6px 12px; background: #ffffff; color: #1d1d1f; border: 2px solid #3460fb; font-size: 16px; font-weight: 700; white-space: nowrap; }
+  .m17-list-chips { margin: 2px 0 4px; }   /* v3.217 段13：撮影リストの行の札 */
+  .m17-chip { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 10px; border-radius: 999px; font-size: 16px; font-weight: 700; line-height: 1.5; white-space: nowrap; }
+  .m17-chip.m17-cur { color: var(--m17-cur-fg); background: var(--m17-cur-bg); border: 3px solid var(--m17-cur-bd); }
+  .m17-chip.m17-done { color: var(--m17-done-fg); background: var(--m17-done-bg); border: 1px solid var(--m17-done-fg); }
+  .m17-chip.m17-none { color: var(--m17-none-fg); background: var(--m17-none-bg); border: 1px solid var(--m17-none-bd); }
+  .m17-chip.m17-todo { color: var(--m17-todo-fg); background: var(--m17-todo-bg); border: 2px dotted var(--m17-todo-bd); }
+  .m17-chip.m17-draft { color: var(--m17-draft-fg); background: var(--m17-draft-bg); border: 2px dashed var(--m17-draft-bd); }
   #m1-steps .m1-here { margin-left: auto; font-size: 16px; font-weight: 700; color: #3a3a3c; }
   .m1-act { width: auto; min-height: 56px; margin: 0; padding: 8px 16px; border-radius: 4px; font-size: 18px; font-weight: 700; background: #3460fb; color: #ffffff; border: none; }
   .m1-act.sub { background: #ffffff; color: #1d1d1f; border: 2px solid #767c86; }
@@ -2828,6 +2907,32 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   #m15-sheet { display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 2050; max-height: 86vh; overflow-y: auto; -webkit-overflow-scrolling: touch; background: #ffffff; border-radius: 16px 16px 0 0; padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); box-shadow: 0 -6px 20px rgba(0,0,0,0.25); }
   #m15-sheet.show { display: block; }
   @media (orientation: landscape) { #m15-sheet { left: 132px; } }
+  /* v3.217 段24：横長で幅 1023 以下（iPad の画面分割の中途の幅）は、縦向きの並び。印 m24-narrow は JS が付け外しする（matchMedia）。
+     上の @media (orientation: …) の決まりは変えず、縦向きの決まりと同じ値を書き、横向きの決まりで付く値を元の値に戻す */
+  html.m24-narrow { --m1-tabh: 64px; --m1-tabw: 0px; }
+  html.m24-narrow .tab-bar { position: fixed; left: 0; right: 0; top: auto; bottom: 0; z-index: 70; width: auto; height: calc(64px + env(safe-area-inset-bottom)); margin: 0; padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); display: flex; flex-direction: row; flex-wrap: nowrap; gap: 6px; overflow-y: visible; border-radius: 0; border-right: none; border-top: 1px solid #767c86; border-bottom: none; box-shadow: 0 -2px 8px rgba(0,0,0,0.12); }
+  html.m24-narrow .tab { flex: 1 1 0; min-width: 0; min-height: 0; padding: 2px; }
+  html.m24-narrow body { padding-top: env(safe-area-inset-top); padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px); padding-left: env(safe-area-inset-left); }
+  html.m24-narrow .offline-bar { top: 0; }
+  html.m24-narrow .container { max-width: 640px; padding-bottom: calc(64px + env(safe-area-inset-bottom) + 24px + var(--m1-bbar-h, 0px)); }
+  html.m24-narrow #continuous-banner, html.m24-narrow #eval-bar, html.m24-narrow #complete-bar { left: 0; bottom: calc(64px + env(safe-area-inset-bottom) + 8px); }
+  html.m24-narrow #m1-backbar { left: 0; }
+  html.m24-narrow #toastHost { left: 0; }
+  html.m24-narrow body:not(.bottombar-on) #toastHost { bottom: calc(64px + env(safe-area-inset-bottom) + 72px); }   /* 下の帯が出ている間は body.bottombar-on #toastHost（上に出す）のまま */
+  html.m24-narrow #pin-undo-chip { left: 0; bottom: calc(64px + env(safe-area-inset-bottom) + 116px); }
+  html.m24-narrow body.bottombar-on { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 300px); }
+  html.m24-narrow body.bottombar-on[data-m1back] { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 24px); }
+  html.m24-narrow body.m1-typing .tab-bar { display: none; }
+  html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { bottom: calc(64px + env(safe-area-inset-bottom) + 16px); }
+  html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 104px); }
+  html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) .container { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px + 72px + 24px); }
+  html.m24-narrow .m17-ask-sheet { border-radius: 16px 16px 0 0; margin-bottom: 0; }
+  html.m24-narrow #m1-sheet, html.m24-narrow #m15-sheet { left: 0; }
+  html.m24-narrow #m17-line { display: flex; align-items: center; gap: 8px; position: sticky; z-index: 45; top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + var(--m1-ban-h, 0px));
+    box-sizing: border-box; min-height: 56px; max-height: 72px; overflow: hidden; padding: 6px 12px; background: #f6f7f9; border-bottom: 1px solid #767c86; }
+  html.m24-narrow body[data-steps] #m1-steps { display: none; }
+  html.m24-narrow body.m15-pinshoot[data-steps] #m1-steps { display: block; }
+  html.m24-narrow body.m15-pinshoot #m17-line { display: none; }
   .m15-sheet-title { margin: 0 0 8px; font-size: 20px; font-weight: 700; color: #1d1d1f; }
   .m15-sheet-p { margin: 0 0 8px; font-size: 16px; line-height: 1.6; color: #1d1d1f; }
   .m15-card-title { margin: 8px 0 8px; font-size: 18px; font-weight: 700; color: #1d1d1f; }
@@ -2977,34 +3082,37 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 m-One Genba App v3.216 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-11-05）</span></span>
+  <span>📷 m-One Genba App v3.217 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-11-11）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
 <!-- v3-150：画面上部に固定の「未保存」バナー（未保存>0のときだけ表示・スクロールしても常に見える・タップで保存タブへ） -->
 <div id="unsavedBar" class="unsaved-bar">
-  <button id="unsavedBarBtn" class="unsaved-bar-btn" type="button">⚠️ 未保存 <strong id="unsavedBarNum">0</strong> 枚 — タップして保存（バックアップ）</button>
+  <button id="unsavedBarBtn" class="unsaved-bar-btn" type="button">⚠️ 未保存 <strong id="unsavedBarNum">0</strong> 枚（ZIP にしていない）— 保存へ ▶</button>
 </div>
 
 <div id="continuous-banner" class="continuous-banner" style="display:none;">
   <span id="continuous-banner-name">次：_1</span>
   <button id="continuous-shoot-btn" class="cb-btn cb-shoot">📷 続けて撮る</button>
   <button id="continuous-retake-btn" class="cb-btn cb-retake">🔄 今の1枚を撮り直す</button>
-  <button id="continuous-eval-btn" class="cb-btn cb-eval">✅ 撮影を終了して G.U.T評価へ</button>
-  <button id="continuous-end-btn" class="cb-btn cb-end">評価せず終了</button>
+  <button id="continuous-eval-btn" class="cb-btn cb-eval">撮影を終了して G.U.T評価へ</button>
+  <button id="continuous-end-btn" class="cb-btn cb-end">評価しないで次へ</button>
 </div>
 
 <div id="eval-bar" class="eval-bar" style="display:none;">
   <p class="eval-bar-title">📊 <span id="eval-bar-name"></span> のG.U.T評価・メモを入力してください</p>
   <p class="eval-bar-sub">下の「G.U.T評価」「メモ」を入力したら、いちばん下の「✅ 評価を保存して位置記録へ」を押してください。</p>
   <button id="eval-save-btn" class="cb-btn cb-eval">✅ 評価を保存して位置記録へ</button>
-  <button id="eval-skip-btn" class="cb-btn cb-end">評価せずに位置記録へ</button>
+  <button id="eval-skip-btn" class="cb-btn cb-end">評価しないで位置記録へ</button>
+  <p id="m17-skip-note" class="m17-skip-note">打った評価はまだ記録されていません（「＜ 評価へ戻る」で戻って保存できます）</p>
 </div>
 
 <div id="complete-bar" class="eval-bar" style="display:none;">
-  <p class="eval-bar-title">📍 <span id="complete-bar-name"></span> の位置記録（任意）</p>
-  <p class="eval-bar-sub">図面にピンを置けます。終わったら「✅ この設備を完了して次へ」を押してください。位置記録が不要ならそのまま完了できます。</p>
-  <button id="complete-done-btn" class="cb-btn cb-eval">✅ この設備を完了して次へ</button>
+  <p class="eval-bar-title">📍 <span id="m17-cb-no"></span> の位置<span id="m17-cb-state">（まだ置いていません）</span><span id="complete-bar-name" class="m17-sr"></span></p>
+  <p class="eval-bar-sub" id="m17-cb-sub">「📍 図面に置く」で、撮った写真の位置を図面に残せます。置かずに次の設備へ進むこともできます。</p>
+  <button id="m17-cb-back" class="cb-btn m17-cb-back" type="button">＜ 評価へ戻る</button>
+  <button id="m17-cb-place" class="cb-btn m17-pri" type="button">📍 図面に置く</button>
+  <button id="complete-done-btn" class="cb-btn cb-eval m17-sec">ピンを置かずに次の設備へ</button>
 </div>
 
 <div id="pinrec-banner" class="pinrec-banner" style="display:none;">
@@ -3015,7 +3123,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <!-- v3-140：先行ピンの逆算ループ＝「📷この位置で撮影」から来たときの自動紐づけ案内（撮ると起点ピンへ自動でつながる）。 -->
 <div id="shoot-for-pin-banner" class="shoot-for-pin-banner" style="display:none;">
   <span class="shoot-for-pin-text">📍 先行ピン「<span class="sfp-name" id="shoot-for-pin-name"></span>」用に撮影中。<br>このまま撮ると、その写真が自動で紐づきます。</span>
-  <button id="shoot-for-pin-cancel" class="shoot-for-pin-cancel">解除</button>
+  <button id="shoot-for-pin-cancel" class="shoot-for-pin-cancel">ピンに付けるのを取り消す</button>
 </div>
 
 <div id="retake-banner" class="retake-banner" style="display:none;">
@@ -3024,6 +3132,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <button id="retake-banner-cancel" class="retake-banner-cancel">やめる</button>
 </div>
 
+<div id="m17-line" class="m17-line" role="status" aria-label="今の作業"></div>   <!-- v3.217 段10：縦の上の1行（中身は readNow から作る） -->
 <div class="container">
 
   <div class="safety-status" id="safetyStatus">
@@ -3037,7 +3146,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   </details>
 
   <div id="unsavedPill" class="unsaved-pill">
-    <span>⚠️ 未保存 <strong id="unsavedPillNum">0</strong> 枚 — こまめに保存してください</span>
+    <span>⚠️ 未保存 <strong id="unsavedPillNum">0</strong> 枚（ZIP にしていない）— こまめに保存してください</span>
   </div>
 
   <div class="tab-bar">
@@ -3084,7 +3193,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <button type="button" class="fn-pad-key" data-fnpad="9">9</button>
           <button type="button" class="fn-pad-key fn-pad-fn fn-pad-back" data-fnpad="back">⌫</button>
           <button type="button" class="fn-pad-key" data-fnpad="0">0</button>
-          <button type="button" class="fn-pad-key fn-pad-fn fn-pad-clear" data-fnpad="clear">全消去</button>
+          <button type="button" class="fn-pad-key fn-pad-fn fn-pad-clear" data-fnpad="clear">番号を全部消す</button>
         </div>
       </div>
     </div>
@@ -3123,7 +3232,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div class="bulk-divider"><span>または</span></div>
 
       <input type="file" id="bulk-camera" accept="image/*" multiple />
-      <button id="bulk-btn" class="bulk-btn">🖼️ 複数枚をまとめて読み込む</button>
+      <button id="bulk-btn" class="bulk-btn">🖼 撮った写真を選んで、この番号で記録する（複数可）</button>
       <p class="bulk-help desc-collapsible" data-desc="shoot-bulk" data-desc-label="複数まとめて読み込み">
         同じ設備を前方・左右・後方など複数アングルで撮る場合におすすめ。<br>
         ① 先にiPhone標準カメラで必要な枚数を撮影<br>
@@ -3152,6 +3261,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <p style="margin:0; font-size:14px; font-weight:700; color:#5d4200; line-height:1.6;">撮影リストの「📊 評価」から設備を選んでください。この画面で入力しても保存されません。</p>
         <button id="evalNoTargetListBtn" type="button" style="width:100%;margin:8px 0 0;padding:12px;border:none;border-radius:10px;background:#0058c7;color:#fff;font-size:15px;font-weight:700;cursor:pointer;">📋 撮影リストを開く</button>
       </div>
+      <!-- v3.217 段18（小5）：位置記録の段から左のタブで来たとき、打った値がまだ記録されていないことを知らせる（updateEvalAside18 で出し入れ） -->
+      <div id="m18-eval-aside" class="m18-aside" role="status" hidden>
+        <p id="m18-aside-text" class="m18-aside-text"></p>
+        <button id="m18-aside-back" class="secondary m18-aside-back" type="button">＜ 評価へ戻る</button>
+      </div>
     </div>
     <div class="card" id="cls-card">
       <p class="card-title">🏷 分類（任意）</p>
@@ -3163,6 +3277,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div id="cls-suggest" class="cls-suggest" style="display:none;"></div>
       <p class="cls-breadcrumb" id="cls-breadcrumb" style="display:none;"></p>
       <p class="cls-gu-note" id="cls-gu-note" style="display:none;"></p>
+      <p class="m17-cls-hint">小分類まで選ぶと、G・U の初めの値が入ります</p>
       <div id="cls-step-area">
         <div class="cls-level">
           <p class="cls-level-label">大分類</p>
@@ -3177,7 +3292,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <div class="cls-options" id="cls-small-row"></div>
         </div>
       </div>
-      <button id="cls-reset" class="cls-reset" style="display:none;">↩ 分類をやり直す（選択を消す）</button>
+      <button id="cls-reset" class="cls-reset" style="display:none;">↩ 分類を選び直す（G・U の値は残る）</button>
     </div>
 
     <div class="card" id="postshot-gut-card">
@@ -3190,7 +3305,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <p class="gut-info">G・U：上の「🏷 分類」を選ぶと初期値が自動で入ります<span class="gut-note">（手で変更できます）</span></p>
         <label class="gut-toggle">
           <input type="checkbox" id="gu-edit-check" />
-          <span>G・Uの初期値から変更を加える</span>
+          <span>G・U を自分で選ぶ</span>
         </label>
         <div id="gu-edit-area" class="gut-edit-area" style="display:none;">
           <div class="gut-select-block">
@@ -3220,7 +3335,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <span id="t-basis-display-text" class="t-basis-empty">未選択</span>
           </div>
           <div class="gut-row">
-            <label class="gut-label">評価対象</label>
+            <label class="gut-label">T の対象：</label>
             <div class="t-target-group">
               <label class="t-target-radio">
                 <input type="radio" name="t-target" value="equipment" checked />
@@ -3257,7 +3372,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <strong>使い方：</strong>📷撮影タブで番号を入れ、この評価タブで「📊 G.U.T評価」「📝 メモ」を入力してから、最後にこのボタンを押してください。写真なしでその設備を登録できます。登録後はそのまま「📍 位置記録」でピンも置けます。<br>
         あとで写真担当のZIPを「📥 データを読み込む」で合流すると、<strong>同じ番号の写真が自動で入ります</strong>（足りない情報を補い合います）。
       </p>
-      <button id="nophoto-btn" class="secondary" style="background:#0058c7;color:#fff;">🧾 入力した内容で写真なし登録</button>
+      <button id="nophoto-btn" class="secondary" style="background:#0058c7;color:#fff;">🧾 番号を打って、写真なしで登録する</button>
     </div>
 
   </div>
@@ -3433,8 +3548,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <li><strong>（あとで・別の日でもOK）</strong>保存した写真をアプリで元どおり使いたくなったら、アプリがちゃんと動く端末（このiPadのSafariでも、別の端末でもOK）でアプリを開き、「📥 データを読み込む」から、保存したZIPを<strong>順番にすべて</strong>選んで読み込みます。バラバラに保存したものが<strong>自動でひとつにまとまります</strong>。今すぐ読み込む必要はありません。</li>
         </ol>
         <p style="margin:0 0 6px 0;"><strong>救出ページ：</strong></p>
-        <a href="https://manyostudio.github.io/camera-app-v2/diag.html" target="_self" style="display:inline-block; word-break:break-all; background:#ff9500; color:#fff; padding:10px 14px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:8px;">🆘 救出ページを開く（diag.html）</a>
-        <p style="margin:0 0 12px 0; font-size:12px; color:#6e6e73; word-break:break-all;">https://manyostudio.github.io/camera-app-v2/diag.html</p>
+        <a href="diag.html" target="_self" style="display:inline-block; word-break:break-all; background:#ff9500; color:#fff; padding:10px 14px; border-radius:8px; text-decoration:none; font-weight:600; margin-bottom:8px;">🆘 救出ページを開く（diag.html）</a>
+        <p id="rescueDiagAddr" style="margin:0 0 12px 0; font-size:12px; color:#6e6e73; word-break:break-all;">このアプリと同じ場所の diag.html</p>
         <p style="margin:0; font-size:12px; color:#b71c1c;">⚠️ 救出ページは<strong>必ず同じブラウザ・同じ場所（URL）</strong>で開いてください。別のブラウザやプライベートタブで開くと、データがあっても「0件」に見えてしまいます。</p>
 
         <div style="margin-top:14px; border-top:1px solid #f0d9b5; padding-top:12px;">
@@ -3443,7 +3558,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <p style="margin:0 0 4px 0; font-weight:600;">▼ Safari をお使いのとき</p>
           <ol style="margin:0 0 10px 0; padding-left:20px;">
             <li>iPad本体の「設定」アプリ → <strong>Safari</strong> → <strong>詳細</strong> → <strong>Webサイトデータ</strong> と進みます。</li>
-            <li>検索に <strong>manyostudio</strong> と入れ、出てきた <strong>manyostudio.github.io</strong> を左へスワイプして削除します。</li>
+            <li>検索に <strong data-app-host="word">アドレスの最初の部分</strong> と入れ、出てきた <strong data-app-host="name">このアプリのアドレス</strong> を左へスワイプして削除します。</li>
             <li>Safari を一度終了し、もう一度このアプリのURLを開き直します（写真0枚で起動します）。</li>
           </ol>
           <p style="margin:0 0 4px 0; font-weight:600;">▼ Edge をお使いのとき</p>
@@ -3496,7 +3611,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <details class="more-info"><summary>①だけで保管するときの大切な注意</summary>
           <div class="more-body">① で作るファイルには、<strong>前回より後に撮った写真だけ</strong>が入ります。たとえば3回 ① をすると、ファイルが3つできて、写真は3つに分かれて入っています。<br>そのため、写真を全部もどすには、<strong>これまでの ① のファイルを1つも欠かさず、全部とっておく</strong>必要があります。1つでも消したり見失ったりすると、その分の写真はもどせません。<br>これを防ぐために、区切りのタイミングで ②（これまでの写真がまるごと入る保存）も残しておくと安心です。</div>
         </details>
-        <button id="exportIncBtn" class="success" style="background:#0058c7;">🆕 新しく撮った分だけバックアップ（未保存 <span id="exportIncCount">0</span> 枚）</button>
+        <button id="exportIncBtn" class="success" style="background:#0058c7;">🆕 新しく撮った <span id="exportIncCount">0</span> 枚を保存する（ZIP）</button>
         <div id="incLinks"></div>
       </div>
 
@@ -3506,7 +3621,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <details class="more-info"><summary>写真がとても多いときは</summary>
           <div class="more-body">写真が非常に多いと1つのファイルが大きくなり、作成に時間がかかったり途中で止まったりすることがあります。そのときは下の <strong>③区切りで小分け</strong>（全データをいくつかのファイルに分ける形）をお使いください。</div>
         </details>
-        <button id="exportBtn" class="success" style="background:#0058c7;">📦 すべてを1つのZIPにまとめてバックアップ</button>
+        <button id="exportBtn" class="success" style="background:#0058c7;">📦 すべてを1つの ZIP に保存する</button>
         <div id="exportLinks"></div>
         <button id="exportClearBtn" class="danger" style="display:none;">🗑 アプリ内データを削除（ZIPの保存を確かめたあと）</button>
       </div>
@@ -3514,10 +3629,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <div style="margin-top:16px; border-top:1px solid #eee; padding-top:14px;">
         <p style="font-weight:700; margin:0 0 4px; color:#6e6e73; font-size:14px;"><span style="display:inline-block; width:22px; height:22px; line-height:22px; text-align:center; background:#8e8e93; color:#fff; border-radius:50%; font-size:13px; margin-right:6px;">③</span>区切りで小分けにしてバックアップ</p>
         <p class="desc-collapsible" data-desc="exp-split" data-desc-label="③区切りで小分けにして保存" style="font-size:12px; color:#6e6e73; margin:0 0 6px; line-height:1.6;">区切り（午前後・昼前・午後・退勤前など）で、保存したいものを選んで保存します。<strong>写真が多いときは自動で小分け</strong>（いくつかのファイルに分かれる形）になります。② が重いときはこちら。</p>
-        <button id="splitToggleBtn" class="success" style="background:#0058c7;">🏁 区切りで小分けにしてバックアップ（押して選ぶ）</button>
+        <button id="splitToggleBtn" class="success" style="background:#0058c7;">🏁 区切りで小分けにして保存する（ZIP）（押して選ぶ）</button>
 
         <div id="splitPanel" style="display:none; margin-top:10px; background:#f7f7fa; border:1px solid #e5e5ea; border-radius:10px; padding:12px;">
-          <p style="font-size:12px; color:#6e6e73; margin:0 0 8px; line-height:1.6;">保存したいものにチェックを入れて、下の「選んだ分をバックアップ」を押してください。</p>
+          <p style="font-size:12px; color:#6e6e73; margin:0 0 8px; line-height:1.6;">保存したいものにチェックを入れて、下の「選んだ分を保存する（ZIP）」を押してください。</p>
 
           <label style="display:flex; align-items:center; gap:8px; padding:8px; border:1px solid #cfe0ff; background:#eef5ff; border-radius:8px; margin-bottom:8px; font-size:13px; font-weight:700;">
             <input type="checkbox" id="incUnsavedChk" style="flex:0 0 auto;">
@@ -3527,15 +3642,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <p style="font-size:12px; color:#6e6e73; margin:8px 0 4px;">これまでの「①新しく撮った分だけのバックアップ」の記録：</p>
           <div id="incLogList"></div>
 
-          <button id="incRebuildBtn" class="success" style="background:#0058c7; margin-top:6px;">🏁 選んだ分をバックアップ</button>
+          <button id="incRebuildBtn" class="success" style="background:#0058c7; margin-top:6px;">🏁 選んだ分を保存する（ZIP）</button>
           <div id="incRebuildLinks"></div>
-          <button id="incRebuildDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ すべてファイルに保存しました（未保存の表示をリセット）</button>
+          <button id="incRebuildDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ ファイルアプリへの保存を確かめた（未保存を0にする）</button>
 
           <div style="border-top:1px dashed #d0d0d5; margin-top:14px; padding-top:12px;">
             <p style="font-size:12px; color:#6e6e73; margin:0 0 6px; line-height:1.6;">または、<strong>これまでの全データ</strong>を一度にまとめて保存：</p>
-            <button id="exportSplitBtn" class="success" style="background:#0058c7; font-size:13px; padding:11px;">📦 全データを小分けにしてバックアップ</button>
+            <button id="exportSplitBtn" class="success" style="background:#0058c7; font-size:13px; padding:11px;">📦 全データを小分けにして保存する（ZIP）</button>
             <div id="splitLinks"></div>
-            <button id="splitDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ すべてのZIPをファイルに保存しました（未保存の表示をリセット）</button>
+            <button id="splitDoneBtn" class="secondary" style="display:none; margin-top:8px;">✅ ファイルアプリへの保存を確かめた（未保存を0にする）</button>
           </div>
         </div>
       </div>
@@ -3887,7 +4002,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <select id="pin-area-select" class="pin-select"></select>
           <label class="pin-select-label">マップ</label>
           <select id="pin-sheet-select" class="pin-select"></select>
-          <button id="pin-open-btn" class="pin-open-btn">📍 マップを開いてピンを打つ</button>
+          <button id="pin-open-btn" class="pin-open-btn">📍 図面を開いてピンを置く</button>
         </div>
         <p id="pin-no-data" class="pin-no-data" style="display:none;">
           まだマップ（図面・写真等）が登録されていません。<br>
@@ -3900,10 +4015,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="card" id="map-buildings-card">
       <p class="card-title">🏢 棟（建物）の登録情報一覧</p>
       <p class="desc-collapsible" data-desc="map-building" data-desc-label="棟（建物）の登録" style="font-size:12px;color:#6e6e73;margin:0 0 10px 0; line-height:1.6;">
-        撮影・記録する建物を「棟」として登録するところです。まず下の「＋ 棟（建物）の情報を登録する」を押して、棟の名前（例：A棟、本館）を登録してください。<br>
+        撮影・記録する建物を「棟」として登録するところです。まず下の「＋ 棟（建物）を足す」を押して、棟の名前（例：A棟、本館）を登録してください。<br>
         <strong>次の手順：</strong>登録した棟をタップ → 中にマップ（図面・写真等）を読み込む → マップの上にピンを打って撮影位置を記録、の順で進みます。フロアや面で分けたいときは「区分」も使えます。
       </p>
-      <button id="map-add-building-btn" class="add-field-btn">＋ 棟（建物）の情報を登録する</button>
+      <button id="map-add-building-btn" class="add-field-btn">＋ 棟（建物）を足す</button>
       <button id="map-add-buildings-from-photos-btn" class="add-field-btn" style="margin-top:6px;background:#fff3e0;border-color:#ffcc80;color:#8a5a00;">📷 写真の棟をまとめて登録</button>
       <p style="font-size:11px;color:#8a94a6;margin:6px 0 12px 0;line-height:1.5;">取り込んだ・撮影した写真の「棟」のうち、まだ未登録のものをまとめて作成します（その後、各棟に図面を読み込めます）。</p>
       <div id="map-buildings-list"></div>
@@ -3911,7 +4026,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     <!-- 第2階層：棟の中（区分リスト＋棟直下のマップリスト） -->
     <div class="card" id="map-inside-card" style="display:none;">
-      <button id="map-back-btn" class="secondary" style="margin-bottom:12px;">← 棟一覧へ戻る</button>
+      <button id="map-back-btn" class="secondary" style="margin-bottom:12px;">＜ 棟の一覧へ戻る</button>
       <p id="map-inside-title" class="card-title"></p>
 
       <div class="map-section-label">
@@ -3925,33 +4040,33 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <span>この棟に直接置くマップ</span>
       </div>
       <p class="map-section-hint">区分を使わない場合は、ここにマップ（図面・写真等）を直接読み込めます。図面が無いときは「✏️ 白紙から手描きで作る」でその場で描けます。</p>
-      <button id="map-add-sheet-btn" class="map-add-read">＋ マップを追加（図面・写真／複数・ZIP可）</button>
+      <button id="map-add-sheet-btn" class="map-add-read">＋ 図面を読み込む（写真・画像・ZIP／複数可）</button>
       <button id="map-add-blank-btn" class="map-add-blank">✏️ 白紙から手描きで作る</button>
       <div id="map-sheets-list"></div>
     </div>
 
     <!-- 第3階層：区分の中（マップリスト） -->
     <div class="card" id="map-area-card" style="display:none;">
-      <button id="map-area-back-btn" class="secondary" style="margin-bottom:12px;">← 戻る</button>
+      <button id="map-area-back-btn" class="secondary" style="margin-bottom:12px;">＜ 棟の中へ戻る</button>
       <p id="map-area-title" class="card-title"></p>
       <div class="map-section-label">
         <span>マップ</span>
       </div>
       <p class="map-section-hint">この区分の図面（平面図・立面図・写真など）を読み込みます。図面が無いときは「✏️ 白紙から手描きで作る」でその場で描けます。</p>
-      <button id="map-area-add-sheet-btn" class="map-add-read">＋ マップを追加（図面・写真／複数・ZIP可）</button>
+      <button id="map-area-add-sheet-btn" class="map-add-read">＋ 図面を読み込む（写真・画像・ZIP／複数可）</button>
       <button id="map-area-add-blank-btn" class="map-add-blank">✏️ 白紙から手描きで作る</button>
       <div id="map-area-sheets-list"></div>
     </div>
 
     <!-- マッププレビュー -->
     <div class="card" id="map-sheet-card" style="display:none;">
-      <button id="map-sheet-back-btn" class="secondary" style="margin-bottom:12px;">← 戻る</button>
+      <button id="map-sheet-back-btn" class="secondary" style="margin-bottom:12px;">＜ 棟の中へ戻る</button>
       <p id="map-sheet-title" class="card-title"></p>
       <p class="map-section-hint">このマップにピンを打ったり、打ったピンを確認・編集できます。ピンを打つ画面では「＋」「－」で拡大して細かく置けます。</p>
-      <button id="map-sheet-pin-btn" class="pin-open-btn" style="margin-bottom:12px;">📍 このマップでピンを打つ・編集する</button>
+      <button id="map-sheet-pin-btn" class="pin-open-btn" style="margin-bottom:12px;">📍 この図面でピンを置く・編集する</button>
       <p class="map-section-hint" style="margin-bottom:6px;">下地の差し替え（仮の図面でピンを打ってから、正式な図面に入れ替えられます。ピンはそのまま残ります）</p>
-      <button id="map-swap-base-btn" class="map-swap-base">🖼 下地（図面）を差し替える</button>
-      <button id="map-undo-base-btn" class="map-undo-base" style="display:none;">↩ 下地を元に戻す</button>
+      <button id="map-swap-base-btn" class="map-swap-base">🖼 図面の絵を替える（ピンは残る）</button>
+      <button id="map-undo-base-btn" class="map-undo-base" style="display:none;">↩ 図面の絵を前に戻す</button>
       <p class="map-section-hint" style="margin-bottom:6px;">マッププレビュー（全体）</p>
       <div class="sheet-thumb-box">
         <img id="map-sheet-img" alt="マップ" />
@@ -3993,9 +4108,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
 <div id="pin-editor" class="pin-editor" style="display:none;">
   <div class="pin-editor-bar">
-    <button id="pin-editor-close" class="pin-editor-close">← 戻る</button>
+    <button id="pin-editor-close" class="pin-editor-close">＜ 図面の一覧へ戻る（置いた物は残る）</button>
     <span id="pin-editor-title" class="pin-editor-title">マップ</span>
     <span id="pin-editor-count" class="pin-editor-count">ピン0</span>
+    <button id="pin-editor-done" class="pin-editor-done">✅ 置いた物を残して閉じる</button>   <!-- v3.217 段19（小1）：上の帯の右の端（戻るは左の端） -->
   </div>
   <div class="pin-editor-body">
   <div class="pin-editor-stage" id="pin-editor-stage">
@@ -4028,7 +4144,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
   <div id="placement-banner" class="placement-banner">
     <span class="placement-info" id="placement-info"></span>
-    <button class="placement-skip" id="placement-skip">この写真はスキップ</button>
+    <button class="placement-skip" id="placement-skip">この写真は置かない</button>
     <button class="placement-finish" id="placement-finish">終了</button>
   </div>
   <div class="pin-label-mode-bar">
@@ -4089,9 +4205,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
   </div>
   <div class="pin-editor-tools">
-    <button id="draw-mode-btn" class="draw-mode-btn">✏️ マップに手描きする</button>
+    <button id="draw-mode-btn" class="draw-mode-btn">✏️ 図面に手描きする</button>
     <button id="vector-mode-btn" class="draw-mode-btn" style="background:#0058c7;">📐 直線で作図（CAD用）</button>
-    <button id="layer-mode-btn" class="draw-mode-btn" style="background:#0058c7;">🗂 レイヤー（下地の重ね合わせ）</button>
+    <button id="layer-mode-btn" class="draw-mode-btn" style="background:#0058c7;">🗂 別の図面を重ねる</button>
     <button id="place-from-photo-btn" class="place-from-photo-btn">📷 写真を選んでピンを置く</button>
     <div class="marker-type-row" id="marker-type-row">
       <button class="marker-type-btn selected" data-type="pin">📍 ピン</button>
@@ -4102,7 +4218,6 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <button id="toggle-captions-btn" class="toggle-captions-btn">🏷 番号ラベル：表示中（タップで隠す）</button>
     <div class="pin-color-row" id="pin-color-row"></div>
     <p class="pin-editor-tools-note" id="pin-editor-mode-note">色を選んでマップをタップ → 置くもの（ピン／写真／メモ／矢印）を選べます</p>
-    <button id="pin-editor-done" class="pin-editor-done">✅ 完了して閉じる</button>
   </div>
   </div><!-- /.pin-editor-rail -->
   </div><!-- /.pin-editor-body -->
@@ -4112,10 +4227,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="pin-sheet-card">
       <p class="pin-sheet-title">この場所に何を置きますか？</p>
       <button type="button" class="pin-sheet-btn" data-act="pin">📍 ピンを置く（写真なし）</button>
-      <button type="button" class="pin-sheet-btn" data-act="photo">📷 写真を紐づけてピンを置く</button>
+      <button type="button" class="pin-sheet-btn" data-act="photo">📷 写真を付けてピンを置く</button>
       <button type="button" class="pin-sheet-btn" data-act="memo">📝 メモを置く</button>
       <button type="button" class="pin-sheet-btn" data-act="arrow">➡️ 矢印を置く</button>
-      <button type="button" class="pin-sheet-cancel" data-act="cancel">キャンセル</button>
+      <button type="button" class="pin-sheet-cancel" data-act="cancel">やめる</button>
     </div>
   </div>
   <div id="pin-photo-picker" class="pin-sheet-overlay" style="display:none;">
@@ -4140,7 +4255,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <button id="layer-add-btn" class="layer-add-btn">＋ レイヤーを追加（画像を重ねる）</button>
     <div id="layer-list" class="layer-list"></div>
     <div class="layer-tb-foot">
-      <button id="layer-done-btn" class="layer-done-btn">✅ 閉じる</button>
+      <button id="layer-done-btn" class="layer-done-btn">✅ 重ねた物を残して閉じる</button>
     </div>
   </div>
   <input type="file" id="layer-add-input" accept="image/*" style="display:none;" />
@@ -4168,11 +4283,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div class="layer-align-actions">
       <button class="layer-nudge-btn layer-align-undo" id="layer-align-undo" title="1つ戻す（Ctrl+Z）" disabled>↩ 戻す</button>
       <button class="layer-nudge-btn layer-align-room" id="layer-align-room" title="ハンドルが画面の端で止まって引けないときに押します。図面全体を小さく表示して、枠の外まで引けるようにします（もう一度押すと元の表示に戻ります）">🔍➖ 図面を小さく表示</button>
-      <button class="layer-align-reset" id="layer-align-reset">リセット</button>
+      <button class="layer-align-reset" id="layer-align-reset">位置を初めに戻す</button>
     </div>
     <div class="layer-align-foot">
-      <button class="layer-align-cancel" id="layer-align-cancel">✕ キャンセル</button>
-      <button class="layer-align-done" id="layer-align-done">✅ この位置で確定</button>
+      <button class="layer-align-cancel" id="layer-align-cancel">動かした位置を捨てる</button>
+      <button class="layer-align-done" id="layer-align-done">✅ この位置を残して閉じる</button>
     </div>
   </div>
 
@@ -4194,9 +4309,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="vector-mini-btn" id="vector-measure-btn" style="display:none;background:#0058c7;color:#fff;">📏 実測mmを入力</button>
       <button class="vector-mini-btn" id="vector-sel-delete" style="display:none;background:#ff3b30;color:#fff;">🗑 選択した線を削除</button>
       <button class="vector-mini-btn" id="vector-undo-btn">↩︎ 1つ戻す</button>
-      <button class="vector-mini-btn" id="vector-clear-btn">🗑 全消し</button>
+      <button class="vector-mini-btn" id="vector-clear-btn">🗑 直線を全部消す…</button>
       <button class="vector-cancel-btn" id="vector-cancel-btn">閉じる</button>
-      <button class="vector-done-btn" id="vector-done-btn">✅ 保存して閉じる</button>
+      <button class="vector-done-btn" id="vector-done-btn">✅ 作図を残して閉じる</button>
     </div>
     <div class="vector-row" style="border-top:1px solid #cfe6da; padding-top:8px; margin-top:2px;">
       <button class="vector-mini-btn" id="vector-export-btn" style="background:#0058c7;color:#fff;">⬇ CAD用に書き出し</button>
@@ -4210,7 +4325,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="draw-tool-btn selected" id="draw-pen-btn" data-tool="pen">✏️ ペン</button>
       <button class="draw-tool-btn" id="draw-eraser-btn" data-tool="eraser">🩹 消しゴム</button>
       <button class="draw-tool-btn" id="draw-undo-btn">↩️ 一筆もどす</button>
-      <button class="draw-tool-btn" id="draw-clear-btn">🗑 全消し</button>
+      <button class="draw-tool-btn" id="draw-clear-btn">🗑 描いた物を全部消す…</button>
     </div>
     <div class="draw-width-row" id="draw-width-row">
       <span class="draw-width-label">太さ</span>
@@ -4220,8 +4335,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div class="pin-color-row" id="draw-color-row"></div>
     <div class="draw-done-row">
-      <button class="draw-cancel-btn" id="draw-cancel-btn">✕ 描くのをやめる</button>
-      <button class="draw-done-btn" id="draw-done-btn">✅ 描き終わり（保存）</button>
+      <button class="draw-cancel-btn" id="draw-cancel-btn">描いた物を捨てる</button>
+      <button class="draw-done-btn" id="draw-done-btn">✅ 描いた物を残して閉じる</button>
     </div>
   </div>
 </div>
@@ -4249,7 +4364,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <!-- v3-118：③を「劣化なし／あり」の2分岐に分離（二者択一を視覚化・表示のみ） -->
         <div class="t-helper-branch t-helper-branch-no">
           <p class="t-helper-branch-label">劣化・損傷が <strong>ない</strong> とき</p>
-          <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">✓ 見当たらない（良好）</button>
+          <button type="button" id="t-helper-nodeg" class="t-helper-nodeg">劣化なしで T を決める</button>
         </div>
         <div class="t-helper-or"><span>または</span></div>
         <div class="t-helper-branch t-helper-branch-yes">
@@ -4258,10 +4373,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           <input type="text" id="t-helper-search" class="t-helper-search" placeholder="🔍 検索（例: 外壁・配管・漏水・クラック）" />
           <p id="t-helper-search-status" class="t-helper-search-status"></p>
           <div id="t-helper-cats"></div>
-          <button type="button" id="t-helper-confirm" class="t-helper-confirm" disabled>✓ この内容で確定（劣化あり → T4/T5）</button>
+          <button type="button" id="t-helper-confirm" class="t-helper-confirm" disabled>選んだ劣化で T を決める</button>
         </div>
       </div>
-      <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">キャンセル</button>
+      <button type="button" class="pin-sheet-cancel" id="t-helper-cancel">やめる</button>
     </div>
   </div>
 
@@ -4311,8 +4426,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </label>
       <button type="button" id="imp-tidy" class="imp-tidy-btn" style="display:none;"></button>
       <div id="imp-list" class="pin-photo-list" style="max-height:42vh;"></div>
-      <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#0058c7;text-align:center;">この内容で取り込む</button>
-      <button type="button" class="pin-sheet-cancel" id="imp-cancel">キャンセル</button>
+      <button type="button" class="pin-sheet-btn" id="imp-confirm" style="background:#0058c7;text-align:center;">✅ 選んだ 0 枚を取り込む</button>
+      <button type="button" class="pin-sheet-cancel" id="imp-cancel">やめる</button>
     </div>
   </div>
 
@@ -4337,8 +4452,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <div id="place-select-visible" class="place-select-visible"></div>
     <div id="place-select-grid" class="place-select-grid"></div>
     <div class="place-select-footer">
-      <button id="place-select-cancel" class="place-select-cancel">← 戻る（選ばない）</button>
-      <button id="place-select-start" class="place-select-start" disabled>✅ 選んだ 0 枚でピン留め開始</button>
+      <button id="place-select-cancel" class="place-select-cancel">＜ 図面へ戻る</button>
+      <button id="place-select-start" class="place-select-start" disabled>選んだ 0 枚でピンを置き始める</button>
     </div>
   </div>
 </div>
@@ -4347,12 +4462,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="pin-detail-content">
     <p class="pin-detail-title" id="pin-detail-title">ピン</p>
     <div class="pin-detail-photo" id="pin-detail-photo"></div>
-    <button id="pin-detail-link" class="secondary">🔗 写真を紐づける／変更する</button>
+    <button id="pin-detail-link" class="secondary">🔗 写真を付ける／変更する</button>
     <button id="pin-detail-autolink" class="secondary" style="display:none;"></button>
     <button id="pin-detail-rename" class="secondary" style="display:none;">✏️ 名称を変更する</button>
     <button id="pin-detail-memo" class="secondary">📝 メモを編集する</button>
     <button id="pin-detail-shoot" class="secondary" style="display:none;">📷 この位置で撮影</button>
-    <button id="pin-detail-eval" class="secondary" style="display:none;">🟢 GUT評価</button>
+    <button id="pin-detail-eval" class="secondary" style="display:none;">🟢 G.U.T評価</button>
     <button id="pin-detail-move" class="secondary">✋ 位置を移動する</button>
     <button id="pin-detail-color" class="secondary">🎨 色を変える</button>
     <div id="pin-detail-dir" class="pin-dir-row" style="display:none;">
@@ -4364,10 +4479,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     </div>
     <div id="pin-detail-len" class="pin-dir-row" style="display:none;">
       <span class="pin-dir-label">長さ</span>
-      <button class="pin-len-btn" data-len="regular" title="標準（現状）">レギュラー</button>
-      <button class="pin-len-btn" data-len="semilong" title="やや長い">セミロング</button>
-      <button class="pin-len-btn" data-len="long" title="長い">ロング</button>
-      <button class="pin-len-btn" data-len="superlong" title="とても長い">超ロング</button>
+      <button class="pin-len-btn" data-len="regular" title="標準（現状）">短い</button>
+      <button class="pin-len-btn" data-len="semilong" title="やや長い">ふつう</button>
+      <button class="pin-len-btn" data-len="long" title="長い">長い</button>
+      <button class="pin-len-btn" data-len="superlong" title="とても長い">とても長い</button>
     </div>
     <div id="pin-detail-thickness" class="pin-thickness-row" style="display:none;">
       <span class="pin-thickness-label">太さ</span>
@@ -4376,7 +4491,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       <button class="pin-thick-btn" data-thick="10">太</button>
     </div>
     <button id="pin-detail-close" class="success">閉じる</button>
-    <button id="pin-detail-delete" class="danger">🗑 削除する</button>
+    <button id="pin-detail-delete" class="danger">🗑 このピンを消す（写真は消えない）</button>
   </div>
 </div>
 
@@ -4385,11 +4500,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <p class="pin-detail-title">紐づける写真を選ぶ</p>
     <label class="pin-select-label">候補から選ぶ</label>
     <select id="photo-picker-select" class="pin-select"></select>
-    <button id="photo-picker-select-apply" class="pin-open-btn" style="margin:10px 0 0 0;">この写真を紐づける</button>
+    <button id="photo-picker-select-apply" class="pin-open-btn" style="margin:10px 0 0 0;">この写真を付ける</button>
     <p style="font-size:11px;color:#8e8e93;margin:14px 0 6px 0;">または一覧から選ぶ（絞り込み可）</p>
     <input type="text" id="photo-picker-search" class="ref-search" placeholder="🔍 番号・ファイル名で絞り込み（例: 123）" />
     <div id="photo-picker-list" class="photo-picker-list"></div>
-    <button id="photo-picker-none" class="secondary">紐づけを外す</button>
+    <button id="photo-picker-none" class="secondary">付けた写真を外す</button>
     <button id="photo-picker-close" class="success">閉じる</button>
   </div>
 </div>
@@ -4420,8 +4535,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   <div class="recovery-content">
     <p class="recovery-title">🔢 番号の確認</p>
     <p id="digit-modal-text" style="font-size: 14px; color: #1d1d1f; margin: 0 0 16px 0; line-height: 1.6; white-space: pre-wrap;"></p>
-    <button id="digit-yes-btn" class="success">はい、これで撮影する</button>
-    <button id="digit-no-btn" class="secondary">いいえ、入力し直す</button>
+    <button id="digit-yes-btn" class="success">この番号で撮る</button>
+    <button id="digit-no-btn" class="secondary">番号を打ち直す</button>
   </div>
 </div>
 
@@ -4431,8 +4546,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     <p class="backup-title">写真を保存しましょう</p>
     <div class="backup-count">未保存の写真が <span class="num" id="backupModalNum">0</span> 枚あります</div>
     <p class="backup-sub" id="backupModalSub">この写真はまだこの端末の中だけにあります。ZIPで保存して、安全な場所（クラウド等）に保存してください。</p>
-    <button id="backupModalIncBtn" class="backup-btn-go" style="background:#0058c7;">🆕 ① 新しく撮った分だけバックアップ</button>
-    <button id="backupModalGoBtn" class="backup-btn-go">🏁 ③ 全データを小分けにしてバックアップ</button>
+    <button id="backupModalIncBtn" class="backup-btn-go" style="background:#0058c7;">🆕 ① 新しく撮った分を保存する</button>
+    <button id="backupModalGoBtn" class="backup-btn-go">🏁 ③ 小分けにして保存する</button>
     <button id="backupModalLaterBtn" class="backup-btn-later">あとで（10分後にまた知らせる）</button>
   </div>
 </div>
@@ -4453,13 +4568,29 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 </div>
 
 <!-- v3-139：アプリ内データ削除の専用確認モーダル（背景タップでは閉じない／「削除する」確定後のみ削除） -->
+<!-- v3.217 段12：縦の板（今の状態）。初めから置いておき、開くときは hidden を外すだけ -->
+<div id="m17-panel" class="m17-panel" role="dialog" aria-modal="true" aria-labelledby="m17-panel-title" hidden>
+  <div class="m17-panel-sheet">
+    <div class="m17-panel-head"><p id="m17-panel-title" class="m17-panel-title">今の状態</p><button id="m17-panel-close" class="m17-panel-close" type="button">閉じる ✕</button></div>
+    <div id="m17-panel-body" class="m17-panel-body"></div>
+  </div>
+</div>
+<!-- v3.217 段4：自前の確認の部品（初めから置いておく。開くときは hidden を外すだけ） -->
+<div id="m17-ask" class="m17-ask" role="dialog" aria-modal="true" aria-labelledby="m17-ask-title" hidden>
+  <div class="m17-ask-sheet">
+    <p id="m17-ask-title" class="m17-ask-title"></p>
+    <p id="m17-ask-body" class="m17-ask-body"></p>
+    <div id="m17-ask-list" class="m17-ask-list"></div>
+    <button id="m17-ask-cancel" class="m17-ask-cancel" type="button">やめる（何も変えない）</button>
+  </div>
+</div>
 <div id="deleteGuardModal" class="delguard-modal">
   <div class="delguard-content">
     <div class="delguard-icon">🗑</div>
     <p class="delguard-title">ファイルアプリで保存を確認しましたか？</p>
     <p class="delguard-body" id="deleteGuardBody">撮影済みデータをこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。</p>
     <div class="delguard-warn" id="deleteGuardWarn" style="display:none;"></div>
-    <button id="deleteGuardConfirm" class="delguard-del">🗑 保存を確認した。削除する</button>
+    <button id="deleteGuardConfirm" class="delguard-del">🗑 保存を確かめたので、写真を全部消す</button>
     <button id="deleteGuardCancel" class="delguard-cancel">やめる（削除しない）</button>
   </div>
 </div>
@@ -4585,7 +4716,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   // v3.199 M12：位置記録の ZIP・ピン入り画像の ZIP 専用の保存のボタン（全部保存の appendSaveLinkApp・showSaveGuide は変えない）
   //   利用者が押して保存する（待ったあとにプログラムで保存を始めない：地雷1）。名前は文字として出す（地雷9）
-  //   「ファイルに保存しました」は本当に保存したときだけ：iPad＝共有が成功したとき・「✅ ファイルに保存できた（確認した）」を押したとき／PC＝オレンジの枠を押したとき
+  //   「ファイルに保存しました」は本当に保存したときだけ：iPad＝共有が成功したとき・「✅ ファイルアプリへの保存を確かめた」→［確かめた］のとき（v3.217 段17）／PC＝オレンジの枠を押したとき
   //   iPad でオレンジの枠（ダウンロード）を押しただけのときは、保存できたか分からないので onUnsure で伝える
   function appendConfirmedSaveApp(holder, blob, filename, onSaved, onUnsure) {
     if (!holder) return null;
@@ -4631,10 +4762,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       holder.appendChild(a);
       okBtn = document.createElement('button');
       okBtn.type = 'button';
-      okBtn.textContent = '✅ ファイルに保存できた（確認した）';
+      okBtn.textContent = SAVE_OK17;   // v3.217 段17：言い方を1つに
       okBtn.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:14px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:15px; cursor:pointer;';
-      okBtn.addEventListener('click', markSaved);
+      okBtn.addEventListener('click', function(){ if (okBtn.disabled) return; askSavedOk17().then(function(y){ if (y) markSaved(); }); });   // v3.217 段17：押す前に確かめる
       holder.appendChild(okBtn);
+      waitDownload17(okBtn, [a]);   // v3.217 段17：ZIP を保存する枠を押すまで押せない
     } else {
       holder.appendChild(a);
     }
@@ -4708,10 +4840,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           // 共有が使えない端末：誤確定を避けつつ、保存できたら“自分で”未保存を消せる明示ボタンを用意。
           var cb = document.createElement('button');
           cb.type = 'button';
-          cb.textContent = '✅ ファイルに保存できた（未保存の数字を消す）';
+          cb.textContent = SAVE_OK17;   // v3.217 段17：言い方を1つに
           cb.style.cssText = 'display:block; width:100%; margin:8px 0 0; padding:14px; background:#0058c7; color:#fff; border:none; border-radius:12px; font-weight:700; font-size:15px;';
-          cb.addEventListener('click', function(){ markSavedState(); cb.style.display = 'none'; });
+          cb.addEventListener('click', function(){ if (cb.disabled) return; askSavedOk17().then(function(y){ if (y) { markSavedState(); cb.style.display = 'none'; } }); });   // v3.217 段17：押す前に確かめる
           holder.appendChild(cb);
+          waitDownload17(cb, [a]);   // v3.217 段17：ZIP を保存する枠を押すまで押せない
         }
         try { pulseTarget.scrollIntoView({ behavior: 'smooth', block: 'center' }); } catch(e){}
         // v3-138：ZIP生成完了後に「保存ガイド」モーダルを必ず1枚挟む（保存し忘れ／保存前削除を物理的に防ぐ）。
@@ -4784,12 +4917,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // 事前案内（このあと確認が出ます）→①②③の番号手順→DLリンク→事後の明示確認「✅保存できた」。
     // 未保存リセットは「✅保存できた」を押したときだけ（ダウンロードを押しただけでは確定しない＝“保存したつもり”を作らない）。
     function renderDownloadFallback() {
-      if (subEl) subEl.textContent = 'ダウンロードで保存します。下の手順どおりに進め、保存できたら必ず最後の「✅ 保存できた」を押してください（押すまで右上の未保存の数字は消えません）。';
+      if (subEl) subEl.textContent = 'ダウンロードで保存します。下の手順どおりに進め、保存できたら必ず最後の「✅ ファイルアプリへの保存を確かめた」を押してください（押すまで右上の未保存の数字は消えません）。';
       if (stepsEl) {
         stepsEl.innerHTML =
           '<div class="saveguide-step"><span class="sg-num">①</span><span>下の「⬇ ダウンロードして保存」を押す</span></div>' +
           '<div class="saveguide-step"><span class="sg-num">②</span><span>「ダウンロードしますか？」と出たら、必ず「ダウンロード」を押す</span></div>' +
-          '<div class="saveguide-step"><span class="sg-num">③</span><span>保存できたら「✅ 保存できた（確認した）」を押す</span></div>';
+          '<div class="saveguide-step"><span class="sg-num">③</span><span>保存できたら「✅ ファイルアプリへの保存を確かめた」を押す</span></div>';
         stepsEl.style.display = '';
       }
       actions.innerHTML = '';
@@ -4806,9 +4939,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var ok = document.createElement('button');
       ok.type = 'button';
       ok.className = 'saveguide-confirm';
-      ok.textContent = '✅ ファイルに保存できた（確認した）';
-      ok.addEventListener('click', function(){ showSavedState(); });   // 明示確認のみで確定
+      ok.textContent = SAVE_OK17;   // v3.217 段17：言い方を1つに
+      ok.addEventListener('click', function(){ if (ok.disabled) return; askSavedOk17().then(function(y){ if (y) showSavedState(); }); });   // 明示確認のみで確定（v3.217 段17：押す前に確かめる）
       actions.appendChild(ok);
+      waitDownload17(ok, [dl]);   // v3.217 段17：ZIP を保存する枠を押すまで押せない
     }
 
     // 端末が files 共有に対応しているか
@@ -4923,7 +5057,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.216）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.217）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -4976,7 +5110,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'位置記録・図面', q:'ピンに出る番号は設備番号ですか？', a:'写真を紐づけたピンは、原則<strong>写真の設備番号</strong>で表示されます。書き出した<strong>ピン入り図面の画像</strong>でも、アプリと<strong>同じ角丸のフラッグ</strong>で表示され、桁の多い番号（例「07550」）もはみ出さずに収まります。手で名前を変えたピンはその名前が出ます。' },
 
     // ── 5. 保存（バックアップ）（💾保存） ──
-    { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>① 新しく撮った分だけバックアップ</strong>、または全データのバックアップ（<strong>② 1つのZIP</strong> か <strong>③ 小分け</strong>）を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、右上の未保存の数字が減ります（iPad では、共有で「ファイル」に保存するか、「ファイルに保存できた」を押したときに減ります。③ では、全部のZIPを保存したあとに「✅ すべてのZIPをファイルに保存しました」を押したときに減ります）。' },
+    { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>① 新しく撮った分だけバックアップ</strong>、または全データのバックアップ（<strong>② 1つのZIP</strong> か <strong>③ 小分け</strong>）を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、右上の未保存の数字が減ります（iPad では、共有で「ファイル」に保存するか、「✅ ファイルアプリへの保存を確かめた」を押したときに減ります。③ では、全部のZIPを保存したあとに「✅ すべてのZIPをファイルに保存しました」を押したときに減ります）。' },
     { cat:'保存（バックアップ）', q:'「新しく撮った分」「区切りでまとめて」「1つのZIP」の違いは？', a:'<strong>① 新しく撮った分だけ</strong>＝前回保存のあとに撮った分だけ（軽い。作業の合間や毎日の終わりに）。<br><strong>② 1つのZIP</strong>＝これまでの全データを1つのファイルにまとめる（区切りや現場の終わりに、全部を1つで残したいときに）。<br><strong>③ 全データを小分け</strong>＝これまでの全データを、いくつかのファイルに分けて保存（写真がとても多いときや、② が途中で止まるときに）。' },
     { cat:'保存（バックアップ）', q:'いつ保存すればいいですか？', a:'<strong>こまめに「① 新しく撮った分」</strong>を保存し、<strong>区切り（午前・昼・午後・退勤前など）や現場の終わりには、全データ（② か ③）</strong>も保存しておくと、全部がそろった控えが手元に残ります。電波が悪くても<strong>保存自体はオフラインでできます</strong>。' },
     { cat:'保存（バックアップ）', q:'保存したファイルはどこに入りますか？', a:'タップして保存するとき、「ファイル」アプリの保存先を選べます。SharePointなどの共有フォルダにも保存できます。' },
@@ -5021,7 +5155,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 10. その他 ──
     { cat:'その他', q:'「保存したつもり」で消えてしまうことはない？', a:'オレンジの枠を<strong>タップするまで</strong>、未保存の数字は0になりません。ただし、数字は「タップした」印で、本当に保存できたかまでは分かりません。<strong>消す前には、「ファイル」アプリでZIPがあるかを目で確かめてください。</strong>' },
     { cat:'その他', q:'「✅ この端末に記録しました」と一瞬出るのは何ですか？', a:'写真なし登録・評価の保存・図面へのピン設置などが、<strong>この端末の中に記録された</strong>合図です。安心して次の操作に進めます。ただし、<strong>まだ端末の外（ファイル）には保存されていません。</strong>外に残すには「💾 保存」タブでバックアップします（そのときは「✅ ファイルに保存しました」と出ます）。' },
-    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、未保存の赤い数字が減ります（iPad では、共有で「ファイル」に保存するか、「ファイルに保存できた」を押したときに減ります）。' },
+    { cat:'その他', q:'オレンジの枠が長押しで保存できない', a:'長押しは<strong>機種によって効かないことが分かっています</strong>。オレンジの保存枠は<strong>「タップ」で保存</strong>してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、未保存の赤い数字が減ります（iPad では、共有で「ファイル」に保存するか、「✅ ファイルアプリへの保存を確かめた」を押したときに減ります）。' },
 
     // ===== v3-143 追加Q&A（全12カテゴリを網羅拡充・実機FB反映） =====
     // ── はじめ・設定（追加） ──
@@ -5045,7 +5179,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // ── 位置記録・図面（追加） ──
     { cat:'位置記録・図面', q:'マップに使う図面（平面図）の写真はどう用意すればいい？', a:'紙の図面を<strong>正面から明るく撮る</strong>か、PDF・画像を用意します。<strong>📥 読込</strong>タブの「🖼 図面・写真からマップを作る」でまとめて取り込めます。文字や記号が読める程度の解像度があれば十分です（大きすぎる画像は動作が重くなることがあります）。' },
     { cat:'位置記録・図面', q:'ピンの色は何の意味ですか？使い分けたいです', a:'色に決まった意味はなく、<strong>自由に使い分け</strong>られます（例：済＝緑、要確認＝赤 など）。ピンの詳細の<strong>🎨 色を変える</strong>で変更でき、色でしぼり込みもできます。チームで<strong>色のルールをそろえておく</strong>と見やすくなります。' },
-    { cat:'位置記録・図面', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 削除する</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
+    { cat:'位置記録・図面', q:'間違えて置いたピンを消したい／たくさん消したい', a:'置いた<strong>直後</strong>なら「↩ 直前の配置を取り消す」で1件取り消せます。あとから消すときは、ピンをタップ→詳細の<strong>🗑 このピンを消す（写真は消えない）</strong>です。<strong>まとめて一括削除する機能はありません</strong>（誤削除を防ぐため）。数が多いときは落ち着いて1つずつ確認しながら消してください。' },
     { cat:'位置記録・図面', q:'図面を新しいものに差し替えたいです', a:'新しい図面で<strong>別のマップを作る</strong>運用がおすすめです。<strong>古いマップのピンは新しい図面へ自動では移りません</strong>ので、必要なピンは新しいマップに置き直してください。差し替え前に<strong>全部のバックアップ（💾 保存タブの②か③）</strong>をしておくと安心です。' },
     { cat:'位置記録・図面', q:'写真がないピンに設備番号（ID）だけ付けたい', a:'マップ編集で <strong>「ピンを置く（写真なし）」</strong> を選ぶと、<strong>設備ID（番号）を入力</strong>してからピンを置けます（空欄のままなら通し番号が入ります）。あとで写真を撮って紐づけることもできます。' },
     { cat:'位置記録・図面', q:'移動ツールを選ばずにピンを動かしたい', a:'ピンを<strong>長押し（約0.35秒）</strong>すると、移動ツールを選んでいなくてもそのまま<strong>ドラッグで移動</strong>できます。<strong>サッとタップ</strong>したときは詳細が開きます。' },
@@ -5409,6 +5543,16 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
 
+  // v3.217 段27：手順の文に、今開いている住所の名前（location.hostname）を入れる（字は textContent）。word は名前の最初の部分（検索に入れる字）。
+  //   名前が取れないとき（ファイルで開いたときなど）は、書いてある字のまま。失敗しても何も止めない
+  function fillHost27(root) {
+    try {
+      var h = location.hostname || '';
+      if (!h || !root || !root.querySelectorAll) return;
+      Array.prototype.forEach.call(root.querySelectorAll('[data-app-host]'), function(el){ el.textContent = el.getAttribute('data-app-host') === 'word' ? h.split('.')[0] : h; });
+    } catch (_) {}
+  }
+
   function formatGeoStatus(geo) {
     if (!geo) return '';
     if (geo.error) {
@@ -5419,7 +5563,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
           + '<div class="geo-err-section">✨【かんたん版】このアプリの画面から直接許可（おすすめ）</div>'
           + '<ol class="geo-err-steps">'
-          + '<li>このアプリを Safari で開いている画面の <strong>一番上のアドレスバー</strong>（manyostudio.github.io と書かれているところ）を見てください</li>'
+          + '<li>このアプリを Safari で開いている画面の <strong>一番上のアドレスバー</strong>（<span data-app-host="name">このアプリのアドレス</span> と書かれているところ）を見てください</li>'
           + '<li>アドレスバーの <strong>左端</strong> に <strong>「ぁあ」</strong> という小さなアイコンがあります。それをタップします</li>'
           + '<li>メニューの中から <strong>「Webサイトの設定」</strong> をタップ</li>'
           + '<li><strong>「位置情報」</strong> をタップして <strong>「許可」</strong> を選びます</li>'
@@ -5966,7 +6110,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
 
   // ===== 異常検知＆救出導線（事故対策）=====
-  var DIAG_URL = 'https://manyostudio.github.io/camera-app-v2/diag.html';
+  // v3.217 段27：救出ページの住所は、今開いている住所と同じ場所の diag.html（丸ごとの住所）。古い住所で開けば今までと同じ住所になる。作れないときは同じ場所を指す 'diag.html'
+  var DIAG_URL = (function(){ try { return new URL('diag.html', location.href).href; } catch (_) { return 'diag.html'; } })();
+  try { var rescueAddr27 = document.getElementById('rescueDiagAddr'); if (rescueAddr27) rescueAddr27.textContent = DIAG_URL; } catch (_) {}   // 🆘 の欄の住所の字
+  fillHost27(document);   // 🆘 の欄の Safari の手順の文に、今の住所の名前を入れる
   function showRescueWarning(reason) {
     try {
       if (!safetyStatus) return;
@@ -6661,6 +6808,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   
   function updatePreview() {
     try { syncNumKeep(); } catch (e) {}   // v3.215 ⑦⑥
+    try { var np17 = $('nophoto-btn'), nv17 = (getFilename() || {}).value || ''; nv17 = String(nv17).trim(); if (isOnlyNumPrefix(nv17)) nv17 = '';   // v3.217 段15（E11）：番号をボタンに書く
+      var nt17 = nv17 ? '🧾 番号 ' + nv17 + ' を写真なしで登録する' : '🧾 番号を打って、写真なしで登録する'; if (np17 && np17.textContent !== nt17) np17.textContent = nt17; } catch (e) {}
     var fields = getAllFields();
     var parts = [];
     fields.forEach(function(f) {
@@ -7058,6 +7207,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   // 保存済みかどうかを「写真のキー（会社/事業所/棟/ファイル名）」で管理する。
   // これにより、古い写真を消さず累積していく現場の使い方でも、増えた分だけを正確に保存できる。
   function photoPathKey(p) { return (p.client || '') + '/' + (p.site || '') + '/' + (p.building || '') + '/' + (p.filename || ''); }
+  // v3.217 段25（R3）：ZIP を作ったときの画像を控え（鍵 → 画像）、保存済みの印を付ける前に、そのあと撮り直して画像が替わった写真の鍵を外す（未保存のまま残す）
+  function zipShots25(list) { var m = {}; (list || []).forEach(function(p){ if (p) m[photoPathKey(p)] = p.dataUrl; }); return m; }
+  function keysSameShot25(keys, shots) {
+    var now = zipShots25(photos);
+    return (keys || []).filter(function(k){ return !(k in shots) || !(k in now) || now[k] === shots[k]; });
+  }
   var backedUpKeys = (function() {
     try { var r = localStorage.getItem('backedUpKeys'); var a = r ? JSON.parse(r) : []; return new Set(Array.isArray(a) ? a : []); }
     catch (e) { return new Set(); }
@@ -7172,6 +7327,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var u = getUnsavedCount();
     if (u <= 0) return;
     $('backupModalNum').textContent = u;
+    var ib17 = $('backupModalIncBtn'); if (ib17) ib17.textContent = '🆕 ① 新しく撮った ' + u + ' 枚を保存する';   // v3.217 段15（X11）
     var mins = minutesSinceBackup();
     var sub = 'この写真はまだこの端末の中だけにあります。ZIPで保存して、安全な場所（クラウド等）に保存してください。';
     if (mins >= 1) sub = '前回の保存から約' + mins + '分が経過しています。' + sub;
@@ -7475,6 +7631,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (isOnlyNumPrefix(fnEl.value)) { alert(numPrefixStopMsg()); fnEl.focus(); return; }   // v3.215 ⑦
     var val = fnEl.value.trim();
     if (isShortNumStop(val)) { alert(shortNumStopMsg(val)); fnEl.focus(); return; }   // v3.216 必達5
+    if (evalBarShown17() && evalModeBaseId != null) {   // v3.217 段6 (b)（S04）：評価の途中の「写真なし登録」は、先に聞く（評価の帯が無いときは今までどおり）
+      var ev17 = photos.find(function(p){ return p.id === evalModeBaseId; }), en17 = ev17 ? equipNo17(ev17) : '';
+      var k17 = await askSheet({
+        title: '今は ' + en17 + ' の評価の途中です',
+        body: '番号の欄の「' + val + '」を、写真なしで登録しようとしています。評価の画面の今の値は ' + en17 + ' の物なので、' + val + ' には付けません。\n' + en17 + ' の評価は、評価の帯の「✅ 評価を保存して…」で保存します。',
+        choices: [{ key: 'reg', label: '🧾 ' + val + ' を写真なしで登録する', sub: 'G・U・T・分類・メモは付けずに登録します（' + en17 + ' の評価の欄はそのまま）', kind: 'plain' }]
+      });
+      if (k17 !== 'reg') return;
+    }
     // 桁チェックONなら数字を撮影と同じ桁にそろえる（写真担当のファイル名と一致させ、あとで合流できるようにする）
     if (isDigitCheckOn() && /^[0-9]+$/.test(val)) {
       var dc = getDigitCount();
@@ -7492,6 +7657,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var cl = sanitize(clientField ? clientField.value : '') || '未分類';
     var st = sanitize(siteField ? siteField.value : '') || '未分類';
     var bl = sanitize(buildingField ? buildingField.value : '') || '未分類';
+    var own17 = evalFormFor17(evalKeyOf17(sanitize(clientField ? clientField.value : ''), sanitize(siteField ? siteField.value : ''), sanitize(buildingField ? buildingField.value : ''), val)), cls17 = own17 ? selectedCls : null;   // v3.217 段15a（DEC-0094）：欄の値が別の番号の物なら付けない
     if (photos.some(function(o){ return o.client===cl && o.site===st && o.building===bl && o.filename===newFilename; }) || shotInFlightNamed(cl, st, bl, newFilename)) {   // v3.206：記録中の名前も見る
       alert('この番号「' + newFilename + '」は既に登録されています。一覧で確認してください。'); return;
     }
@@ -7499,23 +7665,25 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var eqInFlight = addShotInFlight({ client: cl, site: st, building: bl, filename: newFilename });   // v3.206：登録の間、この名前を記録中に入れる
     var guEditCheck = $('gu-edit-check'), tCheck = $('t-check');
     var gInput = $('g-value'), uInput = $('u-value'), tInput = $('t-value'), memoEl = $('memo');
-    var guEdited = guEditCheck && guEditCheck.checked;
-    var tChecked = tCheck && tCheck.checked;
+    var guEdited = own17 && guEditCheck && guEditCheck.checked;
+    var tChecked = own17 && tCheck && tCheck.checked;
+    if (guEdited && String(gInput ? gInput.value : '').trim() === '' && String(uInput ? uInput.value : '').trim() === '') guEdited = false;   // v3.217 段6（DEC-0080）：値の無い印は写さない
+    if (tChecked && String(tInput ? tInput.value : '').trim() === '') tChecked = false;   // v3.217 段6（DEC-0080）
     var photo = {
       client: cl, site: st, building: bl,
       filename: newFilename,
       dataUrl: BLANK_IMG, noPhoto: 1,
       size: 0, time: new Date().toISOString(),
       fields: fields.map(function(f){ return { key:f.key, label:f.label, value:f.value, included:f.included, folder:f.folder }; }),
-      memo: memoEl ? memoEl.value : '',
+      memo: (own17 && memoEl) ? memoEl.value : '',
       gValue: guEdited ? gutSaveValue(gInput.value) : '',
       uValue: guEdited ? parseGutValue(uInput.value) : '',
       tValue: tChecked ? parseGutValue(tInput.value) : '',
       tTarget: tChecked ? getTTarget() : '',
       tBasis: tChecked ? (tHelperBasis || '') : '', // v3-117：段階B＝T補助で選んだ観察項目（手動Tは空欄）
       guEdited: guEdited ? 1 : 0, tChecked: tChecked ? 1 : 0,
-      clsCode: selectedCls?selectedCls.code:'', clsBig: selectedCls?selectedCls.big:'', clsMid: selectedCls?selectedCls.mid:'',
-      clsSmall: selectedCls?selectedCls.small:'', clsGInit: selectedCls?selectedCls.g:'', clsUInit: selectedCls?selectedCls.u:'',
+      clsCode: cls17?cls17.code:'', clsBig: cls17?cls17.big:'', clsMid: cls17?cls17.mid:'',
+      clsSmall: cls17?cls17.small:'', clsGInit: cls17?cls17.g:'', clsUInit: cls17?cls17.u:'',
       geoLat: '', geoLng: '', geoAccuracy: '', geoError: ''
     };
     try {
@@ -7532,7 +7700,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var info = $('continuous-info');
       if (info) { info.style.display = 'block'; info.innerHTML = '🧾 <strong>' + saved.filename + '</strong> を写真なしで登録しました（評価・位置記録だけ）。<br>このまま「📍 位置記録」でピンを置けます。あとで写真担当のZIPと合流すると写真が入ります。'; }
       showPinrecBanner();
-      clearGutMemoInputs();
+      if (own17) clearGutMemoInputs();   // v3.217 段15a：評価中の設備の欄は残す
       var keepFilename = $('keep-filename-check');
       if ((!keepFilename || !keepFilename.checked) && fnEl.value === eqFnStart) { fnEl.value = ''; keepNumPrefix(String(eqFnStart).trim()); }   // v3.206：登録の間に打ち直した番号は消さない／v3.215 ⑦
       updatePreview();
@@ -7571,6 +7739,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         return String(a.filename).localeCompare(String(b.filename), 'ja');
       });
     }
+    var chipsOf17 = (typeof listChips17 === 'function') ? listChips17() : null;   // v3.217 段13：行の札（1回だけ数える）
     photoList.innerHTML = '';
     if (list.length === 0) {
       photoList.innerHTML = '<div class="empty">「' + (se ? se.value.trim() : '') + '」に一致する写真はありません</div>';
@@ -7607,6 +7776,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         name.appendChild(ph);
       }
       info.appendChild(name);
+      if (chipsOf17) { try { var cw17 = chipsOf17(p); if (cw17) info.appendChild(cw17); } catch (_) {} }   // v3.217 段13：状態の札
       
       var path = document.createElement('div');
       path.className = 'photo-path';
@@ -7691,7 +7861,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       del.textContent = '×';
       del.onclick = async function() {
         // v3.197 L7：confirm() の代わりに、未保存の数が出る確認画面を通す
-        return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: p.filename, onConfirm: async function() {
+        return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, one: true, name: p.filename, onConfirm: async function() {
           await deletePhotoFromDB(p.id);
           forgetBackedUpKey(p);
           var idx = photos.findIndex(function(ph) { return ph.id === p.id; });
@@ -7746,6 +7916,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         evalBtn.textContent = '📊 評価';
         evalBtn.style.cssText = 'width:100%;margin:0;border:none;border-radius:8px;padding:7px 10px;font-size:12px;font-weight:600;cursor:pointer;background:#0058c7;color:#fff;';
         evalBtn.onclick = function(ev){ ev.stopPropagation(); enterEvalMode(grp.repId, { fromList: true }); };
+        gateEvalDraft17(evalBtn, function(){ return photos.find(function(x){ return x.id === grp.repId; }); }, function(){ var rp = photos.find(function(x){ return x.id === grp.repId; }); return '、' + (rp ? equipNo17(rp) : '') + ' の評価を開く'; });   // v3.217 段5：入り口①
         actions.appendChild(evalBtn);
       }
       actions.appendChild(retake);
@@ -7806,7 +7977,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           fbDel.onclick = async function() {
             if (!(p && p.id != null)) return;
             // v3.197 L7：confirm() の代わりに、未保存の数が出る確認画面を通す
-            return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, name: (p && p.filename) ? p.filename : '', onConfirm: async function() {
+            return openDeleteGuard({ count: 1, pinPhotos: [p], unsaved: backedUpKeys.has(photoPathKey(p)) ? 0 : 1, selected: true, one: true, name: (p && p.filename) ? p.filename : '', onConfirm: async function() {
               try { await deletePhotoFromDB(p.id); forgetBackedUpKey(p); if (typeof unlinkPinsOfDeletedPhotos === 'function') unlinkPinsOfDeletedPhotos([p]); } catch(e){}   // v3.209 R6：消せたときだけ、ピンのつながりを外す
               var i = photos.findIndex(function(ph){ return ph.id === p.id; });
               if (i !== -1) photos.splice(i, 1);
@@ -7924,6 +8095,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function updateEvalNoTarget() {
     var b = $('evalNoTarget'); if (!b) return;
     b.style.display = (evalModeBaseId == null) ? 'block' : 'none';
+    if (typeof updateEvalAside18 === 'function') updateEvalAside18();   // v3.217 段18（小5）
   }
   (function setupEvalNoTarget() {
     var lb = $('evalNoTargetListBtn');
@@ -7991,6 +8163,392 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   //   設定の「今日の現場」と「その他の設定」・保存の ①②③ の札・撮影の帯の「✓ 撮れました」。
   //   見た目と画面を移る道だけ：帯の出し入れ（style.display）・写真の保存・撮影の流れには触れない。カメラを開く click は遅らせない。
   //   字は textContent で入れる（地雷9）。新しい保存はしない（「＜ 戻る」はメモリだけに覚える）
+  // ===== v3.217 段1（DEC-0078 ①・REQ-0033）：今の状態を1か所で決める所（読むだけ。保存領域・localStorage には書かない） =====
+  //   上の一覧・右の欄・縦の板・位置記録の文・撮影リストの札・確かめの窓は、どれもここを読む。記録の形は変えない
+  // v3.217 段2：状態の札の決まり（印と言葉はここだけで決める。色は CSS の --m17-*）
+  var CHIP17 = { cur: { mark: '● ', word: '今' }, done: { mark: '✓ ', word: '済み' }, none: { mark: '− ', word: 'なし' }, todo: { mark: '○ ', word: 'まだ' }, draft: { mark: '✎ ', word: '打ちかけ' } };
+  function chipText17(state, label, word) { var c = CHIP17[state] || CHIP17.todo; return c.mark + (label || '') + (label ? ' ' : '') + (word != null ? word : c.word); }
+  function chip17(state, label, word) { var e = document.createElement('span'); e.className = 'm17-chip m17-' + (CHIP17[state] ? state : 'todo'); e.textContent = chipText17(state, label, word); return e; }
+  // ===== v3.217 段15a（DEC-0094）：評価の欄の値の持ち主 =====
+  //   持ち主＝会社/事業所/棟/番号（番号は桁の確かめのとおり0を足してそろえる）。'' は「番号を打つ前に打った値」（次に記録する番号の物にする）。null は持ち主なし
+  //   評価の帯が出ている間は、欄は評価中の設備の物（開くときに入れ直すため）。欄を触ったとき、欄が空なら、今の番号の物にする
+  var evalOwner17 = null, evalLastCtx17 = '', evalStash17 = null;
+  var evalContAt26 = '';   // v3.217 段26（S1）：持ち主が '' になったときに続けて撮っていた設備の鍵（'' は無し）
+  var evalHold28 = null;   // v3.217 段28（T1）：番号を打ち直して欄を空にしたときの値と持ち主 { owner, f, cls, basis }（持ち主と同じ番号に戻ったときだけ戻す）
+  function evalNorm17(no) { var t = String(no == null ? '' : no).trim(); if (/^[0-9]+$/.test(t) && isDigitCheckOn()) { var dc = getDigitCount(); while (t.length < dc) t = '0' + t; } return t; }
+  function evalKeyOf17(c, st, b, no) { no = evalNorm17(no); return no ? [c, st, b, no].join('/') : ''; }
+  function evalFieldOf17(p, k) { var f = (p.fields || []).find(function(x){ return x && x.key === k; }); return f ? sanitize(f.value || '') : String(p[k] || ''); }   // 記録したときの欄の字（無ければ記録の値）
+  function evalKeyOfPhoto17(p) { return p ? evalKeyOf17(evalFieldOf17(p, 'client'), evalFieldOf17(p, 'site'), evalFieldOf17(p, 'building'), equipNo17(p)) : ''; }
+  function evalKeyOfFields17() {
+    var f = getFilename(), v = f ? f.value.trim() : '';
+    if (!v || isOnlyNumPrefix(v)) return '';
+    return evalKeyOf17(sanitize(numKeepField('client')), sanitize(numKeepField('site')), sanitize(numKeepField('building')), v);
+  }
+  function evalEmpty17() {   // 値（G・U・T・メモ・分類・T の根拠）が1つも無い（印は見ない）
+    var v = function(id){ var x = $(id); return x ? String(x.value).trim() : ''; };
+    return !v('g-value') && !v('u-value') && !v('t-value') && !(memo && String(memo.value).trim()) && !selectedCls && !tHelperBasis;
+  }
+  function evalMarks17() { return !!(($('gu-edit-check') || {}).checked || ($('t-check') || {}).checked); }
+  function evalX17() { return evalModeBaseId != null ? (photos.find(function(p){ return p.id === evalModeBaseId; }) || null) : null; }
+  // 今の欄が誰の物として見えているか：評価の帯が出ていれば評価中の設備。帯が無ければ番号の欄の番号（空か同じ番号なら、評価中の設備）
+  function evalCtx17() {
+    var x = evalX17(), kx = x ? evalKeyOfPhoto17(x) : '';
+    if (x && evalBarShown17()) return kx;
+    var k = evalKeyOfFields17();
+    return (x && (k === '' || k === kx)) ? kx : k;
+  }
+  function evalBarOwner17() {   // 評価の帯が出ていれば、持ち主は評価中の設備（ほかの設備の控えは使わない）
+    if (!(evalBarShown17() && evalModeBaseId != null)) return false;
+    var x = evalX17(); if (!x) return false;
+    evalOwner17 = evalKeyOfPhoto17(x);
+    if (evalStash17 && evalStash17.baseId !== x.id) evalStash17 = null;
+    return true;
+  }
+  function evalAttr17() {   // 持ち主を今の欄に合わせる（空にしない）
+    if (evalBarOwner17()) return;
+    if (evalEmpty17()) { if (!evalMarks17()) evalOwner17 = null; return; }   // 値が無い：印も無ければ持ち主なし（印だけなら、印の持ち主はそのまま）
+    if (evalOwner17 === null) { evalOwner17 = evalLastCtx17; evalContAt26 = evalContNow26(); }   // 見張りの間に打った値（見張りの外の打ち方）は、前の見張りの時の持ち主の物
+  }
+  function evalTouch17() {   // 欄を触った（打つ前）：空の欄に打ち始めるなら、今の番号の物にする
+    if (evalBarOwner17()) return;
+    if (evalOwner17 === null || evalEmpty17()) { evalOwner17 = evalCtx17(); evalContAt26 = evalContNow26(); }
+  }
+  function evalClearAll17() {   // 欄を全部空にする（値・メモ・分類・T の根拠に加え、2つの印と T の対象も）
+    clearGutMemoInputs();
+    applyEvalFields17({}); tHelperBasis = ''; updateTBasisDisplay('');
+    var bc28 = $('cls-breadcrumb'); if (bc28) bc28.textContent = '';   // v3.217 段28（T1・案A）：隠れた分類の表示の中の字も消す（画面と記録に付く値を合わせる）
+    evalOwner17 = null;
+  }
+  function evalBack28() {   // v3.217 段28（T1）：控えた値を欄に戻し、持ち主も戻す（分類は控えた物をそのまま入れ、そのあと G・U・T・メモ・印を控えた値にする）
+    var h = evalHold28; evalHold28 = null; if (!h) return;
+    var c = h.cls;
+    if (c) { selectedCls = c; clsCurBig = c.big; clsCurMid = c.mid; clsRenderBig(c.big); clsShowMid(c.big); clsShowSmall(c.big, c.mid); clsUpdateBreadcrumb(); }
+    applyEvalFields17(h.f); tHelperBasis = h.basis || ''; updateTBasisDisplay(tHelperBasis);
+    evalOwner17 = h.owner; evalContAt26 = '';
+  }
+  // 見張り：target＝これから欄を見せる・記録する番号の持ち主。take＝'' の値を target の物にしてよい（記録する所だけ）。orphan＝持ち主の無い印を消す（記録する所だけ）
+  function evalCheck17(target, take, orphan) {
+    evalAttr17();
+    if (!(evalBarShown17() && evalModeBaseId != null)) {
+      var o = evalOwner17;
+      if (o === null) {
+        if (evalHold28 && target && evalHold28.owner === target && !evalMarks17()) evalBack28();   // v3.217 段28（T1）：欄が空のまま持ち主の番号に戻った → 空にする前の値を戻す
+        else if (orphan && evalMarks17()) evalClearAll17();
+      }
+      else if (o === '') { if (take && target) evalOwner17 = target; }
+      else if (o !== target) {
+        var x = evalX17();
+        if (x && o === evalKeyOfPhoto17(x)) evalStash17 = { baseId: x.id, f: evalFormRecord17() };   // 評価中の設備の打ちかけは控える（その設備を開いたときだけ戻す）
+        evalHold28 = { owner: o, f: evalFormRecord17(), cls: selectedCls, basis: tHelperBasis || '' };   // v3.217 段28（T1）：空にする前の値と持ち主を控える（持ち主と同じ番号に戻ったときだけ戻す）
+        evalClearAll17();
+      }
+    } else evalHold28 = null;   // v3.217 段28（T1）：評価の帯が出ている間は、欄は評価中の設備の物（控えは使わない）
+    evalLastCtx17 = evalCtx17();
+  }
+  // 記録する所から呼ぶ。true＝欄の値をこの記録に付けてよい。評価の帯が出ていて持ち主が違うときは false（欄は空にしない）
+  function evalFormFor17(target) {
+    if (evalBarShown17() && evalModeBaseId != null) { evalHold28 = null; evalAttr17(); return evalOwner17 === target; }
+    evalCheck17(target, true, true); evalHold28 = null;   // v3.217 段28（T1）：記録する所を通ったら控えは捨てる（別の番号のまま記録しても、前の番号の値は付けない）
+    return evalOwner17 === null || evalOwner17 === '' || evalOwner17 === target;
+  }
+  // v3.217 段25（R1）：続けて撮る写真の持ち主＝続けて撮っている設備（代表の写真 equipmentBaseId）の番号。
+  //   1枚目のあと番号の欄は空になり、撮影リストから続けて撮るときは欄を替えないため、欄ではなく代表の写真で決める。代表が無ければ欄
+  function evalKeyOfCont25() {
+    var r = (typeof equipmentBaseId !== 'undefined' && equipmentBaseId != null) ? photos.find(function(p){ return p.id === equipmentBaseId; }) : null;
+    return r ? evalKeyOfPhoto17(r) : evalKeyOfFields17();
+  }
+  // v3.217 段26（S1）：持ち主が ''（番号の欄が空のときに打った値）なら、そのとき続けて撮っていた設備を覚える。続けて撮る写真は、その設備でなければ分類を付けない
+  function evalContNow26() {
+    if (evalOwner17 !== '') return '';
+    var r = (typeof equipmentBaseId !== 'undefined' && equipmentBaseId != null) ? photos.find(function(p){ return p.id === equipmentBaseId; }) : null;
+    return r ? evalKeyOfPhoto17(r) : '';
+  }
+  function evalContOk26(cont) {   // true＝続けて撮るこの写真に、欄の値を付けてよい（続けて撮る写真でなければ、いつも true）
+    if (!cont) return true;
+    evalAttr17();
+    return !(evalOwner17 === '' && evalContAt26 && evalContAt26 !== evalKeyOfCont25());
+  }
+  // 打ちかけを読む元：欄が評価中の設備の物なら欄、そうでなければ控え（同じ設備の物だけ）
+  function evalDraftSrc17(p0) {
+    evalAttr17();
+    if (evalOwner17 === evalKeyOfPhoto17(p0)) return evalFormRecord17();
+    return (evalStash17 && evalStash17.baseId === p0.id) ? evalStash17.f : null;
+  }
+  // v3.217 段25（R2）：データを守る見張りを付けられなかったとき、黙って外さずに画面に知らせる（今ある知らせ showToast を使う。#safetyStatus は使わない）
+  function guardFail25(er, atSetup) {   // v3.217 段28（T4）：atSetup＝見張りを付ける所の失敗。無ければ、付けたあとの見張りの中のエラー（console の字だけ分ける。画面の言葉は同じ）
+    try { if (window.console && console.error) console.error(atSetup ? '守りの見張りを付けられませんでした（付ける所の失敗）' : '守りの見張りの中でエラーが起きました（付けたあと）', er); } catch (_) {}
+    showToast('守りの一部が働いていません。アプリを開き直してください。直らなければ、開発責任者に知らせてください。', 'error');
+  }
+  (function(){ try {
+    document.addEventListener('input', function(ev){   // 番号を打ち直した（v3.217 段26（S2）：番号の欄は起動の最後に作られ、設定の読み込みで作り直されるので、欄でなく document で受ける）
+      try { var t = ev.target; if (t && t.id === 'filename') evalCheck17(evalCtx17(), false, false); } catch (er) { guardFail25(er); }
+    }, true);
+    document.addEventListener('click', function(ev){   // タブ・戻るを押した（今の処理より先に）
+      try {
+        var b = ev.target && ev.target.closest ? ev.target.closest('.tab, #m1-back, #m1-backbar, #m17-cb-back') : null;
+        if (b) evalCheck17(evalCtx17(), false, false);
+      } catch (er) { guardFail25(er); }   // v3.217 段26（S3）：見張りの中のエラーも黙らない
+    }, true);
+    var touch = function(ev){ try { var t = ev.target; if (t && t.closest && t.closest('#view-eval, #t-helper-sheet')) evalTouch17(); } catch (er) { guardFail25(er); } };   // 評価の欄を触った（今の処理より先に）
+    ['click', 'input', 'change', 'keydown'].forEach(function(n){ document.addEventListener(n, touch, true); });
+    setTimeout(function(){ try { evalLastCtx17 = evalCtx17(); } catch (er) { guardFail25(er); } }, 0);
+  } catch (er) { guardFail25(er, true); } })();   // v3.217 段25（R2）：段15a の見張り
+  // ===== v3.217 段18（小5）：評価の寄り道の1行 =====
+  //   評価の相手がある・評価の帯が出ていない・持ち主（evalCtx17）が評価中の設備 → 「まだ記録されていません」と「＜ 評価へ戻る」
+  //   相手があって帯が無いが、番号の欄に別の番号がある → 「番号の欄の ○○ の物になります」（戻るボタンは出さない）。ほかは隠す
+  function updateEvalAside18() {
+    var box = $('m18-eval-aside'), tx = $('m18-aside-text'), bk = $('m18-aside-back'); if (!box || !tx || !bk) return;
+    var x = evalX17(), show = !!x && !evalBarShown17(), kx = '', k = '';
+    if (show) { kx = evalKeyOfPhoto17(x); k = evalCtx17(); }
+    if (show && k === kx) { tx.textContent = kx.split('/').pop() + ' の評価：ここで打った値は、まだ記録されていません（「＜ 評価へ戻る」で戻って保存できます）'; bk.hidden = false; box.hidden = false; }
+    else if (show && k) { tx.textContent = 'ここで打った値は、番号の欄の ' + k.split('/').pop() + ' の物になります'; bk.hidden = true; box.hidden = false; }
+    else { box.hidden = true; }
+  }
+  (function(){ try {
+    var bk = $('m18-aside-back');
+    if (bk) bk.addEventListener('click', function(){ if (evalModeBaseId != null && !evalBarShown17()) openEvalForEdit17(evalModeBaseId); updateEvalAside18(); });
+    var ob = new MutationObserver(function(){ updateEvalAside18(); });   // 評価の帯が出た・消えたら決め直す
+    var eb = $('eval-bar'); if (eb) ob.observe(eb, { attributes: true, attributeFilter: ['style'] });
+    var fn = getFilename(); if (fn) fn.addEventListener('input', function(){ updateEvalAside18(); });
+  } catch (_) {} })();
+  // ===== v3.217 段5（DEC-0074・DEC-0079）：評価の打ちかけを失わない =====
+  function sameEquip17(a, b) { return !!a && !!b && a.client === b.client && a.site === b.site && a.building === b.building && equipBaseOf(a) === equipBaseOf(b); }
+  // 評価の画面の G・U・T・メモを、写した値（evalFormRecord17）に戻す（分類は戻さない：記録の分類を loadEvalIntoForm で入れたまま）
+  function applyEvalFields17(f) {
+    var guChk = $('gu-edit-check'), guArea = $('gu-edit-area'), gH = $('g-value'), uH = $('u-value');
+    if (guChk) guChk.checked = !!f.guEdited; if (guArea) guArea.style.display = f.guEdited ? 'block' : 'none';
+    if (gH) gH.value = f.guEdited ? String(f.gValue === '' || f.gValue == null ? '' : f.gValue) : '';
+    if (uH) uH.value = f.guEdited ? String(f.uValue === '' || f.uValue == null ? '' : f.uValue) : '';
+    if (typeof clsSyncGutButtons === 'function') clsSyncGutButtons();
+    var tChk = $('t-check'), tArea = $('t-edit-area'), tH = $('t-value'), tBox = $('t-options-buttons');
+    if (tChk) tChk.checked = !!f.tChecked; if (tArea) tArea.style.display = f.tChecked ? 'block' : 'none';
+    if (tH) tH.value = f.tChecked ? String(f.tValue === '' || f.tValue == null ? '' : f.tValue) : '';
+    if (tBox) Array.prototype.forEach.call(tBox.children, function(ch) { ch.classList.toggle('selected', !!tH && tH.value !== '' && ch.dataset.value === tH.value); });
+    var want = (f.tChecked && f.tTarget) ? f.tTarget : 'equipment';
+    Array.prototype.forEach.call(document.getElementsByName('t-target'), function(r) { r.checked = (r.value === want); });
+    tHelperBasis = f.tChecked ? (f.tBasis || '') : (tHelperBasis || '');
+    if (memo) memo.value = f.memo || '';
+  }
+  // 評価を直すために、評価の保存の帯を付けて評価の画面を開く（DEC-0079）。
+  //   帯がもう出ていれば、画面の値はそのまま評価のタブへ移るだけ。帯が無ければ（位置記録の段階など）記録の値を入れ直し、打ちかけがあれば G・U・T・メモを打ちかけのまま戻す。
+  //   保存すると、その設備の記録が直した値になり、位置記録の段階に戻る（今の評価の保存の処理のまま）。撮っている途中の別の設備の帯は閉じない
+  function openEvalForEdit17(baseId) {
+    var p0 = photos.find(function(p){ return p.id === baseId; }); if (!p0) return false;
+    if (!(evalBarShown17() && evalModeBaseId === baseId)) {
+      var d = evalDraftNow17(), f = (d && d.baseId === baseId) ? evalDraftSrc17(p0) : null;   // v3.217 段15a：控えた打ちかけも戻す（同じ設備だけ）
+      evalStash17 = null;
+      evalModeBaseId = baseId; evalFromList = false; setEvalBarForList(false);
+      loadEvalIntoForm(p0); tHelperBasis = p0.tBasis || ''; updateTBasisDisplay(tHelperBasis);
+      if (f) applyEvalFields17(f);
+      var cbar = $('complete-bar'); if (cbar) cbar.style.display = 'none';   // 評価の段階に戻す（保存すると位置記録の段階に戻る）
+      var nm = $('eval-bar-name'); if (nm) nm.textContent = p0.filename || '';
+      if (evalBar) evalBar.style.display = 'flex';
+    }
+    var et = document.querySelector('.tab[data-view="eval"]'); if (et) et.click();
+    if (typeof renderTracker === 'function') renderTracker();
+    return true;
+  }
+  // 「＜ 評価」（題の行）で評価に戻るとき：評価の相手があって帯が出ていなければ、帯を付けて開く
+  function backToEval17() { if (evalModeBaseId == null || evalBarShown17()) return false; return openEvalForEdit17(evalModeBaseId); }
+  // 打ちかけがあるまま離れようとしたら、自前の部品で聞く。true＝続けてよい（打ちかけが無い・同じ設備・捨てると選んだ）
+  //   target：これから開く設備の写真（同じ設備なら聞かない）。null＝完了して次へなど、打ちかけが必ず消える道
+  //   askLeaveEvalDraft17 は答えだけを返す：'ok'（続けてよい）・'same'（同じ設備で打ちかけがある）・'back'（今の評価に戻る）・null（やめる）
+  async function askLeaveEvalDraft17(target, goLabel) {
+    var d = evalDraftNow17(); if (!d) return 'ok';
+    var p0 = photos.find(function(p){ return p.id === d.baseId; });
+    if (target && sameEquip17(target, p0)) return 'same';   // 同じ設備：聞かずに、打ちかけのまま評価の画面へ（記録の値で上書きしない）
+    var what = d.parts.length ? d.parts.join('・') : '直した値';
+    var k = await askSheet({
+      title: '✎ ' + d.no + ' の評価が、まだ保存されていません',
+      body: '打ちかけ：' + what + '\n評価の画面の「✅ 評価を保存して…」を押すまで、端末に記録されません。',
+      danger: true,
+      choices: [
+        { key: 'back', label: '✎ ' + d.no + ' の評価に戻る', sub: '打ちかけは残ります。評価の画面で保存できます', kind: 'main' },
+        { key: 'drop', label: '打ちかけを捨てて' + goLabel, sub: d.no + ' の ' + what + ' が消えます（記録してある評価はそのまま）', kind: 'danger' }
+      ]
+    });
+    if (k === 'drop') { evalStash17 = null; return 'ok'; }   // v3.217 段15a：捨てたら控えも消す
+    return k === 'back' ? 'back' : null;
+  }
+  async function confirmLeaveEvalDraft(target, goLabel) {
+    var d = evalDraftNow17(), k = await askLeaveEvalDraft17(target, goLabel);
+    if (k === 'ok') return true;
+    if ((k === 'back' || k === 'same') && d) openEvalForEdit17(d.baseId);
+    return false;
+  }
+  // 見張り：登録したボタンが押されたとき、打ちかけがあれば今の処理より先に（document の捕まえる段で）止めて聞く
+  var gate17 = (typeof WeakMap === 'function') ? new WeakMap() : null, gate17Pass = null;
+  function gateEvalDraft17(b, targetOf, labelOf) { if (b && gate17) gate17.set(b, { target: targetOf, label: labelOf }); }
+  document.addEventListener('click', function(ev){
+    var b = ev.target && ev.target.closest ? ev.target.closest('button') : null;
+    if (!b || !gate17 || !gate17.has(b)) return;
+    if (gate17Pass === b) { gate17Pass = null; return; }   // 「捨てて進む」のあとの1回だけ素通り
+    if (!evalDraftNow17()) return;
+    var g = gate17.get(b);
+    ev.stopPropagation(); ev.preventDefault();
+    confirmLeaveEvalDraft(g.target ? g.target() : null, g.label ? g.label() : '').then(function(ok){ if (ok) { gate17Pass = b; b.click(); } });
+  }, true);
+  // v3.217 段4（DEC-0078 ④・REQ-0036）：自前の確認の部品。askSheet({ title, body, choices: [{ key, label, sub, kind: 'main'|'danger'|'plain' }], cancel, danger })
+  //   返す物：Promise（押したボタンの key。「やめる」・覆い・2つ目を開こうとしたときは null）。答えを受け取ってから続きを動かす（消す処理は答えのあと）
+  //   ボタンは押すと何が起きるかを書く（［OK］［キャンセル］は使わない）。「やめる」はいつもいちばん下の同じ場所。
+  //   消える物があるシート（danger）は、覆いを押しても閉じない。部品の中からカメラは開かない・.click() は呼ばない
+  var ask17Open = false;
+  function askSheet(opts) {
+    opts = opts || {};
+    return new Promise(function(resolve){
+      var m = $('m17-ask'), tt = $('m17-ask-title'), bd = $('m17-ask-body'), ls = $('m17-ask-list'), cc = $('m17-ask-cancel');
+      if (!m || !tt || !bd || !ls || !cc || ask17Open) { resolve(null); return; }   // 2つ同時には開かない
+      ask17Open = true;
+      tt.textContent = opts.title || ''; bd.textContent = opts.body || ''; bd.hidden = !opts.body; ls.textContent = '';
+      var done = function(k){
+        if (!ask17Open) return; ask17Open = false;
+        m.hidden = true; m.onclick = null; cc.onclick = null; ls.textContent = '';
+        document.body.classList.remove('m17-ask-open');
+        resolve(k == null ? null : k);
+      };
+      (opts.choices || []).forEach(function(c){
+        var b = document.createElement('button'); b.type = 'button';
+        b.className = 'm17-ask-btn m17-' + (c.kind === 'main' || c.kind === 'danger' ? c.kind : 'plain') + (c.sub ? ' m17-two' : '');
+        b.setAttribute('data-key', c.key);
+        var d1 = document.createElement('span'); d1.className = 'm17-ask-do'; d1.textContent = c.label; b.appendChild(d1);
+        if (c.sub) { var d2 = document.createElement('span'); d2.className = 'm17-ask-then'; d2.textContent = c.sub; b.appendChild(d2); }
+        b.addEventListener('click', function(ev){ ev.stopPropagation(); done(c.key); });
+        ls.appendChild(b);
+      });
+      cc.textContent = opts.cancel || 'やめる（何も変えない）';
+      cc.onclick = function(ev){ ev.stopPropagation(); done(null); };
+      m.onclick = function(ev){ if (ev.target === m && !opts.danger) done(null); };   // 覆いを押す＝やめる（消える物があるときは閉じない）
+      m.hidden = false; document.body.classList.add('m17-ask-open');
+    });
+  }
+  try { Object.defineProperty(window, '__m17Ask', { value: askSheet }); } catch (_) {}   // 検査が部品を開くためだけ（部品は値を書かない）
+  // ===== v3.217 段17（DEC-0085）：「ファイルアプリへの保存を確かめた」 =====
+  var SAVE_OK17 = '✅ ファイルアプリへの保存を確かめた（未保存を0にする）';
+  function askSavedOk17() {   // 押す前の確かめ。true＝［確かめた］。［まだ］・覆いは false（何も変えない）
+    return askSheet({
+      title: 'ファイルアプリに ZIP が保存されたことを確かめましたか？',
+      body: '保存できていないまま進むと、あとでアプリ内データを削除したときに写真を戻せません。',
+      choices: [{ key: 'yes', label: '確かめた（未保存を0にする）', kind: 'main' }],
+      cancel: 'まだ（何も変えない）'
+    }).then(function(k){ return k === 'yes'; });
+  }
+  // ZIP を保存する枠（ダウンロード）を押すまで、btn を押せなくする。そばに1行を出す。枠を押したら押せるようにする
+  function waitDownload17(btn, dls) {
+    if (!btn) return;
+    btn.disabled = true; btn.classList.add('m17-save-wait');
+    var note = document.createElement('p'); note.className = 'm17-save-note'; note.textContent = '先に ZIP を保存してください（上のオレンジの枠を押す）';
+    if (btn.parentNode) btn.parentNode.insertBefore(note, btn.nextSibling);
+    var on = function(){ btn.disabled = false; btn.classList.remove('m17-save-wait'); if (note.parentNode) note.parentNode.removeChild(note); };
+    (dls || []).forEach(function(d){ if (d) d.addEventListener('click', on); });
+  }
+  // 選んだ分・小分けの「確かめた」：今のボタンの処理は変えず、前の見張りで聞く。ZIP の枠（オレンジ）を1つも押していなければ押せない
+  (function(){ try {
+    var pairs = [['incRebuildDoneBtn', 'incRebuildLinks'], ['splitDoneBtn', 'splitLinks']], pass17 = null;
+    pairs.forEach(function(pr){
+      var b = $(pr[0]), box = $(pr[1]); if (!b || !box) return;
+      var arm = function(){   // ボタンが出たら、枠を押すまで押せなくする（そばの1行は waitDownload17 と同じ）
+        if (b.style.display === 'none' || b.getAttribute('data-m17-armed') === '1') return;
+        b.setAttribute('data-m17-armed', '1');
+        waitDownload17(b, Array.prototype.slice.call(box.querySelectorAll('a')));
+      };
+      new MutationObserver(function(){ try { if (b.style.display === 'none') b.removeAttribute('data-m17-armed'); else arm(); } catch (er) { guardFail25(er); } }).observe(b, { attributes: true, attributeFilter: ['style'] });   // v3.217 段26（S3）
+      arm();
+      document.addEventListener('click', function(ev){
+        try {   // v3.217 段26（S3）：見張りの中のエラーも黙らない
+          if (ev.target !== b) return;
+          if (pass17 === b) { pass17 = null; return; }
+          ev.stopPropagation(); ev.preventDefault();
+          if (b.disabled) return;   // ZIP の枠を押すまでは何もしない
+          askSavedOk17().then(function(y){ if (y) { pass17 = b; b.click(); } }).catch(function(er){ guardFail25(er); });
+        } catch (er) { guardFail25(er); }
+      }, true);
+    });
+  } catch (er) { guardFail25(er, true); } })();   // v3.217 段25（R2）：段17 の見張り
+  // v3.217 段3：未保存の言い方（全部の場所で同じ）。読み込み中は数を出さない
+  function loadingNow17() { try { return !bootPhotosLoaded || !!importBusy; } catch (_) { return false; } }
+  function unsavedText17(n, loading) { if (loading) return '… 読み込み中（数は読み終えてから）'; return n > 0 ? ('未保存 ' + n + ' 枚（ZIP にしていない）') : '未保存 0 枚'; }
+  var evalSavedEmpty17 = {};   // 評価を空のまま保存した設備（代表の写真の id）。メモリだけ（記録には書かない）。「− なし」と「✓ 済み（空）」を分けるため
+  var CLS_KEYS17 = ['clsCode', 'clsBig', 'clsMid', 'clsSmall', 'clsGInit', 'clsUInit'];
+  function evalFormRecord17() {   // 評価の画面の今の値を、評価の保存（evalSaveBtn）と同じ形に写す（読むだけ）
+    var guC = $('gu-edit-check'), tC = $('t-check'), gI = $('g-value'), uI = $('u-value'), tI = $('t-value');
+    var gu = !!(guC && guC.checked), tc = !!(tC && tC.checked), c = selectedCls;
+    return {
+      gValue: (gu && gI) ? gutSaveValue(gI.value) : '', uValue: (gu && uI) ? parseGutValue(uI.value) : '', tValue: (tc && tI) ? parseGutValue(tI.value) : '',
+      tTarget: tc ? getTTarget() : '', tBasis: tc ? (tHelperBasis || '') : '', guEdited: gu ? 1 : 0, tChecked: tc ? 1 : 0,
+      clsCode: c ? c.code : '', clsBig: c ? c.big : '', clsMid: c ? c.mid : '', clsSmall: c ? c.small : '', clsGInit: c ? c.g : '', clsUInit: c ? c.u : '',
+      memo: memo ? memo.value : ''
+    };
+  }
+  function evalBarShown17() { return !!(evalBar && evalBar.style.display && evalBar.style.display !== 'none'); }
+  // 打ちかけ：評価の相手（evalModeBaseId）があり、画面の値が記録の値と違うとき。
+  //   評価の帯が出ていないとき（位置記録の段階）は、分類を比べない（v3.216 案2 で、位置記録の段階に入ると分類を空にするため）
+  function evalDraftNow17() {
+    if (evalModeBaseId == null) return null;
+    var p0 = photos.find(function(p){ return p.id === evalModeBaseId; }); if (!p0) return null;
+    var f = evalDraftSrc17(p0), bar = evalBar ? evalBarShown17() : false;   // v3.217 段15a：持ち主の違う欄は打ちかけにしない
+    if (!f) return null;
+    var norm = function(v){ return (v == null || v === 0) ? '' : String(v); };
+    var diff = EVAL_KEYS.filter(function(k){ return (bar || CLS_KEYS17.indexOf(k) < 0) && norm(f[k]) !== norm(p0[k]); });
+    if (!diff.length) return null;
+    var parts = [];
+    if (f.guEdited && f.gValue !== '') parts.push('G ' + f.gValue);
+    if (f.guEdited && f.uValue !== '') parts.push('U ' + f.uValue);
+    if (f.tChecked && f.tValue !== '') parts.push('T ' + f.tValue);
+    if (diff.some(function(k){ return CLS_KEYS17.indexOf(k) >= 0; }) && f.clsCode) parts.push('分類');
+    if (String(f.memo || '').trim()) parts.push('メモあり');
+    return { baseId: p0.id, no: equipNo17(p0), filename: p0.filename || '', parts: parts, keys: diff };
+  }
+  function equipRep17(p) {   // 設備の代表＝いちばん小さい枝番の写真（写真なし登録の記録より、写真のある物を先に）
+    if (!p) return null;
+    var eq = equipPhotosOf(p).slice();
+    eq.sort(function(a, b){ return ((a.noPhoto ? 1 : 0) - (b.noPhoto ? 1 : 0)) || ((branchIndexOf(a.filename) || 0) - (branchIndexOf(b.filename) || 0)) || (a.id - b.id); });
+    return eq[0] || p;
+  }
+  function equipNo17(p) { var r = equipRep17(p); return (r && unitNumberOf(r)) || (p && unitNumberOf(p)) || equipBaseOf(p); }   // 画面に出す設備の番号（番号の欄に打った値。無ければ名前の頭）
+  function completeBarShown17() { var c = $('complete-bar'); return !!(c && c.style.display && c.style.display !== 'none'); }
+  // 図面に付く写真：下の帯（位置記録の段階）が出ていれば、その設備の代表。出ていなければ、直前に撮った写真の設備の代表
+  function pinTargetPhoto17() {
+    var p = null;
+    if (completeBarShown17() && evalModeBaseId != null) p = photos.find(function(x){ return x.id === evalModeBaseId; });
+    if (!p && lastShotPhotoId != null) p = photos.find(function(x){ return x.id === lastShotPhotoId; });
+    return p ? equipRep17(p) : null;
+  }
+  function pinnedPhotoIds17() {   // ピンの付いた写真の id（読むだけ）
+    var set = {};
+    try { (mapData && mapData.buildings || []).forEach(function(b){
+      var each = function(sh){ (sh.pins || []).forEach(function(pn){ if (pn && pn.photoId != null) set[pn.photoId] = true; }); };
+      (b.sheets || []).forEach(each); (b.areas || []).forEach(function(a){ (a.sheets || []).forEach(each); });
+    }); } catch (_) {}
+    return set;
+  }
+  function readNow() {
+    var out = { loading: false, eq: null, work: null, stages: null, draft: null, pinTarget: null, done: [], unsaved: 0, lastBackup: '', site: {} };
+    out.loading = loadingNow17();
+    try {
+      var p0 = currentEquipP0();
+      out.eq = p0 ? { id: p0.id, no: equipNo17(p0), filename: p0.filename || '' } : null;
+      out.stages = currentStages();
+      out.draft = evalDraftNow17();
+      out.work = workNow17();   // v3.217 段10：今の作業（1つ）
+      var pt = pinTargetPhoto17(); out.pinTarget = pt ? { id: pt.id, no: equipNo17(pt), filename: pt.filename || '' } : null;
+      var pinned = pinnedPhotoIds17(), seen = {}, curKey = p0 ? (p0.client + '/' + p0.site + '/' + p0.building + '/' + equipBaseOf(p0)) : null;
+      photos.forEach(function(ph){
+        var k = ph.client + '/' + ph.site + '/' + ph.building + '/' + equipBaseOf(ph);
+        if (k === curKey) return;
+        var g = seen[k]; if (!g) { g = seen[k] = { no: '', base: equipBaseOf(ph), eval: false, pin: false, n: 0 }; out.done.push(g); }
+        if (!g.no) g.no = unitNumberOf(ph);
+        g.n++; if (hasEval(ph)) g.eval = true; if (pinned[ph.id]) g.pin = true;
+      });
+      out.done.forEach(function(g){ if (!g.no) g.no = g.base; delete g.base; });
+      out.unsaved = getUnsavedCount();
+      var lb = $('lastBackupInfo'); out.lastBackup = lb ? (lb.textContent || '').trim() : '';
+      var fv = function(k){ var e = document.querySelector('#fixedFields .field-row[data-key="' + k + '"] .field-input'); return e ? e.value.trim() : ''; };
+      var dck = $('survey-digit-check'), dcn = $('survey-digit-count');
+      out.site = { client: fv('client'), site: fv('site'), building: fv('building'), digits: (dck && !dck.checked) ? '' : ((dcn && dcn.value) || '4') };
+    } catch (_) {}
+    return out;
+  }
+  try { Object.defineProperty(window, '__m17ReadNow', { value: readNow }); } catch (_) {}   // 検査が読むためだけ（書く道は無い）
   (function setupScreenV214(){
     try {
       var TABNAME = { settings: '設定', shoot: '撮影', eval: '評価', floorplan: '位置記録', list: '撮影リスト', export: '保存', 'import': '読込', reference: '評価参考', qa: 'Q&A' };
@@ -8018,9 +8576,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var stepChips = function(stage, evalState){
         var w = mk('span', 'm1-chips');
         ['撮影', '評価', '位置記録'].forEach(function(s, i){
-          var st = i < stage ? 'done' : (i === stage ? 'cur' : 'todo'), word = st === 'done' ? '済み' : (st === 'cur' ? '今' : 'まだ'), mark = st === 'done' ? '✓ ' : (st === 'cur' ? '● ' : '○ ');
-          if (i === 1 && stage === 2 && evalState === 'skip') { st = 'skip'; word = 'しなかった'; mark = '− '; }
-          w.appendChild(mk('span', 'm1-step' + (st === 'todo' ? '' : ' ' + st), mark + s + ' ' + word));
+          var st = i < stage ? 'done' : (i === stage ? 'cur' : 'todo'), word = null, cs = st;   // v3.217 段2：印と言葉は CHIP17 から
+          if (i === 1 && stage === 2 && evalState === 'skip') { st = 'skip'; cs = 'none'; }
+          if (i === 1 && stage === 2 && evalState === 'empty') word = '済み（空）';   // 空のまま保存したときは「なし」と分ける
+          w.appendChild(mk('span', 'm1-step' + (st === 'todo' ? '' : ' ' + st), typeof chipText17 === 'function' ? chipText17(cs, s, word) : s));
         });
         return w;
       };
@@ -8034,7 +8593,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (shown('eval-bar')) { var e = text('eval-bar-name'); a.push({ go: 'eval', eq: eqOf(e), stage: 1, label: '📊 評価へ', what: '評価：' + e + ' の G.U.T評価・メモを入れて「' + text('eval-save-btn') + '」' }); }
         if (shown('complete-bar')) {
           var c = text('complete-bar-name'), ev = '';
-          try { var st = currentStages(); if (st && st.name === c) ev = st.eval ? 'done' : 'skip'; } catch (_) {}
+          try { var st = currentStages(); if (st && st.name === c) ev = st.eval ? 'done' : ((typeof evalSavedEmpty17 !== 'undefined' && typeof evalModeBaseId !== 'undefined' && evalSavedEmpty17[evalModeBaseId]) ? 'empty' : 'skip'); } catch (_) {}
           a.push({ go: 'floorplan', eq: eqOf(c), stage: 2, ev: ev, label: '📍 位置記録へ', what: '位置記録：' + c + ' のピンを置く（任意）→「' + text('complete-done-btn') + '」' });
         }
         return a;
@@ -8058,8 +8617,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (shown('pinrec-banner') && v !== 'floorplan' && v !== 'eval') {   // 位置記録の画面（同じ画面）と評価の途中では出さない
           var pr = mk('div', 'm1-row');
           pr.appendChild(mk('span', 'm1-name', '📍 今撮った位置を図面に記録できます'));
-          var pb = mk('button', 'm1-act sub m1-go', '図面に記録 ▶'); pb.type = 'button'; pb.addEventListener('click', function(){ var o = $('pinrec-banner-btn'); if (o) o.click(); });
-          var pc = mk('button', 'm1-act sub', 'あとで'); pc.type = 'button'; pc.addEventListener('click', function(){ var o = $('pinrec-banner-close'); if (o) o.click(); });
+          var pb = mk('button', 'm1-act sub m1-go', '📍 ピンを置く ▶'); pb.type = 'button'; pb.addEventListener('click', function(){ var o = $('pinrec-banner-btn'); if (o) o.click(); });
+          var pc = mk('button', 'm1-act sub', 'ピンはあとで（この行を閉じる）'); pc.type = 'button'; pc.addEventListener('click', function(){ var o = $('pinrec-banner-close'); if (o) o.click(); });
           pr.appendChild(pb); pr.appendChild(pc); steps.appendChild(pr);
         }
         if (steps.childNodes.length) document.body.setAttribute('data-steps', '1'); else document.body.removeAttribute('data-steps');
@@ -8070,7 +8629,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var back = mk('button'); back.id = 'm1-back'; back.type = 'button';
       if (appBar) appBar.insertBefore(back, appBar.firstChild);
       var hist = [], lastView = curView(), backTo = null, lastPress = null;
-      back.addEventListener('click', function(){ var p = hist.pop(); if (!p) return; backTo = p; goTab(p); });
+      back.addEventListener('click', function(){ var p = hist.pop(); if (!p) return; backTo = p;
+        if (p === 'eval' && typeof backToEval17 === 'function' && backToEval17()) return;   // v3.217 段5（DEC-0079）：評価に戻るときは、評価の保存の帯を付けて開く
+        goTab(p); });
       var foot = mk('div'); foot.id = 'm1-foot'; foot.setAttribute('role', 'status');
       // 人が新しく押し始めたら、前に押したボタンの名前は捨てる（古い足あとを出さない）
       document.addEventListener('pointerdown', function(e){ if (e.isTrusted) lastPress = null; }, true);
@@ -8078,7 +8639,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var t = e.target && e.target.closest ? e.target : null; if (!t) return;
         if (t.closest('.tab-bar') || t.closest('#m1-back')) { if (e.isTrusted) lastPress = null; return; }   // 人がタブや「＜ 戻る」を押したときは足あとを出さない（処理の中で押すタブは別）
         var b = t.closest('button'); if (!b) return;
-        lastPress = { label: (b.textContent || '').replace(/\s+/g, ' ').trim().replace(/^[✅✓]\s*/, '').slice(0, 40), t: Date.now() };
+        var bdo23 = b.querySelector ? b.querySelector('.m17-ask-do') : null;   // v3.217 段23：部品の2段のボタンは、ボタンの字だけ（説明の字とつなげない）
+        lastPress = { label: ((bdo23 ? bdo23.textContent : b.textContent) || '').replace(/\s+/g, ' ').trim().replace(/^[✅✓]\s*/, '').slice(0, 40), t: Date.now() };
       }, true);
       var onView = function(){
         var v = curView();
@@ -8095,7 +8657,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           lastView = v;
         }
         var p = hist[hist.length - 1];
-        if (p && p !== v) { back.textContent = '＜ ' + (TABNAME[p] || '戻る'); back.classList.add('show'); } else back.classList.remove('show');
+        if (p && p !== v) { back.textContent = '＜ ' + (TABNAME[p] ? TABNAME[p] + 'へ戻る' : '戻る'); back.classList.add('show'); } else back.classList.remove('show');
         renderSteps(); renderBadge(); syncTyping();
         if (v === 'settings') { renderToday(); if (window.__m1SumMore) window.__m1SumMore(); }
       };
@@ -8132,7 +8694,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var n = loaded() ? unsaved() : 0;
         var ex = document.querySelector('.tab[data-view="export"]');
         if (ex) { if (n > 0) ex.setAttribute('data-badge', '未保存' + n); else ex.removeAttribute('data-badge'); }
-        var cta = $('m1-save-cta'); if (cta) cta.textContent = loaded() ? ('💾 保存する（未保存 ' + unsaved() + '枚）— 3つの保存のしかたから選ぶ') : '💾 保存する — 3つの保存のしかたから選ぶ';
+        var cta = $('m1-save-cta'); if (cta) cta.textContent = loaded() ? ('💾 保存する（' + (typeof unsavedText17 === 'function' ? unsavedText17(unsaved()) : ('未保存 ' + unsaved() + ' 枚')) + '）— 3つの保存のしかたから選ぶ') : '💾 保存する — 3つの保存のしかたから選ぶ';
       };
 
       // ---- 撮影の帯に「✓ 撮れました」 ----
@@ -8167,7 +8729,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           else b.disabled = true;
           sheet.appendChild(b);
         });
-        var c = mk('button', 'm1-act sub', 'やめる（保存しない）'); c.type = 'button'; c.addEventListener('click', closeSheet); sheet.appendChild(c);
+        var c = mk('button', 'm1-act sub', 'やめる'); c.type = 'button'; c.addEventListener('click', closeSheet); sheet.appendChild(c);
         sheet.classList.add('show'); sheetBack.classList.add('show');
       };
       var exView = $('view-export');
@@ -8355,8 +8917,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var BUSY = ['exportIncBtn', 'exportBtn', 'exportSplitBtn', 'incRebuildBtn', 'mapExportBtn', 'mapExportPngBtn'];
         var busyObs = new MutationObserver(function(){ var busy = BUSY.some(function(id){ var b = $(id); return b && b.disabled; }); if (busy && !opened) setOpen(true); });
         BUSY.forEach(function(id){ var b = $(id); if (b) busyObs.observe(b, { attributes: true, attributeFilter: ['disabled'] }); });
-        var t1w = tile('m15-main', '① 合間にこまめに残す', '', 'ふだん', function(){
-          openSheet('① 合間にこまめに残す', function(s){
+        var t1w = tile('m15-main', '合間に保存する', '', 'ふだん', function(){   // v3.217 段26（S7）：タイルは番号を外して名前だけ（番号はカードの ①②③ だけ）
+          openSheet('合間に保存する', function(s){
             para(s, ['いつ：休憩・作業の合間・毎日の終わり']);
             para(s, ['入るもの：前回の保存のあとに撮った写真 ', [unsavedN() + ' 枚'], '・撮影記録・位置記録']);
             marks(s, [['写真（新しく撮った分）', 1], ['撮影記録', 1], ['位置記録', 1]]);
@@ -8364,44 +8926,44 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             s.appendChild(btn('m15-row m15-main', '① 新しく撮った ' + unsavedN() + ' 枚を保存する', function(){ closeSheet(); go('exportIncBtn'); }));
           });
         });
-        tile('', '② 今日の終わり・区切り', '全部を1つの ZIP に', '1日1回', function(){
-          openSheet('② 今日の終わり・区切り', function(s){
+        tile('', '今日の終わり・区切り', '全部を1つの ZIP に', '1日1回', function(){
+          openSheet('今日の終わり・区切り', function(s){
             para(s, ['いつ：午前／午後の区切り・現場の終わり・端末を替える前']);
             para(s, ['入るもの：この端末の写真 ', [(txt('exportCount') || '?') + ' 枚'], ' すべて・撮影記録・位置記録']);
             marks(s, [['写真（全部）', 1], ['撮影記録', 1], ['位置記録', 1]]);
             s.appendChild(btn('m15-row m15-main', '② 全部を1つの ZIP に保存する', function(){ closeSheet(); go('exportBtn'); }));
             s.appendChild(mk('p', 'm15-sep', '重い・途中で止まったとき'));
-            s.appendChild(btn('m15-row m15-line', '小分けにして保存する（写真が多くて重いとき）', function(){ closeSheet(); setOpen(true); var spp = $('splitPanel'); if (!spp || spp.style.display === 'none') press('splitToggleBtn'); var sp = $('splitPanel'); if (sp) try { sp.scrollIntoView({ block: 'start' }); } catch (_) {} }));
+            s.appendChild(btn('m15-row m15-line', '③ 小分けにして保存する（写真が多くて重いとき）', function(){ closeSheet(); setOpen(true); var spp = $('splitPanel'); if (!spp || spp.style.display === 'none') press('splitToggleBtn'); var sp = $('splitPanel'); if (sp) try { sp.scrollIntoView({ block: 'start' }); } catch (_) {} }));
           });
         });
-        tile('', '③ 別の端末・PC に渡す', '全部／位置記録だけ', '', function(){
-          openSheet('③ 別の端末・PC に渡す', function(s){
-            var a = btn('m15-row m15-main', '全部を渡す（写真も）', function(){ closeSheet(); go('exportBtn'); });
+        tile('', '別の端末・PC に渡す', '全部／位置記録だけ', '', function(){
+          openSheet('別の端末・PC に渡す', function(s){
+            var a = btn('m15-row m15-main', '全部を ZIP に保存して渡す', function(){ closeSheet(); go('exportBtn'); });
             a.appendChild(mk('span', 'm15-when', '②と同じ ZIP。渡した先の「📥 読込」で足して戻せます')); s.appendChild(a);
             var b = btn('m15-row m15-line', '位置記録だけ渡す（棟・図面・ピン）', function(){ closeSheet(); go('mapExportBtn'); });
             var w = mk('span', 'm15-when'); w.appendChild(mk('span', 'm15-no', '写真は入りません')); w.appendChild(document.createTextNode('　前日の準備・事前の配布に')); b.appendChild(w); s.appendChild(b);
           });
         });
-        tile('', '④ 印刷・報告に使う', '図面の画像・CSV', '', function(){
-          openSheet('④ 印刷・報告に使う', function(s){
+        tile('', '印刷・報告に使う', '図面の画像・CSV', '', function(){
+          openSheet('印刷・報告に使う', function(s){
             para(s, ['ピン入り図面の画像（ピンの大きさを選ぶ）']);
             var sizes = mk('div', 'm15-tiles m15-tiles3');
-            [['小', '1.2'], ['標準', '1.8'], ['大', '2.4']].forEach(function(o){ sizes.appendChild(btn('m15-row m15-line', '🖼 ' + o[0], function(){ var sel = $('mapPngPinSize'); if (sel) sel.value = o[1]; closeSheet(); go('mapExportPngBtn'); })); });
+            [['小', '1.2'], ['標準', '1.8'], ['大', '2.4']].forEach(function(o){ sizes.appendChild(btn('m15-row m15-line', '🖼 図面の画像を作る（ピン：' + o[0] + '）', function(){ var sel = $('mapPngPinSize'); if (sel) sel.value = o[1]; closeSheet(); go('mapExportPngBtn'); })); });
             s.appendChild(sizes);
             var c = btn('m15-row m15-line', '📄 撮影記録の CSV を保存', function(){ closeSheet(); press('exportCsvBtn'); });
             var w = mk('span', 'm15-when'); w.appendChild(mk('span', 'm15-no', '写真は入りません')); w.appendChild(document.createTextNode('　台帳の入力・数の確認に')); c.appendChild(w); s.appendChild(c);
           });
         });
         sw.appendChild(mk('p', 'm15-sep', '片付け（危ない）'));
-        sw.appendChild(btn('m15-row m15-danger-line', '🗑 アプリ内の写真を全部消す…（確かめの小窓が出ます）', function(){ press('clearAllBtn'); }));
+        sw.appendChild(btn('m15-row m15-danger-line', '🗑 この端末の写真を全部消す…（確かめの小窓が出ます）', function(){ press('clearAllBtn'); }));
         sw.appendChild(fold);
         var sos = exView.querySelector(':scope > details.card');
         exView.insertBefore(sw, sos && sos.nextSibling ? sos.nextSibling : exView.firstChild);
         var cta = $('m1-save-cta'); if (cta) cta.style.display = 'none';   // 役目が同じなので隠す（v3.214 のシートの処理は残す）
         setOpen(false);
         var syncSave = function(){
-          var n = unsavedN();
-          setText(sstU, n > 0 ? '⚠ 未保存 ' + n + ' 枚' : '✓ 未保存 0 枚'); sstU.className = n > 0 ? 'm15-bad' : 'm15-ok';
+          var n = unsavedN(), ld = loadingNow17();   // v3.217 段3：読み込み中は「✓ 0 枚」を出さない
+          setText(sstU, ld ? unsavedText17(0, true) : ((n > 0 ? '⚠ ' : '✓ ') + unsavedText17(n))); sstU.className = ld ? 'm15-muted' : (n > 0 ? 'm15-bad' : 'm15-ok');
           var lb = txt('lastBackupInfo'); setText(sstL, '最後の保存：' + (lb ? lb.replace(/^[^：]*：/, '') : 'まだ'));
           setText(t1w, '新しく撮った ' + n + ' 枚だけ');
         };
@@ -8529,7 +9091,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       // 保存（今のカードの中）
       var full = $('export-full-card');
       if (full) {
-        var ibs = full.querySelectorAll(':scope > .info-box'); if (ibs[0]) addInfo(ibs[0], '保存の動き・ZIP の中身'); if (ibs[1]) addInfo(ibs[1], '①②③の使い分け');
+        var ibs = full.querySelectorAll(':scope > .info-box'); if (ibs[0]) addInfo(ibs[0], '保存の動き・ZIP の中身'); if (ibs[1]) addInfo(ibs[1], '①〜③の使い分け');   // v3.217 段26（S7）：中身はカードの ①②③ の使い分け
         ['exp-inc', 'exp-backup', 'exp-split'].forEach(function(k){ D(k); });
       }
       var mapCard = $('mapExportBtn') && $('mapExportBtn').closest('.card');
@@ -8573,12 +9135,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var wide = function(){ try { return window.matchMedia('(orientation: landscape) and (min-width: 1024px)').matches; } catch (_) { return false; } };
       var curV = function(){ var a = document.querySelector('.tab.active'); return a ? a.dataset.view : ''; };
       var aside = mk('aside'); aside.id = 'm15-aside'; aside.setAttribute('aria-label', '今の作業と補足');
-      var ahead = mk('div', 'm15-aside-head'); ahead.appendChild(mk('span', 'm15-aside-title', '今の作業と補足'));
+      var ahead = mk('div', 'm15-aside-head'); ahead.appendChild(mk('span', 'm15-aside-title', '今の状態'));
       var afold = btn('m15-aside-fold', '畳む ▶'); ahead.appendChild(afold); aside.appendChild(ahead);
       var abody = mk('div', 'm15-aside-body'); aside.appendChild(abody);
-      var arail = btn('m15-aside-rail', 'ⓘ 補足 ◀'); arail.id = 'm15-aside-rail';
+      var arail = btn('m15-aside-rail', '今の状態 ◀'); arail.id = 'm15-aside-rail';
       document.body.appendChild(aside); document.body.appendChild(arail);
-      var CLOSED0 = { shoot: 1, 'eval': 1 }, closedBy = {};
+      var CLOSED0 = {}, closedBy = {};   // v3.217 段11：全部のタブで初めは開いたまま（人が畳んだタブだけ畳む。メモリだけ）
       var asideClosed = function(){ var v = curV(); return Object.prototype.hasOwnProperty.call(closedBy, v) ? closedBy[v] : !!CLOSED0[v]; };
       window.__m15AsideOpen = function(){ return wide() && !asideClosed(); };
       var sec = function(title){ var s = mk('section', 'm15-sec'); s.appendChild(mk('p', 'm15-sec-title', title)); abody.appendChild(s); return s; };
@@ -8594,26 +9156,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       };
       window.__m15InfoChange = putInfo;
       var steps215 = $('m1-steps');
-      var fillAside = function(){
+      var fillAside = function(){   // v3.217 段11：中身は buildStatus17（縦の板と同じ関数）。この画面の補足は横だけ
         abody.textContent = '';
-        var s1 = sec('今の作業');
-        var rowsS = steps215 ? Array.prototype.filter.call(steps215.querySelectorAll('.m1-row'), function(r){ return r.style.display !== 'none' && !r.classList.contains('m15-hid'); }) : [];
-        if (!rowsS.length) s1.appendChild(mk('p', 'm15-muted', '途中の設備はありません'));
-        rowsS.forEach(function(r){
-          var c = r.cloneNode(true); c.removeAttribute('id'); c.className = 'm15-side-row';
-          var ob = r.querySelectorAll('button'), cbs = c.querySelectorAll('button');
-          Array.prototype.forEach.call(cbs, function(b, i){ b.className = 'm15-side-btn' + (/あとで|やめる|解除/.test(b.textContent) ? ' sub' : ''); b.addEventListener('click', function(){ if (ob[i]) ob[i].click(); }); });
-          s1.appendChild(c);
-        });
-        var s2 = sec('今日の現場');
-        var fv = function(k){ var e = document.querySelector('#fixedFields .field-row[data-key="' + k + '"] .field-input'); return e ? e.value.trim() : ''; };
-        kv(s2, '会社', fv('client') || '（未入力）', fv('client') ? '' : 'm15-bad'); kv(s2, '事業所', fv('site') || '（未入力）', fv('site') ? '' : 'm15-bad'); kv(s2, '棟', fv('building') || '（未入力）', fv('building') ? '' : 'm15-bad');
-        var dck = $('survey-digit-check'); kv(s2, '番号の桁数', (dck && !dck.checked) ? '桁を確かめない' : ((($('survey-digit-count') || {}).value || '4') + ' けた'));
+        if (typeof buildStatus17 === 'function') buildStatus17(abody);
         infoHolder = mk('div', 'm15-side-info'); sec('この画面の補足').appendChild(infoHolder); putInfo(openInfo);
-        var s4 = sec('失わないために'); var n = unsavedN();
-        kv(s4, '未保存', n > 0 ? ('⚠ ' + n + ' 枚（まだ ZIP にしていない）') : '✓ 0 枚', n > 0 ? 'm15-bad' : 'm15-ok');
-        var lb = txt('lastBackupInfo'); kv(s4, '最後の保存', lb ? lb.replace(/^[^：]*：/, '') : 'まだ保存していません');
-        if (curV() !== 'export') s4.appendChild(btn('m15-side-btn sub', '💾 保存へ ▶', function(){ var t = document.querySelector('.tab[data-view="export"]'); if (t) t.click(); }));
       };
       var lastAsideKey = null;
       var syncAside = function(){
@@ -8623,7 +9169,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var top = 0; ['.app-bar', '#unsavedBar'].forEach(function(s){ var el = document.querySelector(s); if (!el) return; var r = el.getBoundingClientRect(); if (r.height > 0 && r.top < innerHeight / 2) top = Math.max(top, r.bottom); });
         try { root.style.setProperty('--m15-aside-top', Math.round(top) + 'px'); } catch (_) {}
         if (w && !closed) {
-          var key = JSON.stringify([curV(), steps215 ? steps215.textContent : '', txt('badgeCount'), txt('lastBackupInfo')]);
+          var key = JSON.stringify([curV(), steps215 ? steps215.textContent : '', txt('badgeCount'), txt('lastBackupInfo'), (typeof statusKey17 === 'function') ? statusKey17() : '']);
           if (key !== lastAsideKey) { lastAsideKey = key; fillAside(); }   // 中身が同じなら作り直さない
         } else lastAsideKey = null;
         if (window.__m15ReflowInfo) window.__m15ReflowInfo();
@@ -8635,6 +9181,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       [steps215, $('badgeCount'), $('lastBackupInfo')].forEach(function(el){ if (el) aObs.observe(el, { childList: true, subtree: true, characterData: true, attributes: true }); });
       if (setView) setView.addEventListener('input', function(){ lastAsideKey = null; clearTimeout(aTimer); aTimer = setTimeout(syncAside, 60); });
       window.addEventListener('resize', function(){ lastAsideKey = null; syncAside(); });
+      window.__m17AsideSync = function(){ syncAside(); };   // v3.217 段11：今の状態が変わったら描き直す（中身が同じなら作り直さない）
       syncAside();
 
       // ---- ⑧ 位置記録：①棟 → ②図面 → ③ピン の段階と、次にすること（主のボタン1つ）・「どちらの順番？」・
@@ -8653,7 +9200,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           var bname = txt('map-inside-title') || txt('map-area-title'), sname = txt('map-sheet-title');
           var inArea = shownEl(mapCards[2]);
           var none = stg === 1 ? emptyList('map-buildings-list') : (stg === 2 ? emptyList(inArea ? 'map-area-sheets-list' : 'map-sheets-list') : false);
-          var key = JSON.stringify([stg, bname, sname, none, afterShot, txt('complete-bar-name')]);
+          var key = JSON.stringify([stg, bname, sname, none, afterShot, txt('complete-bar-name'), (typeof readNow === 'function') ? (readNow().pinTarget || {}).filename : '']);
           // 撮った直後（下の帯が出ている）か、図面に記録の欄が開いているときだけ、上の「撮影位置を図面に記録」のカードを出す
           if (pinCard) pinCard.classList.toggle('m15-hid', !(afterShot || (pinBody && pinBody.style.display !== 'none')));
           if (key === lastRoute) return; lastRoute = key;   // 同じなら作り直さない
@@ -8667,8 +9214,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           });
           route.appendChild(st);
           var main = null, next;
-          if (stg === 1) { next = none ? '棟（建物）を登録する' : '下の一覧で、棟の「開く」を押す'; if (none) main = btn('m15-row m15-main', '＋ 棟（建物）を登録する', function(){ press('map-add-building-btn'); }); }
-          else if (stg === 2) { next = none ? '図面（マップ）を読み込む' : '下の一覧で、図面を選ぶ'; if (none) main = btn('m15-row m15-main', '＋ 図面を読み込む（写真・画像／複数可）', function(){ press(inArea ? 'map-area-add-sheet-btn' : 'map-add-sheet-btn'); }); }
+          if (stg === 1) { next = none ? '棟（建物）を足す' : '下の一覧で、棟の「開く」を押す'; if (none) main = btn('m15-row m15-main', '＋ 棟（建物）を足す', function(){ press('map-add-building-btn'); }); }
+          else if (stg === 2) { next = none ? '図面（マップ）を読み込む' : '下の一覧で、図面を選ぶ'; if (none) main = btn('m15-row m15-main', '＋ 図面を読み込む（写真・画像・ZIP／複数可）', function(){ press(inArea ? 'map-area-add-sheet-btn' : 'map-add-sheet-btn'); }); }
           else { next = 'ピンを置く'; main = btn('m15-row m15-main', '📍 この図面でピンを置く ▶', function(){ press('map-sheet-pin-btn'); }); }
           route.appendChild(mk('p', 'm15-next', '次にすること：' + next)); if (main) route.appendChild(main);
           if (stg === 3) {   // 第3段：「どちらの順番？」の2つの札は ⓘ を押したときだけ出す
@@ -8682,7 +9229,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             var a2 = mk('div', 'm15-tile m15-card-info', '📍→📷 先に置いて撮る'); a2.appendChild(mk('span', 'm15-when', '上のボタンで図面を開いてピンを置き、ピンの「📷 この位置で撮影」で撮る（先行ピン）'));
             od.appendChild(a1); od.appendChild(a2); ow.appendChild(od);
           }
-          if (afterShot) route.appendChild(mk('p', 'm15-keep', '📷 ' + (txt('complete-bar-name') || '今撮った写真') + 'の位置は、下の「撮影位置を図面に記録」で図面を選んで置けます'));
+          var pt17 = (typeof readNow === 'function') ? readNow().pinTarget : null;   // v3.217 段6 (a)：名前は実際に付く写真から（完了した設備の古い名前は使わない）
+          if (afterShot) route.appendChild(mk('p', 'm15-keep', '📷 ' + ((pt17 && pt17.filename) || txt('complete-bar-name') || '今撮った写真') + 'の位置は、下の「撮影位置を図面に記録」で図面を選んで置けます'));
         };
         var bcr = $('map-breadcrumb'); if (bcr) bcr.style.display = 'none';   // 今いる所は、上の段階の表示で出す
         var rTimer = null, rObs = new MutationObserver(function(){ clearTimeout(rTimer); rTimer = setTimeout(renderRoute, 30); });
@@ -8930,7 +9478,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var had = !!pendingShootPin;
     pendingShootPin = null;
     hideShootForPinBanner();
-    if (had && !silent) showToast('先行ピンへの自動紐づけを解除しました');
+    if (had && !silent) showToast('先行ピンに付けるのを取り消しました');
   }
   function showShootForPinBanner() {
     var b = $('shoot-for-pin-banner');
@@ -8955,7 +9503,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var newPhoto = photos.find(function(p){ return p.id === newPhotoId; });
     if (newPhoto && pinPhotoNumberDiffers(pin.label, newPhoto)) {   // v3.208 F-05：ピンの番号と撮った番号が違えば付けない（写真はそのまま）
       clearPendingShootPin(true);
-      showToast('ピン「' + String(pin.label).trim() + '」と撮った番号「' + photoNumberForPin(newPhoto) + '」が違うので、紐づけませんでした。付けるときは、ピンの「写真を紐づける」から');
+      showToast('ピン「' + String(pin.label).trim() + '」と撮った番号「' + photoNumberForPin(newPhoto) + '」が違うので、紐づけませんでした。付けるときは、ピンの「写真を付ける」から');
       return false;
     }
     pin.photoId = newPhotoId;
@@ -9034,6 +9582,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function openDigitModal(text, valueToUse) {
     pendingShotValue = valueToUse;
     var t = $('digit-modal-text'); if (t) t.textContent = text;
+    var y17 = $('digit-yes-btn'); if (y17) y17.textContent = '『' + valueToUse + '』で撮る';   // v3.217 段15（S17）：使う番号をボタンに書く
     if (digitModal) digitModal.classList.add('show');
   }
   function closeDigitModal() { if (digitModal) digitModal.classList.remove('show'); }
@@ -9089,11 +9638,34 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   if (continuousEndBtn) {
     continuousEndBtn.addEventListener('click', function() {
+      askEndNoEval22().then(function(k22){ if (k22 !== 'next') return;   // v3.217 段22（小2）：行き先を選んでから
       var __prevNo = unitNumberOf(currentEquipP0());   // v3.215 ⑦
       endContinuousMode();
       advanceToNextEquipment('撮影を終了しました。次の設備の番号を入力して撮影してください。');
       keepNumPrefix(__prevNo);
+      });
     });
+  }
+  // v3.217 段22（小2）：「評価しないで次へ」の行き先を選ぶ。返す物：'next'（今までどおり次の設備へ）・'locate'（ここで位置記録へ進めた）・null（やめる）
+  async function askEndNoEval22() {
+    if (!continuousMode.active || equipmentBaseId == null) return 'next';   // 設備が決まっていないときは、今までどおり
+    var p0 = photos.find(function(x){ return x.id === equipmentBaseId; }); if (!p0) return 'next';
+    var no = equipNo17(p0);
+    var k = await askSheet({
+      title: no + ' の評価をしないで進みます',
+      choices: [
+        { key: 'locate', label: '評価しないで位置記録へ', kind: 'main' },
+        { key: 'next', label: '評価しないで、ピンも置かずに次の設備へ' }
+      ],
+      cancel: 'やめる'
+    });
+    if (k !== 'locate') return k;
+    if (!continuousMode.active || equipmentBaseId !== p0.id) return null;   // 聞いている間に変わったら、何もしない
+    if (!(await confirmLeaveEvalDraft(p0, '、' + no + ' の評価をしないで位置記録へ'))) return null;   // 別の設備の打ちかけ（評価の帯の入り口と同じ確かめ）
+    enterEvalMode(equipmentBaseId);   // 「撮影を終了して G.U.T評価へ」と同じ
+    if (evalModeBaseId !== p0.id) return null;
+    enterLocatePhase('評価しないで位置記録へ進みました。下の「📍 図面に置く」か「ピンを置かずに次の設備へ」を押してください。');   // 「評価しないで位置記録へ」と同じ
+    return 'locate';
   }
   // 連続撮影を終了して、その設備の代表写真のG.U.T評価へ進む（評価モードに入る）
   var continuousEvalBtn = $('continuous-eval-btn');
@@ -9138,7 +9710,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function setEvalBarForList(fromList) {   // v3.199 S8：下の帯のボタンの名前（撮影リストから入ったときだけ「撮影リストへ戻る」）
     var sb = $('eval-save-btn'), kb = $('eval-skip-btn');
     if (sb) sb.textContent = fromList ? '✅ 評価を保存して撮影リストへ戻る' : '✅ 評価を保存して位置記録へ';
-    if (kb) kb.textContent = fromList ? '評価せずに撮影リストへ戻る' : '評価せずに位置記録へ';
+    if (kb) kb.textContent = fromList ? '評価しないで撮影リストへ戻る' : '評価しないで位置記録へ';
+    var kn = $('m17-skip-note'); if (kn) kn.textContent = fromList ? '打った評価は記録されません' : '打った評価はまだ記録されていません（「＜ 評価へ戻る」で戻って保存できます）';   // v3.217 段15（E2・E3）
   }
   function enterEvalMode(baseId, opts) {
     var ph0 = photos.find(function(p){ return p.id === baseId; });
@@ -9378,7 +9951,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!plan.links.length) {
       if (sumEl) sumEl.innerHTML = '一括で紐づけできる候補は見つかりませんでした。';
       if (listEl) listEl.innerHTML = '<p class="empty" style="padding:10px;text-align:center;">写真・ピンとも1つに定まる「写真のない番号付きピン」がありません。' +
-        (skip ? '<br>（あいまいなため見送り：' + skip + ' 件。個別の「🔗 写真を紐づける／変更する」でどうぞ）' : '') +
+        (skip ? '<br>（あいまいなため見送り：' + skip + ' 件。個別の「🔗 写真を付ける／変更する」でどうぞ）' : '') +
         ((mode !== 'loose') ? '<br><span style="color:#0d47a1;">「ゆるく一致」に切り替えると、0埋め違いなども拾えます。</span>' : '') + '</p>';
       if (confirmBtn) confirmBtn.style.display = 'none';
     } else {
@@ -9477,6 +10050,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     evalModeBaseId = null;
     evalFromList = false;
     setEvalBarForList(false);
+    evalStash17 = null; evalClearAll17();   // v3.217 段15a（DEC-0094）：評価の相手を外すので、欄を空にする（次の番号に付けない）
     var lt = document.querySelector('.tab[data-view="list"]'); if (lt) lt.click();
     renderTracker();
     if (msg) showToast(msg);
@@ -9494,6 +10068,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   var completeDoneBtn = $('complete-done-btn');
   if (completeDoneBtn) {
+    gateEvalDraft17(completeDoneBtn, null, function(){ return '、' + ((readNow().eq || {}).no || 'この設備') + ' を完了して次へ'; });   // v3.217 段5：入り口④・⑤
     completeDoneBtn.addEventListener('click', function(){
       var st=currentStages(); var nm=st?st.name:'';
       var __prevNo = unitNumberOf(currentEquipP0());   // v3.215 ⑦：完了する設備の番号（次の設備へ進んだあと、頭の2けたを残すため）
@@ -9501,10 +10076,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var miss=[]; if(!st.shoot)miss.push('撮影'); if(!st.eval)miss.push('評価'); if(!st.pin)miss.push('位置記録');
         // v3.199 S2：位置記録（任意）だけが抜けているときは「未完了」と言わない
         var onlyPin = (miss.length === 1 && miss[0] === '位置記録');
-        var doneMsg = onlyPin
-          ? 'ピンはまだ置いていません（位置記録は任意です）。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとからピンを置くこともできます）'
-          : 'まだ「'+miss.join('・')+'」が未完了です。\nこのまま「'+(nm||'この設備')+'」を完了しますか？\n（あとから追記もできます）';
-        if(!confirm(doneMsg)) return;
+        if (!complete17Pass) { askComplete17(onlyPin, miss, nm); return; }   // v3.217 段8：標準の窓をやめ、自前の部品で聞く（答えのあと、この処理をもう一度動かす）
+        complete17Pass = false;
       }
       // v3.214（B1）：続けて次の設備を撮っている最中に、前の設備の位置記録を完了したときは、前の設備の位置記録の段階だけを閉じる。
       //   撮っている設備（番号・撮影の帯・いま撮影中の設備の印）はそのまま残し、撮影タブから評価に入れるようにする。それ以外は今までどおり次の設備へ
@@ -9523,7 +10096,227 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     });
   }
 
+  // ===== v3.217 段7（DEC-0078 ③⑤）：位置記録の段階の下の帯 =====
+  var cbPlaceBtn17 = $('m17-cb-place'), cbBackBtn17 = $('m17-cb-back');
+  function setText17(id, t) { var el = $(id); if (el && el.textContent !== t) el.textContent = t; }
+  function syncBand17() {
+    var bar = $('complete-bar'); if (!bar || !cbPlaceBtn17 || !completeDoneBtn) return;
+    var pt = pinTargetPhoto17(), st = currentStages();
+    var no = pt ? equipNo17(pt) : (((readNow().eq) || {}).no || '');
+    var placed = !!(st && st.pin);
+    setText17('m17-cb-no', no);
+    setText17('m17-cb-state', placed ? '（置きました）' : '（まだ置いていません）');
+    setText17('m17-cb-sub', placed ? '位置を図面に置きました。「✅ この設備を完了して次へ」で次の設備へ進みます。置き直すこともできます。'
+                                   : '「📍 ' + no + ' を図面に置く」で、撮った写真の位置を図面に残せます。置かずに次の設備へ進むこともできます。');
+    if (cbPlaceBtn17.textContent !== (placed ? '📍 置き直す' : '📍 ' + no + ' を図面に置く')) cbPlaceBtn17.textContent = placed ? '📍 置き直す' : '📍 ' + no + ' を図面に置く';
+    if (completeDoneBtn.textContent !== (placed ? '✅ この設備を完了して次へ' : 'ピンを置かずに次の設備へ')) completeDoneBtn.textContent = placed ? '✅ この設備を完了して次へ' : 'ピンを置かずに次の設備へ';
+    cbPlaceBtn17.classList.toggle('m17-pri', !placed); cbPlaceBtn17.classList.toggle('m17-sec', placed);
+    completeDoneBtn.classList.toggle('m17-pri', placed); completeDoneBtn.classList.toggle('m17-sec', !placed);
+  }
+  // 主「📍（番号）を図面に置く」：窓を出さずに、設備の代表の写真を付けて図面を開く（撮ったあとの道だけ。タブから開いたときは段8 の確かめで選ぶ）
+  function placeFromBand17() {
+    var pt = pinTargetPhoto17(); if (!pt) { showToast('置く写真が見つかりませんでした'); return; }
+    var ft = document.querySelector('.tab[data-view="floorplan"]'); if (ft && !ft.classList.contains('active')) ft.click();
+    openPinSection();
+    if (!pinSheetSelect || !pinSheetSelect.value) {   // 図面を勝手に選ばない
+      showToast('先に、置く図面（マップ）を選んでください。選んだら、もう一度「📍 ' + equipNo17(pt) + ' を図面に置く」を押します');
+      var sec = $('pin-section-toggle'); if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+    var ref = { buildingId: pinBuildingSelect.value, areaId: pinAreaSelect.value || null, sheetId: pinSheetSelect.value };
+    var sh = resolveSheet(ref), ids = equipPhotosOf(pt).map(function(x){ return x.id; });
+    var already = !!sh && (sh.pins || []).some(function(p){ return ids.indexOf(p.photoId) >= 0; });   // その図面にもうその設備のピンがあれば、自動では付けない
+    openPinEditor(ref, already ? null : pt.id);
+    if (already) showToast(equipNo17(pt) + ' はこの図面にもう置いてあります。動かすときは、そのピンを押してください');
+  }
+  // ===== v3.217 段13：撮影リストの札。readNow と同じ決め方（今の作業・打ちかけ・評価・ピン・未保存）。表示だけ =====
+  function listChips17() {
+    var n = readNow(), pinned = pinnedPhotoIds17();
+    var keyOf = function(p){ return p.client + '/' + p.site + '/' + p.building + '/' + equipBaseOf(p); };
+    var work = n.work ? photos.find(function(x){ return x.id === n.work.id; }) : null, workKey = work ? keyOf(work) : null;
+    var draftP = n.draft ? photos.find(function(x){ return x.id === n.draft.baseId; }) : null, draftKey = draftP ? keyOf(draftP) : null;
+    var ev = {}, pin = {}, rep = {};
+    photos.forEach(function(p){
+      var k = keyOf(p);
+      if (hasEval(p)) ev[k] = true; if (pinned[p.id]) pin[k] = true;
+      var b = branchIndexOf(p.filename) || 0, r = rep[k];
+      if (!r || b < r.b || (b === r.b && p.id < r.id)) rep[k] = { b: b, id: p.id };
+    });
+    return function(p){
+      var k = keyOf(p), w = document.createElement('div'); w.className = 'm17-list-chips';
+      if (k === workKey) w.appendChild(chip17('cur', '', '今の設備'));
+      else if (rep[k] && rep[k].id === p.id) { w.appendChild(chip17(ev[k] ? 'done' : 'none', '評価')); w.appendChild(chip17(pin[k] ? 'done' : 'none', 'ピン')); }
+      if (k === draftKey) w.appendChild(chip17('draft', ''));
+      if (!backedUpKeys.has(photoPathKey(p))) w.appendChild(chip17('todo', '', '未保存'));
+      return w.childNodes.length ? w : null;
+    };
+  }
+  // ===== v3.217 段11・12：今の状態の中身（横の右の欄と縦の板で同じ関数。readNow を読むだけ・値は書き換えない） =====
+  function workChips17(n) {   // 今の設備の工程の札（撮影・評価・位置記録）
+    var w = document.createElement('div'); w.className = 'm17-s-chips';
+    var p = photos.find(function(x){ return x.id === n.work.id; }); if (!p) return w;
+    var eq = equipPhotosOf(p), ids = eq.map(function(x){ return x.id; });
+    var done = [eq.some(function(x){ return !x.noPhoto; }), eq.some(function(x){ return hasEval(x); }) || !!evalSavedEmpty17[p.id], equipHasPin(ids)];
+    STAGE17.forEach(function(lb, i){
+      var st = i === n.work.stage ? 'cur' : (done[i] ? 'done' : (i < n.work.stage ? 'none' : 'todo'));
+      var word = (i === 1 && st === 'done' && !eq.some(function(x){ return hasEval(x); })) ? '済み（空）' : null;
+      w.appendChild(chip17(st, lb, word));
+    });
+    if (n.draft) w.appendChild(chip17('draft', '', '打ちかけ（' + n.draft.parts.join('・') + '・まだ保存していない）'));
+    return w;
+  }
+  function statusKey17() { var n = readNow(); return JSON.stringify([n.loading, n.work, n.draft, n.pinTarget, n.done, n.unsaved, n.lastBackup, n.site, curView17(), shownId17('pinrec-banner')]); }
+  function buildStatus17(root) {
+    var n = readNow(), v = curView17();
+    var mk = function(tag, cls, t){ var e = document.createElement(tag); if (cls) e.className = cls; if (t != null) e.textContent = t; return e; };
+    var sec = function(title){ var x = mk('section', 'm15-sec'); x.appendChild(mk('p', 'm15-sec-title', title)); root.appendChild(x); return x; };
+    var kv = function(x, k, val, cls){ var r = mk('div', 'm15-kv' + (cls ? ' ' + cls : '')); r.appendChild(mk('span', 'm15-k', k)); r.appendChild(mk('span', 'm15-v', val)); x.appendChild(r); };
+    var btn = function(x, label, fn, sub){ var b = mk('button', 'm17-s-btn' + (sub ? ' m17-s-sub' : ''), label); b.type = 'button'; b.addEventListener('click', fn); x.appendChild(b); return b; };
+    // 1. 今の作業
+    var s1 = sec('今の作業');
+    if (n.loading) s1.appendChild(mk('p', 'm17-s-muted', '… 読み込み中（読み終えると、今の作業が出ます）'));
+    else if (!n.work) { s1.appendChild(mk('p', 'm17-s-muted', '途中の設備はありません')); if (v !== 'shoot') btn(s1, '📷 次の番号を打って撮る ▶', function(){ goTab17('shoot'); }); }   // v3.217 段14
+    else {
+      s1.appendChild(mk('p', 'm17-s-no', '🔧 ' + n.work.no));
+      s1.appendChild(workChips17(n));
+      if (n.work.stage >= 1 && n.pinTarget) s1.appendChild(mk('p', 'm17-s-line', '図面に付く写真：' + n.pinTarget.filename));
+      if (v === n.work.tab) s1.appendChild(mk('p', 'm17-s-muted', '← 今この画面'));
+      else btn(s1, '今の作業へ ▶（' + TAB17[n.work.tab] + '）', function(){ goTab17(n.work.tab); });
+    }
+    if (shownId17('pinrec-banner') && v !== 'floorplan') btn(s1, '📍 今撮った位置を図面に記録 ▶', function(){ var o = $('pinrec-banner-btn'); if (o) o.click(); }, true);
+    // 2. 失わないために
+    var s2 = sec('失わないために');
+    kv(s2, '未保存', n.loading ? unsavedText17(0, true) : (n.unsaved > 0 ? ('⚠ ' + n.unsaved + ' 枚（ZIP にしていない）') : '✓ 0 枚'), n.loading ? 'm15-muted' : (n.unsaved > 0 ? 'm15-bad' : 'm15-ok'));
+    kv(s2, '最後の保存', n.lastBackup ? n.lastBackup.replace(/^[^：]*：/, '') : 'まだ保存していません');
+    if (n.draft) kv(s2, '打ちかけ', '✎ ' + n.draft.no + ' の評価（ZIP に入りません。評価の帯で保存）', 'm15-bad');
+    if (v !== 'export') btn(s2, '💾 保存へ ▶', function(){ goTab17('export'); }, true);
+    // 3. 終わった設備の残り
+    var s3 = sec('終わった設備の残り');
+    if (!n.done.length) s3.appendChild(mk('p', 'm17-s-muted', 'まだありません'));
+    else {
+      var nev = n.done.filter(function(g){ return !g.eval; }).length, npin = n.done.filter(function(g){ return !g.pin; }).length;
+      s3.appendChild(mk('p', 'm17-s-line', n.done.length + ' 台（評価なし ' + nev + '・ピンなし ' + npin + '）'));
+      n.done.slice(-5).forEach(function(g){
+        var r = mk('div', 'm17-s-row'); r.appendChild(mk('span', 'm17-l-name', g.no + ' '));
+        r.appendChild(chip17(g.eval ? 'done' : 'none', '評価')); r.appendChild(chip17(g.pin ? 'done' : 'none', 'ピン')); s3.appendChild(r);
+      });
+      if (v !== 'list') btn(s3, '📋 撮影リストで見る ▶', function(){ goTab17('list'); }, true);
+    }
+    // 4. 今日の現場
+    var s4 = sec('今日の現場');
+    kv(s4, '会社', n.site.client || '（未入力）', n.site.client ? '' : 'm15-bad');
+    kv(s4, '事業所', n.site.site || '（未入力）', n.site.site ? '' : 'm15-bad');
+    kv(s4, '棟', n.site.building || '（未入力）', n.site.building ? '' : 'm15-bad');
+    kv(s4, '番号の桁数', n.site.digits ? (n.site.digits + ' けた') : '桁を確かめない');
+  }
+  window.__m17Refresh = function(){ if (window.__m17AsideSync) window.__m17AsideSync(); if (window.__m17PanelSync) window.__m17PanelSync(); };
+  // ===== v3.217 段10（REQ-0033 案2）：今の作業を1つに決める・縦の上の1行 =====
+  var TAB17 = { settings: '設定', shoot: '撮影', eval: '評価', floorplan: '位置記録', list: '撮影リスト', export: '保存', 'import': '読込', reference: '評価参考', qa: 'Q&A' };
+  var STAGE17 = ['撮影', '評価', '位置記録'];
+  function shownId17(id) { var el = $(id); return !!(el && el.style.display && el.style.display !== 'none'); }
+  function workNow17() {   // 今の作業：評価 ＞ 撮影 ＞ 位置記録 の順で1つ
+    var pid = null, tab = null, stage = -1;
+    if (evalBarShown17() && evalModeBaseId != null) { tab = 'eval'; pid = evalModeBaseId; stage = 1; }
+    else if (shownId17('continuous-banner') && equipmentBaseId != null) { tab = 'shoot'; pid = equipmentBaseId; stage = 0; }
+    else if (completeBarShown17() && evalModeBaseId != null) { tab = 'floorplan'; pid = evalModeBaseId; stage = 2; }
+    var p = pid != null ? photos.find(function(x){ return x.id === pid; }) : null;
+    return p ? { tab: tab, stage: stage, id: p.id, no: equipNo17(p) } : null;
+  }
+  function curView17() { var a = document.querySelector('.tab.active'); return a ? a.dataset.view : ''; }
+  function goTab17(v) { var t = document.querySelector('.tab[data-view="' + v + '"]'); if (t) t.click(); }
+  var line17 = $('m17-line'), line17Key = null;
+  function renderLine17() {
+    if (!line17) return;
+    var n = readNow(), v = curView17();
+    var key = JSON.stringify([v, n.loading, n.work, n.draft && n.draft.parts, n.work ? workChips17(n).textContent : '']);   // v3.217 段21：札の状態が変われば描き直す
+    if (key === line17Key) return; line17Key = key;
+    line17.textContent = '';
+    var mk = function(tag, cls, t){ var e = document.createElement(tag); if (cls) e.className = cls; if (t != null) e.textContent = t; return e; };
+    var stb = mk('button', 'm17-l-status', '状態 ▶'); stb.type = 'button'; stb.id = 'm17-l-status'; stb.setAttribute('aria-controls', 'm17-panel'); stb.addEventListener('click', function(){ openPanel17(); });   // v3.217 段12
+    var addStatus = function(){ line17.appendChild(stb); };
+    if (n.loading) { line17.appendChild(mk('span', 'm17-l-muted', '… 読み込み中（読み終えると、今の作業が出ます）')); addStatus(); return; }
+    if (!n.work) {   // v3.217 段14：途中の設備が無いときは、次の一手を1つ
+      line17.appendChild(mk('span', 'm17-l-muted', '途中の設備はありません'));
+      if (v !== 'shoot') { var nb = mk('button', 'm1-act fwd m17-l-go', '📷 次の番号を打って撮る ▶'); nb.type = 'button'; nb.addEventListener('click', function(){ goTab17('shoot'); }); line17.appendChild(nb); }
+      addStatus(); return;
+    }
+    line17.appendChild(mk('span', 'm17-l-name', '🔧 ' + n.work.no));
+    Array.prototype.slice.call(workChips17(n).querySelectorAll('.m17-chip'), 0, 3).forEach(function(c, i){   // v3.217 段21（小7）：3つの札（状態は右の欄・縦の板と同じ決め方）
+      var st = (String(c.className).match(/m17-(cur|done|none|todo)\b/) || [])[1] || 'todo';
+      var x = chip17(st, STAGE17[i], ''); x.textContent = CHIP17[st].mark + STAGE17[i]; x.classList.add('m17-l-chip'); line17.appendChild(x);
+    });
+    if (n.draft) line17.appendChild(chip17('draft', ''));
+    if (v === n.work.tab) line17.appendChild(mk('span', 'm17-l-here', '← 今この画面'));
+    else { var b = mk('button', 'm1-act fwd m17-l-go', '今の作業へ ▶'); b.type = 'button'; b.addEventListener('click', function(){ goTab17(n.work.tab); }); line17.appendChild(b); }
+    addStatus();
+  }
+  // 縦の板：開け閉めはメモリだけ。板の中のボタンを押したら（タブを移る）閉じる
+  var panel17 = $('m17-panel'), panelBody17 = $('m17-panel-body'), panel17Key = null;
+  function panelOpen17() { return !!panel17 && !panel17.hidden; }
+  function fillPanel17() { if (!panelBody17) return; var k = statusKey17(); if (k === panel17Key) return; panel17Key = k; panelBody17.textContent = ''; buildStatus17(panelBody17); }
+  function openPanel17() { if (!panel17) return; panel17Key = null; fillPanel17(); panel17.hidden = false; document.body.classList.add('m17-panel-open'); }
+  function closePanel17() { if (!panel17) return; panel17.hidden = true; document.body.classList.remove('m17-panel-open'); }
+  window.__m17PanelSync = function(){ if (panelOpen17()) fillPanel17(); };
+  // v3.217 段24：横長で幅 1023 以下のときは縦向きの並び。印 m24-narrow を html に付け外しするだけ（見た目は CSS の html.m24-narrow が決める）
+  (function(){ try {
+    var mq24 = window.matchMedia('(orientation: landscape) and (max-width: 1023px)');
+    var set24 = function(){ document.documentElement.classList.toggle('m24-narrow', !!mq24.matches); };
+    set24();
+    if (mq24.addEventListener) mq24.addEventListener('change', set24); else if (mq24.addListener) mq24.addListener(set24);
+    window.addEventListener('resize', set24);
+  } catch (_) {} })();
+  (function(){ try {   // ここで何かが起きても、アプリのほかの起動を止めない
+    var pc = $('m17-panel-close'); if (pc) pc.addEventListener('click', closePanel17);
+    if (panel17) panel17.addEventListener('click', function(ev){ if (ev.target === panel17) { closePanel17(); return; } if (ev.target.closest && ev.target.closest('.m17-s-btn')) closePanel17(); });
+    window.addEventListener('resize', function(){ try { if (panelOpen17() && window.matchMedia('(orientation: landscape) and (min-width: 1024px)').matches) closePanel17(); } catch (_) {} });   // v3.217 段24：閉じるのは右の欄が出る横向きのときだけ（横長で幅 1023 以下は縦向きの並び）
+  } catch (_) {} })();
+  var sched17 = null;
+  function schedule17() { clearTimeout(sched17); sched17 = setTimeout(function(){ try { renderLine17(); if (window.__m17Refresh) window.__m17Refresh(); } catch (_) {} }, 60); }
+  (function(){ try {   // ここで何かが起きても、アプリのほかの起動を止めない
+    var mo = new MutationObserver(schedule17);
+    ['continuous-banner', 'eval-bar', 'complete-bar', 'eval-bar-name', 'complete-bar-name', 'continuous-banner-name', 'badgeCount', 'lastBackupInfo'].forEach(function(id){ var el = $(id); if (el) mo.observe(el, { attributes: true, attributeFilter: ['style', 'class'], childList: true, characterData: true, subtree: true }); });
+    document.querySelectorAll('.tab').forEach(function(t){ mo.observe(t, { attributes: true, attributeFilter: ['class'] }); });
+    document.addEventListener('input', schedule17, true); document.addEventListener('change', schedule17, true); document.addEventListener('click', schedule17, true);
+    schedule17();
+  } catch (_) {} })();
+  // v3.217 段8：「完了して次へ」の確かめ（自前の部品）。'go' のときだけ、同じボタンをもう一度押して今の完了の処理を動かす
+  var complete17Pass = false;
+  function askComplete17(onlyPin, miss, nm) {
+    var no = ((readNow().eq) || {}).no || (nm || 'この設備');
+    var opts = onlyPin ? {
+      title: '📍 ' + no + ' の位置は、まだ置いていません',
+      body: '位置記録は任意です。あとから置くこともできます。',
+      choices: [
+        { key: 'place', label: '📍 先にピンを置く', sub: '図面を開いて、' + no + ' のピンを置きます', kind: 'main' },
+        { key: 'go', label: 'ピンを置かずに完了して次へ', sub: no + ' を完了して、次の設備の番号を打てるようにします', kind: 'plain' }
+      ], cancel: 'やめる'
+    } : {
+      title: 'まだ「' + miss.join('・') + '」が済んでいません',
+      body: 'このまま ' + no + ' を完了できます。済んでいない所は、あとから撮影リストで追記できます。',
+      choices: [{ key: 'go', label: 'このまま ' + no + ' を完了して次へ', sub: '済んでいない「' + miss.join('・') + '」は、あとから追記できます', kind: 'plain' }],
+      cancel: 'やめる'
+    };
+    askSheet(opts).then(function(k){
+      if (k === 'place') { placeFromBand17(); return; }
+      if (k !== 'go') return;
+      complete17Pass = true; gate17Pass = completeDoneBtn;   // 打ちかけの見張りは、もう聞いたので素通り
+      completeDoneBtn.click();
+      complete17Pass = false;
+    });
+  }
+  if (cbPlaceBtn17) cbPlaceBtn17.addEventListener('click', placeFromBand17);
+  if (cbBackBtn17) cbBackBtn17.addEventListener('click', function(){ if (evalModeBaseId != null) openEvalForEdit17(evalModeBaseId); });   // DEC-0079：評価の保存の帯つきで開く
+  (function(){   // 帯の字の描き直し。ここで何かが起きても、アプリのほかの起動を止めない（try で囲む）
+    try {
+      var pe = $('pin-editor'), cb = $('complete-bar');
+      var mo = new MutationObserver(function(){ try { syncBand17(); } catch (_) {} });
+      if (pe) mo.observe(pe, { attributes: true, attributeFilter: ['style', 'class'] });
+      if (cb) mo.observe(cb, { attributes: true, attributeFilter: ['style'] });
+      syncBand17();
+    } catch (_) {}
+  })();
   if (continuousEvalBtn) {
+    gateEvalDraft17(continuousEvalBtn, function(){ return equipmentBaseId == null ? null : photos.find(function(x){ return x.id === equipmentBaseId; }); }, function(){ var ep = equipmentBaseId == null ? null : photos.find(function(x){ return x.id === equipmentBaseId; }); return '、' + (ep ? equipNo17(ep) : '') + ' の評価へ進む'; });   // v3.217 段5：入り口③
     continuousEvalBtn.addEventListener('click', function() {
       if (equipmentBaseId == null) { endContinuousMode(); return; }
       enterEvalMode(equipmentBaseId);
@@ -9549,6 +10342,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         ph0.clsCode = selectedCls?selectedCls.code:''; ph0.clsBig = selectedCls?selectedCls.big:''; ph0.clsMid = selectedCls?selectedCls.mid:'';
         ph0.clsSmall = selectedCls?selectedCls.small:''; ph0.clsGInit = selectedCls?selectedCls.g:''; ph0.clsUInit = selectedCls?selectedCls.u:'';
         ph0.memo = memo ? memo.value : '';
+        try { if (typeof evalSavedEmpty17 !== 'undefined' && typeof hasEval === 'function') { if (hasEval(ph0)) delete evalSavedEmpty17[ph0.id]; else evalSavedEmpty17[ph0.id] = 1; } } catch (_) {}   // v3.217 段2：空のまま保存した印（メモリだけ。この処理だけを取り出して動かしても止まらない）
         try { await updatePhotoInDB(ph0); } catch(e) {}
         // v3.197 A5：評価・メモ・分類が変わったら、バックアップと食い違うので未保存に戻す（地雷6の作法）。
         //   書き込みに失敗しても手元の写真は変わっている（次のバックアップに入る）ので、同じく戻す。
@@ -9557,13 +10351,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         showToast('✅ この端末に記録しました'); // 評価保存の確定（v3-49）
       }
       if (evalFromList) { returnToListAfterEval(); return; }   // v3.199 S8：撮影リストから入ったときは、位置記録へ進まない
-      enterLocatePhase('✅ ' + (ph0 ? ph0.filename : '') + ' の評価をこの端末に記録しました。図面にピンを置くか、「✅ この設備を完了して次へ」を押してください。');
+      enterLocatePhase('✅ ' + (ph0 ? ph0.filename : '') + ' の評価をこの端末に記録しました。下の「📍 図面に置く」か「ピンを置かずに次の設備へ」を押してください。');
     });
   }
   if (evalSkipBtn) {
     evalSkipBtn.addEventListener('click', function() {
       if (evalFromList) { returnToListAfterEval('評価をしないで撮影リストへ戻りました'); return; }   // v3.199 S8
-      enterLocatePhase('評価をスキップしました。図面にピンを置くか、「✅ この設備を完了して次へ」を押してください。');
+      enterLocatePhase('評価しないで位置記録へ進みました。下の「📍 図面に置く」か「ピンを置かずに次の設備へ」を押してください。');
     });
   }
   // 連続撮影中：今の1枚を撮り直す（v3-194：同じレコードを更新＝同じ枝番のまま写真だけ差し替え。失敗分が溜まらない）
@@ -9650,7 +10444,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       var bulkInFlight = [];   // v3.206：取り込みの間、付く名前を記録中に入れる
       for (var bj = 1; bj <= files.length; bj++) bulkInFlight.push(addShotInFlight({ client: bClient, site: bSite, building: bBuilding, filename: baseName + '_' + bj + '.jpg' }));
-      var bulkCls = selectedCls;   // v3.206：分類は取り込みを始めた時点のもの
+      var own17 = evalFormFor17(evalKeyOfFields17());   // v3.217 段15a（DEC-0094）：欄の値が別の番号の物なら付けない
+      var bulkCls = own17 ? selectedCls : null;   // v3.206：分類は取り込みを始めた時点のもの
       var bulkFnStart = (getFilename() || {}).value || '';   // v3.206：最後に消すのは、取り込みの間に打ち直していないときだけ
       var bulkMemoStart = memo.value;   // v3.206
       try {
@@ -9660,8 +10455,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var gInput = $('g-value');
       var uInput = $('u-value');
       var tInput = $('t-value');
-      var guEdited = guEditCheck && guEditCheck.checked;
-      var tChecked = tCheck && tCheck.checked;
+      var guEdited = own17 && guEditCheck && guEditCheck.checked;
+      var tChecked = own17 && tCheck && tCheck.checked;
       var gVal = guEdited ? gutSaveValue(gInput.value) : '';
       var uVal = guEdited ? parseGutValue(uInput.value) : '';
       var tVal = tChecked ? parseGutValue(tInput.value) : '';
@@ -9676,6 +10471,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         geo = await Promise.race([getGeolocation(), new Promise(function(res) { setTimeout(function() { res({ lat: '', lng: '', accuracy: '', error: 'timeout' }); }, 12000); })]);   // v3.206
         if (geoStatus) {
           geoStatus.innerHTML = formatGeoStatus(geo);
+          fillHost27(geoStatus);   // v3.217 段27：手順の文に今の住所の名前を入れる
           geoStatus.className = 'geo-status ' + (geo.error ? 'err' : 'ok');
         }
       }
@@ -9744,6 +10540,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var fnEl2 = getFilename(); if (fnEl2) fnEl2.value = '';
         keepNumPrefix(String(bulkFnStart).trim());   // v3.215 ⑦
       }
+      if (own17) {   // v3.217 段15a：評価中の設備の欄は残す
       if (memo.value === memoVal) memo.value = '';   // v3.206：取り込みの間に打ったメモは消さない
       if ([gInput ? gInput.value : '', uInput ? uInput.value : '', tInput ? tInput.value : ''].join('|') === bulkGutStart) {   // v3.206
       if (gInput) gInput.value = '';
@@ -9757,6 +10554,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         if (c) Array.from(c.children).forEach(function(ch){ ch.classList.remove('selected'); });
       });
       if (selectedCls === bulkCls && typeof clearClassification === 'function') clearClassification(); // 分類もリセット（段階1）（v3.206：取り込みの間に選び直した分類は消さない）
+      }
       updatePreview();
 
       // 読み込み後、位置記録バナーを表示（直前の写真を紐づけ候補に）
@@ -9869,7 +10667,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     // v3.206：位置情報を待つ間に入力の欄や連続撮影が変わっても、この写真は受け取った時点の値で記録する（R02）
     var shotContinuous = !!(isContinuousShot && continuousMode.active && !retakeContext);   // この写真が「続けて撮る」の写真か
     isContinuousShot = false;   // 次の写真の種類は、カメラを開く所で決め直す（保存のあとでは戻さない。待つ間に開いたカメラの分を消さないため）
-    var shotCls = selectedCls;   // 分類
+    var shotCls = (retakeContext || (evalContOk26(shotContinuous) && evalFormFor17(shotContinuous ? evalKeyOfCont25() : evalKeyOfFields17()))) ? selectedCls : null;   // 分類（v3.217 段15a：1枚目は、欄が別の番号の物なら付けない。段25（R1）：続けて撮る2枚目以降も、欄が続けて撮っている設備の物でなければ付けない。撮り直しは元の写真の分類を使う。段26（S1）：欄が空のときに選んだ値は、そのとき続けて撮っていた設備の物）
     var shotPin = pendingShootPin;   // 先行ピン（待つ間に別のピンを選んだら、この写真は紐づけない）
     var shotSeq = ++shotReceiveSeq;
     
@@ -9988,6 +10786,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         geo = await Promise.race([getGeolocation(), new Promise(function(res) { setTimeout(function() { res({ lat: '', lng: '', accuracy: '', error: 'timeout' }); }, 12000); })]);   // v3.206：返事が無くても12秒で先へ進む
         if (geoStatus) {
           geoStatus.innerHTML = formatGeoStatus(geo);
+          fillHost27(geoStatus);   // v3.217 段27：手順の文に今の住所の名前を入れる
           geoStatus.className = 'geo-status ' + (geo.error ? 'err' : 'ok');
         }
       } else {
@@ -10217,7 +11016,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var guide = document.createElement('p'); guide.className = 'delguard-body';
       guide.textContent = 'たいていは、別の棟に同じ番号があるときに起きます。次から撮る写真は、⚙️ 設定タブで、会社・事業所・棟の3つに値を入れ、3つとも「このフォルダ名をフォルダ階層に利用する」に印を付けると重なりません（すでに撮った写真には効きません）。';
       var cancel = document.createElement('button'); cancel.id = 'zipOverlapCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
-      cancel.textContent = 'やめる（保存しない）'; cancel.style.marginBottom = '8px';
+      cancel.textContent = 'やめる'; cancel.style.marginBottom = '8px';
       var go = document.createElement('button'); go.id = 'zipOverlapGo'; go.type = 'button'; go.className = 'delguard-del';
       go.textContent = 'このまま保存する（' + lostCount + ' 枚は入りません）';
       box.appendChild(title); box.appendChild(body); box.appendChild(warn); box.appendChild(guide); box.appendChild(cancel); box.appendChild(go);
@@ -10293,6 +11092,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       zip.file('_backup/settings.json', settingsBackupText());   // v3.209 R3：設定（読むだけ）
       var writtenKeys = [];   // v3.197 A1：この ZIP に実際に書いた写真の鍵
+      var fullShots25 = {};   // v3.217 段25（R3）：この ZIP に書いた画像（鍵 → 画像）
       for (var i = 0; i < photos.length; i++) {
         var p = photos[i];
         // フォルダ階層チェックがあればそれを優先。無ければ番号で自動振り分け（例 1-100, 101-200）
@@ -10306,6 +11106,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var base64Data = p.dataUrl.split(',')[1];
         zip.file((folderPath ? folderPath + '/' : '') + p.filename, base64Data, { base64: true });
         writtenKeys.push(photoPathKey(p));
+        fullShots25[photoPathKey(p)] = p.dataUrl;   // v3.217 段25（R3）
         progressBar.style.width = ((i + 1) / photos.length * 50) + '%';
         await new Promise(function(r) { setTimeout(r, 10); });
       }
@@ -10325,6 +11126,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         exportClearBtn.style.display = 'block';
         backupReminder.style.display = 'none';
         dismissedReminder = true;
+        writtenKeys = keysSameShot25(writtenKeys, fullShots25);   // v3.217 段25（R3）：ZIP を作ったあとに撮り直した写真は保存済みにしない
         markBackupDone(writtenKeys);
       }, true);
       if (exportLinks) {
@@ -10339,13 +11141,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       setTimeout(function() {
         exportBtn.disabled = false;
-        exportBtn.textContent = '📦 もう一度すべてを1つのZIPにまとめてバックアップ';
+        exportBtn.textContent = '📦 もう一度、すべてを1つの ZIP に保存する';
         progress.classList.remove('show');
       }, 2000);
     } catch (err) {
       alert('保存エラー: ' + err.message);
       exportBtn.disabled = false;
-      exportBtn.textContent = '📦 すべてを1つのZIPにまとめてバックアップ';
+      exportBtn.textContent = '📦 すべてを1つの ZIP に保存する';
       progress.classList.remove('show');
     }
   });
@@ -10361,7 +11163,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var list = getUnsavedPhotos();
     var hasMap = !!(mapData && mapData.buildings && mapData.buildings.length > 0);
     if (list.length === 0) {
-      alert('新しく撮った分はありません。\n\n前回バックアップしたあとに撮影した写真がありません。すべてを保存したいときは「② すべてを1つのZIPにまとめてバックアップ」か「③ 全データを小分けにしてバックアップ」をお使いください。');
+      alert('新しく撮った分はありません。\n\n前回バックアップしたあとに撮影した写真がありません。すべてを保存したいときは「② すべてを1つの ZIP に保存する」か「③ 全データを小分けにして保存する（ZIP）」をお使いください。');
       return;
     }
 
@@ -10431,6 +11233,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         backupReminder.style.display = 'none';
         dismissedReminder = true;
         logIncBackup(list);   // この回の①バックアップ記録を残す（あとで選んでまとめ直せる）
+        var incKeep25 = keysSameShot25(list.map(photoPathKey), zipShots25(list)); list = list.filter(function(p){ return incKeep25.indexOf(photoPathKey(p)) >= 0; });   // v3.217 段25（R3）：ZIP を作ったあとに撮り直した写真は保存済みにしない
         markBackupDone(list.map(photoPathKey));   // v3.197 A1：この回に入れた写真だけを保存済みにする
         forgetLostKeys(zipOv);   // v3.198 B2：ZIP に入らなかった写真は未保存のまま
         try { renderIncBackupList(); } catch (e) {}
@@ -10448,7 +11251,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
       setTimeout(function() {
         exportIncBtn.disabled = false;
-        exportIncBtn.innerHTML = '🆕 新しく撮った分だけバックアップ（未保存 <span id="exportIncCount">0</span> 枚）';
+        exportIncBtn.innerHTML = '🆕 新しく撮った <span id="exportIncCount">0</span> 枚を保存する（ZIP）';
         updateUnsavedPill();
         progress.classList.remove('show');
       }, 2000);
@@ -10456,7 +11259,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       alert('保存エラー: ' + err.message);
       exportIncBtn.disabled = false;
       updateUnsavedPill();
-      exportIncBtn.innerHTML = '🆕 新しく撮った分だけバックアップ（未保存 <span id="exportIncCount">0</span> 枚）';
+      exportIncBtn.innerHTML = '🆕 新しく撮った <span id="exportIncCount">0</span> 枚を保存する（ZIP）';
       updateUnsavedPill();
       progress.classList.remove('show');
     }
@@ -10471,10 +11274,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!splitBtn) return;
 
     var splitKeys = null;   // v3.197 A1：ボタンを押した時点で分けた組の鍵（分割保存の完了ボタンで印を付ける）
+    var splitShots25 = {};   // v3.217 段25（R3）：分けた組の画像（鍵 → 画像）
     if (splitDoneBtn) splitDoneBtn.addEventListener('click', function(){
+      splitKeys = keysSameShot25(splitKeys, splitShots25);   // v3.217 段25（R3）：ZIP を作ったあとに撮り直した写真は保存済みにしない
       markBackupDone(splitKeys || []);
       splitDoneBtn.style.display = 'none';
-      splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにしてバックアップ';
+      splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにして保存する（ZIP）';
       if (splitLinks) splitLinks.innerHTML = '<p style="color:#1b7f3b; font-weight:700; font-size:13px; margin:8px 0 0;">保存済みにしました。お疲れさまでした。</p>';
       showToast('✅ ファイルに保存しました');
     });
@@ -10493,6 +11298,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (zipOv.groups.length > 0 && !(await askZipOverlap(zipOv))) return;
       splitKeys = [].concat.apply([], chunks).map(photoPathKey);
       splitKeys = keysExceptLost(splitKeys, zipOv);   // v3.198 B2
+      splitShots25 = zipShots25([].concat.apply([], chunks));   // v3.217 段25（R3）
       var setId = localStamp();
 
       if (splitLinks) splitLinks.innerHTML = '';
@@ -10564,12 +11370,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           note.textContent = '全 ' + chunks.length + ' 個できました。上のオレンジの枠を1つずつタップして、必ず全部保存してください。復元するときは、この ' + chunks.length + ' 個を全部読み込みます。';
           splitLinks.appendChild(note);
         }
-        splitBtn.disabled = false; splitBtn.textContent = '📦 もう一度、全データを小分けにしてバックアップ';
+        splitBtn.disabled = false; splitBtn.textContent = '📦 もう一度、全データを小分けにして保存する（ZIP）';
         if (splitDoneBtn) splitDoneBtn.style.display = 'block';
         progress.classList.remove('show');
       } catch (err) {
         alert('保存エラー: ' + err.message);
-        splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにしてバックアップ';
+        splitBtn.disabled = false; splitBtn.textContent = '📦 全データを小分けにして保存する（ZIP）';
         progress.classList.remove('show');
       }
     });
@@ -10597,6 +11403,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var panel = $('splitPanel');
     if (!rebuildBtn) return;
     var lastSelectedKeys = [];
+    var pickShots25 = {};   // v3.217 段25（R3）：選んだ写真の画像（鍵 → 画像）
 
     // ②バナーを押すとパネル（未保存＋①履歴＋全データ）を開閉
     if (toggleBtn && panel) toggleBtn.addEventListener('click', function(){
@@ -10607,6 +11414,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     if (doneBtn) doneBtn.addEventListener('click', function(){
       // 選んで保存した分は「保存済み」として未保存カウントから外す
+      lastSelectedKeys = keysSameShot25(lastSelectedKeys, pickShots25);   // v3.217 段25（R3）：ZIP を作ったあとに撮り直した写真は保存済みにしない
       lastSelectedKeys.forEach(function(k){ backedUpKeys.add(k); });
       persistBackedUpKeys();
       updateUnsavedPill();
@@ -10649,6 +11457,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var setId = 'pick_' + stampStr;
       lastSelectedKeys = selected.map(photoPathKey);
       lastSelectedKeys = keysExceptLost(lastSelectedKeys, zipOv);   // v3.198 B2
+      pickShots25 = zipShots25(selected);   // v3.217 段25（R3）
 
       if (linksBox) linksBox.innerHTML = '';
       if (doneBtn) doneBtn.style.display = 'none';
@@ -10708,12 +11517,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           note.textContent = '全 ' + chunks.length + ' 個できました（選んだ写真 ' + selected.length + ' 枚）。オレンジの枠を1つずつタップして、必ず全部保存してください。';
           linksBox.appendChild(note);
         }
-        rebuildBtn.disabled = false; rebuildBtn.textContent = '🏁 選んだ分をバックアップ';
+        rebuildBtn.disabled = false; rebuildBtn.textContent = '🏁 選んだ分を保存する（ZIP）';
         if (doneBtn) doneBtn.style.display = 'block';
         progress.classList.remove('show');
       } catch (err) {
         alert('保存エラー: ' + err.message);
-        rebuildBtn.disabled = false; rebuildBtn.textContent = '🏁 選んだ分をバックアップ';
+        rebuildBtn.disabled = false; rebuildBtn.textContent = '🏁 選んだ分を保存する（ZIP）';
         progress.classList.remove('show');
       }
     });
@@ -11869,6 +12678,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     deleteGuardAction = (opts && typeof opts.onConfirm === 'function') ? opts.onConfirm : null;
     guardCheckDbCount(opts);   // v3.203：全部を消す経路では、保存場所の数（件数だけ）を数え、画面より多ければ押せなくする
     if (opts) { fillDeleteGuard(opts); if (typeof fillDeleteGuardPins === 'function') fillDeleteGuardPins(opts.pinPhotos || null); modal.classList.add('show'); return; }   // v3.209 R6：ピンの1行
+    var gc17 = $('deleteGuardConfirm'); if (gc17) gc17.textContent = '🗑 保存を確かめたので、写真を全部消す';   // v3.217 段15（X7）：全部を消す道
     var body = $('deleteGuardBody');
     if (body) body.innerHTML = '撮影済みデータ <strong>' + photos.length + '</strong> 枚をこの端末（アプリ内）から削除します。<br>ダウンロード済み・共有済みのZIPは残りますが、<strong>保存できているか「ファイル」アプリで必ず確認</strong>してから削除してください。';
     var warn = $('deleteGuardWarn');
@@ -11884,6 +12694,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function fillDeleteGuard(o) {
     var n = o.count || 0, u = o.unsaved || 0;
     var body = $('deleteGuardBody'), warn = $('deleteGuardWarn');
+    var gc17 = $('deleteGuardConfirm'); if (gc17) gc17.textContent = '🗑 保存を確かめたので、' + (o.selected ? (o.one ? 'この写真を' : '選んだ写真を') : '写真を全部') + '消す';   // v3.217 段15（X7）：道ごとの字
     if (body) {
       body.innerHTML = (o.selected
           ? '選んだ <strong>' + n + '</strong> 枚' + (o.name ? '（' + escapeHtml(o.name) + '）' : '') + 'をこの端末（アプリ内）から削除します。'
@@ -13275,7 +14086,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function renderBuildingsList() {
     if (!mapBuildingsList) return;
     if (mapData.buildings.length === 0) {
-      mapBuildingsList.innerHTML = '<div class="map-empty">まだ棟（建物）が登録されていません。<br>下の「＋ 棟（建物）の情報を登録する」を押して、最初の棟を登録してください。</div>';
+      mapBuildingsList.innerHTML = '<div class="map-empty">まだ棟（建物）が登録されていません。<br>下の「＋ 棟（建物）を足す」を押して、最初の棟を登録してください。</div>';
       return;
     }
     mapBuildingsList.innerHTML = listBarHtml('building') + '<div class="map-list-rows"></div>';
@@ -13307,9 +14118,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           + '<div class="map-item-actions">'
           + (canReorder ? '<button class="map-item-move" data-up="' + b.id + '"' + (isFirst ? ' disabled' : '') + '>↑</button>'
                     + '<button class="map-item-move" data-down="' + b.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>' : '')
-          + '<button class="map-item-rename" data-rename="' + b.id + '">✏️</button>'
+          + '<button class="map-item-rename" data-rename="' + b.id + '">名前を変える</button>'
           + '<button class="map-item-open" data-open="' + b.id + '">開く</button>'
-          + '<button class="map-item-del" data-del="' + b.id + '">🗑</button>'
+          + '<button class="map-item-del" data-del="' + b.id + '">🗑 消す…</button>'
           + '</div></div>';
       });
       if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合う棟がありません（並び替え・絞り込みを解除してください）。</div>';
@@ -13631,7 +14442,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var getSheets = function(){ return area ? (area.sheets || []) : (b.sheets || []); };
     var areaId = area ? area.id : null;
     if (getSheets().length === 0) {
-      container.innerHTML = '<div class="map-empty" style="padding:12px;">マップはまだありません。<br>「＋ マップを追加」で図面や写真を読み込んでください。</div>';
+      container.innerHTML = '<div class="map-empty" style="padding:12px;">マップはまだありません。<br>「＋ 図面を読み込む」で図面や写真を読み込んでください。</div>';
       return;
     }
     container.innerHTML = listBarHtml('sheet') + '<div class="map-list-rows"></div>';
@@ -13659,8 +14470,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
                     + '<button class="map-item-move" data-downsheet="' + s.id + '"' + (isLast ? ' disabled' : '') + '>↓</button>' : '')
           + '<button class="map-item-rename" data-renamesheet="' + s.id + '">✏️</button>'
           + '<button class="map-item-open" data-opensheet="' + s.id + '">開く</button>'
-          + '<button class="map-item-dup" data-dupsheet="' + s.id + '" title="このマップを複製（1F/2F/屋根などで使い分け）">📄+ 複製</button>'
-          + '<button class="map-item-del" data-delsheet="' + s.id + '">🗑</button>'
+          + '<button class="map-item-dup" data-dupsheet="' + s.id + '" title="このマップを複製（1F/2F/屋根などで使い分け）">📄 写し（ピンなし）</button>'
+          + '<button class="map-item-del" data-delsheet="' + s.id + '">🗑 消す…</button>'
           + '</div></div>';
       });
       if (v.shown === 0) html = '<div class="map-empty" style="padding:12px;">条件に合うマップがありません（並び替え・絞り込みを解除してください）。</div>';
@@ -13965,7 +14776,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!loc) { alert('対象のマップが見つかりませんでした。'); return; }
     var sheet = loc.sheet;
     var pinCount = (sheet.pins || []).length;
-    if (!confirm('このマップの「下地（図面）」を、選んだ画像に差し替えます。\n\n・ピン' + pinCount + '個はそのまま残ります（位置は枠に対する割合で保持）。\n・仮の図面と正式な図面は「切り取り範囲・縦横比」を揃えると、ぴったり重なります。\n・差し替え後も、アプリを開き直すまでは「↩ 下地を元に戻す」で戻せます（開き直したあとは戻せません）。\n\n差し替えますか？')) return;
+    if (!confirm('このマップの「下地（図面）」を、選んだ画像に差し替えます。\n\n・ピン' + pinCount + '個はそのまま残ります（位置は枠に対する割合で保持）。\n・仮の図面と正式な図面は「切り取り範囲・縦横比」を揃えると、ぴったり重なります。\n・差し替え後も、アプリを開き直すまでは「↩ 図面の絵を前に戻す」で戻せます（開き直したあとは戻せません）。\n\n差し替えますか？')) return;
     var newUrl;
     try { newUrl = await readFileAsDataURL(file); }
     catch (e) { alert('画像を読み取れませんでした。'); return; }
@@ -17093,7 +17904,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   function updatePlaceSelectCount() {
     var n = Object.keys(placeSelectIds).length;
     var btn = $('place-select-start');
-    if (btn) { btn.textContent = '✅ 選んだ ' + n + ' 枚でピン留め開始'; btn.disabled = (n === 0); }
+    if (btn) { btn.textContent = '選んだ ' + n + ' 枚でピンを置き始める'; btn.disabled = (n === 0); }
   }
 
   (function setupPlaceSelect() {
@@ -17629,6 +18440,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if (sameNameGroups) parts.push('同名(拡張子違い) ' + sameNameGroups + ' 組');
       sum.textContent = parts.join('／') + '（先：' + cl + ' / ' + st + ' / ' + bl + '）';
     }
+    var cf17 = $('imp-confirm'); if (cf17) cf17.textContent = '✅ 選んだ ' + on + ' 枚を取り込む';   // v3.217 段15（L36）
     var tidy = $('imp-tidy');
     if (tidy) {
       if (sameNameGroups > 0) { tidy.style.display = ''; tidy.textContent = '🔁 同名（拡張子違い）を1枚に整理（' + sameNameGroups + '組）'; }
@@ -17799,19 +18611,20 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     return !!drawMode && undoStack.length > 0;
   }
   function askDrawDiscard() {
+    var kind = arguments[0], wd = kind ? discardWords25(kind) : null;   // v3.217 段25（R4）：kind（'vector'＝直線・'align'＝重ねる図面）のときは、同じ小窓で言葉だけを替える。無ければ今までの手描きの言葉
     return new Promise(function(resolve) {
       var modal = $('drawDiscardModal');
       if (!modal) { modal = document.createElement('div'); modal.id = 'drawDiscardModal'; modal.className = 'delguard-modal'; document.body.appendChild(modal); }
       modal.innerHTML = '';
       var box = document.createElement('div'); box.className = 'delguard-content';
       var title = document.createElement('p'); title.className = 'delguard-title';
-      title.textContent = '描いたものを捨てますか？';
+      title.textContent = wd ? wd.title : '描いたものを捨てますか？';
       var body = document.createElement('p'); body.className = 'delguard-body';
-      body.textContent = 'このまま戻ると、保存していない手描きは消えます。残すときは「やめる」を押し、「✅ 描き終わり（保存）」を押してください。';
+      body.textContent = wd ? wd.body : 'このまま戻ると、保存していない手描きは消えます。残すときは「描くのを続ける」を押し、「✅ 描いた物を残して閉じる」を押してください。';
       var cancel = document.createElement('button'); cancel.id = 'drawDiscardCancel'; cancel.type = 'button'; cancel.className = 'delguard-cancel';
-      cancel.textContent = 'やめる'; cancel.style.marginBottom = '8px';
+      cancel.textContent = wd ? wd.keep : '描くのを続ける'; cancel.style.marginBottom = '8px';
       var go = document.createElement('button'); go.id = 'drawDiscardGo'; go.type = 'button';
-      go.textContent = '捨てる';
+      go.textContent = wd ? wd.drop : '描いた物を捨てる';
       go.style.cssText = 'width:100%;margin:0;padding:14px;border:none;border-radius:10px;background:#ff3b30;color:#fff;font-size:16px;font-weight:700;cursor:pointer;';
       box.appendChild(title); box.appendChild(body); box.appendChild(cancel); box.appendChild(go);
       modal.appendChild(box);
@@ -17822,15 +18635,34 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       try { cancel.focus(); } catch (e) {}
     });
   }
+  // v3.217 段25（R4）：直線・重ねる図面の途中の描きかけ・動かしかけ（手描きは drawHasUnsaved）
+  //   直線：連続線の確定前の角（vectorPoly）。引き終えた線は、引いたときに記録へ書く（saveMapData）
+  //   重ねる図面：位置合わせの途中に、位置・大きさ・回転・濃さを初めの値（alignPrev）から変えた。残すのは「✅ この位置を残して閉じる」のときだけ
+  function editUnsaved25() {
+    if (vectorMode && vectorTool === 'poly' && vectorPoly.length > 0) return 'vector';
+    if (alignLayerId != null && alignPrev) { var L = _alignLayer(); if (L && ['fx', 'fy', 'fw', 'fh', 'opacity', 'rot'].some(function(k){ return L[k] !== alignPrev[k]; })) return 'align'; }
+    return '';
+  }
+  function dropEdit25(kind) {   // 「捨てる」：直線は確定前の角を捨てる。重ねる図面は「動かした位置を捨てる」と同じ（初めの値に戻す）
+    if (kind === 'vector') vectorPoly = [];
+    else if (kind === 'align') cancelAlign();
+  }
+  function discardWords25(kind) {
+    if (kind === 'vector') return { title: '引きかけの線を捨てますか？', body: 'このまま閉じると、まだ確定していない連続線の角は消えます（引き終えた線は残ります）。残すときは「線を引くのを続ける」を押し、「✓ 連続線を確定」を押してください。', keep: '線を引くのを続ける', drop: '引きかけの線を捨てる' };
+    return { title: '動かした位置を捨てますか？', body: 'このまま閉じると、重ねる図面を動かした分（位置・大きさ・回転・濃さ）は元に戻ります。残すときは「位置を合わせるのを続ける」を押し、「✅ この位置を残して閉じる」を押してください。', keep: '位置を合わせるのを続ける', drop: '動かした位置を捨てる' };
+  }
   async function onPinEditorBack() {
     if (drawHasUnsaved()) {
       if (!(await askDrawDiscard())) return;   // 「やめる」：手描きの画面に残る（描いたものはそのまま）
+    } else {   // v3.217 段25（R4）：直線・重ねる図面の途中も、描きかけ・動かしかけがあれば同じ小窓で聞く（editUnsaved25 が無い場では今までどおり）
+      var ek25 = (typeof editUnsaved25 === 'function') ? editUnsaved25() : '';
+      if (ek25) { if (!(await askDrawDiscard(ek25))) return; dropEdit25(ek25); }
     }
     closePinEditor();
   }
   if (pinEditorClose) pinEditorClose.addEventListener('click', onPinEditorBack);
   var pinEditorDone = $('pin-editor-done');
-  if (pinEditorDone) pinEditorDone.addEventListener('click', closePinEditor);
+  if (pinEditorDone) pinEditorDone.addEventListener('click', onPinEditorBack);   // v3.217 段19（小1）：上の帯の完了も、描きかけがあれば戻ると同じ確かめを出す（無ければ今と同じ closePinEditor）
 
   // マーカー詳細モーダル（種類別に表示を変える）
   function openPinDetail(pinId) {
@@ -17843,6 +18675,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var type = pin.type || 'pin';
     var pinColorLabel = (PIN_COLORS.find(function(c){return c.key===pin.color;})||{label:''}).label;
     var typeLabel = (type === 'memo') ? 'メモ' : (type === 'arrow') ? '矢印' : 'ピン';
+    var del17 = $('pin-detail-delete'); if (del17) del17.textContent = (type === 'memo') ? '🗑 このメモを消す' : (type === 'arrow') ? '🗑 この矢印を消す' : '🗑 このピンを消す（写真は消えない）';   // v3.217 段15（L33・③-1）：種類で字を替える
 
     // ボタンの出し分け
     var linkBtn = $('pin-detail-link');
@@ -17979,7 +18812,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   });
 
   var pinDetailEval = $('pin-detail-eval');
-  if (pinDetailEval) pinDetailEval.addEventListener('click', function() {
+  if (pinDetailEval) pinDetailEval.addEventListener('click', async function() {
     var sheet = resolveSheet(editSheetRef);
     if (!sheet || !editingPinId) return;
     var pin = sheet.pins.find(function(p){ return p.id === editingPinId; });
@@ -17987,6 +18820,11 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (!pin.photoId) { showToast('この位置には写真がありません。先に写真を紐づけてください'); return; }
     var ph = photos.find(function(p){ return p.id === pin.photoId; });
     if (!ph) { showToast('紐づく写真が見つかりませんでした'); return; }
+    var pid17 = editingPinId;   // v3.217 段5：打ちかけがあれば、ピンの詳細を閉じる前に聞く（入り口②）。「やめる」ならピンの詳細も図面も開いたまま
+    var d17 = evalDraftNow17(), k17 = await askLeaveEvalDraft17(ph, '、' + equipNo17(ph) + ' の評価を開く');
+    if ((k17 === 'back' || k17 === 'same') && d17) { closePinDetail(); closePinEditor(); openEvalForEdit17(d17.baseId); return; }   // 今の評価に戻る：ピンの詳細と図面を閉じて、評価の画面へ
+    if (k17 !== 'ok') return;
+    if (editingPinId !== pid17) return;   // 聞いている間にピンの詳細が変わったら、何もしない
     closePinDetail();
     closePinEditor(); // 全画面の図面エディタを閉じてから評価タブへ
     enterEvalMode(pin.photoId); // 既存の評価フロー（評価タブへ遷移・評価バー表示）に乗せる
@@ -18485,7 +19323,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   if (pinOpenBtn) {
     pinOpenBtn.addEventListener('click', function() {
       if (!pinSheetSelect.value) {
-        alert('ピンを打つマップを選択してください。\nマップがない場合は、下の棟の一覧で棟を「開く」を押し、「＋ マップを追加」から追加してください（棟が無いときは、先に「＋ 棟（建物）の情報を登録する」）。');
+        alert('ピンを打つマップを選択してください。\nマップがない場合は、下の棟の一覧で棟を「開く」を押し、「＋ 図面を読み込む」から追加してください（棟が無いときは、先に「＋ 棟（建物）を足す」）。');
         return;
       }
       // 選択中の棟/区分/マップでピン編集を開く。直前に撮影した写真があれば自動紐づけ
@@ -18495,21 +19333,27 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         sheetId: pinSheetSelect.value
       };
       // v3.199 M9：直前に撮った写真が、もうこの図面にピンを持っていたら自動では付けない（同じ写真のピンが黙ってもう1本付くのを防ぐ）
+      //   v3.217 段8：設備に広げる（その設備のどれかの写真のピンがあれば付けない）。付けるのは、部品で「（番号）を置く」を選んだときだけ（黙って付けない）
       var sheetForAuto = resolveSheet(ref);
-      var autoAlreadyPlaced = lastShotPhotoId != null && !!sheetForAuto && (sheetForAuto.pins || []).some(function(p){ return p.photoId === lastShotPhotoId; });
-      openPinEditor(ref, autoAlreadyPlaced ? null : lastShotPhotoId);
-      // 未配置の写真があれば「写真から連続でピンを置く」を提案（撮った流れの入口）
-      var sheetForCount = resolveSheet(ref);
-      if (sheetForCount) {
-        var placedSet = {};
-        (sheetForCount.pins || []).forEach(function(p){ if (p.photoId != null) placedSet[p.photoId] = true; });
-        var unplaced = photos.filter(function(p){ return !placedSet[p.id]; }).length;
-        if (unplaced > 0) {
-          if (confirm('ふつうは［キャンセル］を押して、自分でタップして置きます。\n\nこの図面に置いていない写真が ' + unplaced + ' 枚あります（ほかの棟の写真も含めて数えています）。\n\n［OK］写真を選んでピンを置く（番号付き）\n［キャンセル］自分でタップして置く')) {
-            startPhotoPlacement();
-          }
-        }
-      }
+      var autoP = lastShotPhotoId != null ? photos.find(function(x){ return x.id === lastShotPhotoId; }) : null;
+      var autoRep = autoP ? equipRep17(autoP) : null, autoIds = autoRep ? equipPhotosOf(autoRep).map(function(x){ return x.id; }) : [];
+      var autoAlreadyPlaced = !autoRep || (!!sheetForAuto && (sheetForAuto.pins || []).some(function(p){ return autoIds.indexOf(p.photoId) >= 0; }));
+      // 未配置の写真があれば「写真を選んで置く」を出す（撮った流れの入口）
+      var placedSet = {};
+      if (sheetForAuto) (sheetForAuto.pins || []).forEach(function(p){ if (p.photoId != null) placedSet[p.photoId] = true; });
+      var unplaced = photos.filter(function(p){ return !placedSet[p.id]; }).length;   // v3.199 M10：数え方はそのまま（この図面にピンが無い写真を、全部の棟から数える）
+      var choices = [];
+      if (!autoAlreadyPlaced) choices.push({ key: 'auto', label: '📍 ' + equipNo17(autoRep) + ' を置く', sub: '今撮った写真（' + (autoRep.filename || '') + '）を付けて図面を開きます。図面を押すと、そこに置きます', kind: 'main' });
+      if (unplaced > 0) choices.push({ key: 'pick', label: '🖼 写真を選んで置く（まだ ' + unplaced + ' 枚）', sub: 'この図面に置いていない写真の一覧から選びます（ほかの棟の写真も含めて数えています）', kind: 'plain' });
+      choices.push({ key: 'self', label: '👆 図面を開いて、押した所に置く', sub: '押したあとで、何を置くか（写真・番号）を選びます', kind: choices.length ? 'plain' : 'main' });
+      var go = function(k){
+        if (!k) return;   // やめる：図面を開かない（何も変えない）
+        openPinEditor(ref, k === 'auto' ? autoRep.id : null);
+        if (k === 'pick') startPhotoPlacement();
+      };
+      if (choices.length === 1) { go('self'); return; }   // 選ぶ物が1つだけなら、聞かずに開く（今までどおり）
+      var sn = (sheetForAuto && sheetForAuto.name) || '';
+      askSheet({ title: '図面「' + sn + '」に、何を置きますか', choices: choices }).then(go);
     });
   }
 
@@ -18689,7 +19533,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     function mapSaveUnsure(fname) {   // v3.199 M12：iPad でダウンロードを押しただけのとき（保存できたか分からない）
       if (!mapPortStatus) return;
       mapPortStatus.className = 'floorplan-status';
-      mapPortStatus.textContent = 'ダウンロードを始めました（' + fname + '）。保存できたかは、この画面では分かりません。「ファイル」アプリに残ったか確かめ、残っていたら「✅ ファイルに保存できた（確認した）」を押してください。';
+      mapPortStatus.textContent = 'ダウンロードを始めました（' + fname + '）。保存できたかは、この画面では分かりません。「ファイル」アプリに残ったか確かめ、残っていたら「✅ ファイルアプリへの保存を確かめた」を押してください。';
     }
     mapExportBtn.addEventListener('click', async function() {
       try {
@@ -18797,7 +19641,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   }
   // 位置記録（マップ）データの取り込み本体。HTML/JSON/ZIP いずれの経路でも共通で使う。
   // 写真（photos[]・一覧）には一切触れない＝位置情報（棟／マップ／ピン）だけを反映する。
-  function importIncomingMapData(incoming, mapPortStatus) {
+  async function importIncomingMapData(incoming, mapPortStatus) {   // v3.217 段9：確かめを自前の部品で聞くため async（呼ぶ所は戻り値を使っていない）
         if (!incoming || !Array.isArray(incoming.buildings)) {
           if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '⚠️ このファイルは位置記録データではないようです。'; }
           mapImportInput.value = '';
@@ -18807,23 +19651,37 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         var hasExisting = mapData.buildings.length > 0;
         var mode = 'replace';
         if (hasExisting) {
-          var inB = incoming.buildings.length;
-          mode = confirm(
-            '読み込んだデータ（棟' + inB + '）の読み込み方法を選んでください。\n\n' +
-            '［OK］今の位置記録に足す（今の位置記録は消えません）\n' +
-            '　※同名の棟は「○○（読込）」として別に追加します。\n' +
-            '　※同じファイルを2回読み込むと二重になります。\n\n' +
-            '［キャンセル］入れ替える（今の位置記録を消します。次にもう一度確かめます）'
-          ) ? 'merge' : 'replace';
+          var inB = incoming.buildings.length, nowB = mapData.buildings.length;
+          var k1 = await askSheet({   // v3.217 段9：足す（消えない側）を上・青。入れ替えは赤い枠。やめるはいちばん下
+            title: '読み込んだ位置記録（棟 ' + inB + '）をどう入れますか',
+            body: '同じ名前の棟は「○○（読込）」として別に足します。同じファイルを2回読み込むと二重になります。',
+            danger: true,
+            choices: [
+              { key: 'merge', label: '➕ 今の位置記録に足す', sub: '今の棟 ' + nowB + ' は消えません', kind: 'main' },
+              { key: 'replace', label: '⚠ 今の位置記録を消して入れ替える', sub: '今の棟 ' + nowB + ' が消えます（次にもう一度確かめます）', kind: 'danger' }
+            ]
+          });
+          if (k1 !== 'merge' && k1 !== 'replace') {
+            if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '読み込みをキャンセルしました。'; }
+            mapImportInput.value = '';
+            return;
+          }
+          mode = k1;
           if (mode === 'replace') {
-            if (!confirm('⚠️ 今の位置記録（棟' + mapData.buildings.length + '）を消して、読み込んだデータに置き換えます。\n\n［OK］消して入れ替える\n［キャンセル］やめる（何も変えません）')) {
+            var k2 = await askSheet({   // 入れ替えは2回確かめる（v3.216 の決まり）
+              title: '⚠ 今の位置記録（棟 ' + mapData.buildings.length + '）を消して、読み込んだデータに置き換えます',
+              danger: true,
+              choices: [{ key: 'replace', label: '⚠ 消して入れ替える', sub: '今の棟 ' + mapData.buildings.length + ' が消えます', kind: 'danger' }]
+            });
+            if (k2 !== 'replace') {
               if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '読み込みをキャンセルしました。'; }
               mapImportInput.value = '';
               return;
             }
           }
         } else {
-          if (!confirm('読み込んだデータで位置記録を復元します。\n\nよろしいですか？')) {
+          var k3 = await askSheet({ title: '読み込んだ位置記録で戻します', choices: [{ key: 'restore', label: '📥 読み込んだ位置記録で戻す', sub: '棟 ' + incoming.buildings.length + ' を入れます（今は位置記録がありません）', kind: 'main' }] });
+          if (k3 !== 'restore') {
             if (mapPortStatus) { mapPortStatus.className = 'floorplan-status'; mapPortStatus.textContent = '読み込みをキャンセルしました。'; }
             mapImportInput.value = '';
             return;
