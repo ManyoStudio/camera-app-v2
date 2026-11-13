@@ -10,7 +10,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="m-One Genba App">
 <meta name="theme-color" content="#007aff">
-<title>m-One Genba App v3.218</title>
+<title>m-One Genba App v3.219</title>
 <!-- JSZip 3.10.1 をアプリ内に同梱（オフラインでもZIP保存が確実に動くため。CDN読込を廃止） -->
 <script>
 /*!
@@ -2738,6 +2738,9 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   @media (orientation: landscape) { body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { right: 24px; bottom: 24px; } }
   @media (orientation: portrait) { body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { bottom: calc(64px + env(safe-area-inset-bottom) + 16px); } body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 104px); } }   /* 縦は下のタブの上に浮かせる */
   @media (orientation: landscape) { body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: 112px; } }
+  /* v3.219（中1）：撮るボタンが浮いている間だけ、知らせ（toast）を撮るボタンの上に出す（重ならないように。撮るボタンの高さ 72px＋すき間 12px） */
+  body[data-curview="shoot"]:not(.bottombar-on) #toastHost { bottom: calc(24px + 72px + 12px); }
+  @media (orientation: portrait) { body[data-curview="shoot"]:not(.bottombar-on) #toastHost { bottom: calc(64px + env(safe-area-inset-bottom) + 16px + 72px + 12px); } }
 
   /* ---- D 押した感触：押した瞬間にへこむ・暗くなる（100ms）。iOS では JS で押した印も付ける ---- */
   button, .tab, .cls-opt, .gut-opt, .fn-kbd-btn, .fn-pad-key, summary, .desc-toggle, .t-target-radio, .check-toggle { transition: transform 100ms ease-out, filter 100ms ease-out, box-shadow 100ms ease-out; touch-action: manipulation; }
@@ -2944,6 +2947,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) #shoot-btn { bottom: calc(64px + env(safe-area-inset-bottom) + 16px); }
   html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 104px); }
   html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) .container { padding-bottom: calc(64px + env(safe-area-inset-bottom) + 16px + 72px + 24px); }
+  html.m24-narrow body[data-curview="shoot"]:not(.bottombar-on) #toastHost { bottom: calc(64px + env(safe-area-inset-bottom) + 16px + 72px + 12px); }   /* v3.219（中1）：画面分割の幅でも、浮いた撮るボタンの上に出す */
   html.m24-narrow .m17-ask-sheet { border-radius: 16px 16px 0 0; margin-bottom: 0; }
   html.m24-narrow #m1-sheet, html.m24-narrow #m15-sheet { left: 0; }
   html.m24-narrow #m17-line { display: flex; align-items: center; gap: 8px; position: sticky; z-index: 45; top: calc(var(--offline-h, 0px) + var(--m1-appbar-h, 0px) + var(--unsaved-h, 0px) + var(--m1-ban-h, 0px));
@@ -3100,7 +3104,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 <body class="notranslate" translate="no">
   <div id="offlineBar" class="offline-bar"><span class="dot"></span>いまオフライン（ネット未接続）です。撮影・保存は端末内でできます。電波が戻ったらバックアップ（ZIP）を送ってください。</div>
 <div class="app-bar">
-  <span>📷 m-One Genba App v3.218 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-11-12）</span></span>
+  <span>📷 m-One Genba App v3.219 <span style="font-size:11px;opacity:0.75;font-weight:400;">（更新 2026-11-13）</span></span>
   <span class="badge-count zero" id="badgeCount">0</span>
 </div>
 
@@ -3340,7 +3344,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       </div>
 
       <div class="gut-section">
-        <p class="gut-info">T（傾向性）：未評価</p>
+        <p class="gut-info">T（傾向性）：下の『T（傾向）をチェックする』に印を入れて、観察項目から決めます</p>
         <label class="gut-toggle">
           <input type="checkbox" id="t-check" />
           <span>T（傾向）をチェックする</span>
@@ -3555,7 +3559,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <div class="info-box" style="background:#fdecea; border-color:#f5c6cb; color:#b71c1c; margin:0 0 12px 0;">
           <strong>⛔ 順番がとても大切です</strong><br>
           <strong>救出して写真を安全な場所に保存できるまでは、ブラウザの「履歴」や「サイトデータ」を消さないでください。</strong>先に消すと、残っている写真も救い出せなくなります。<br>
-          写真を保存できたあとなら、サイトデータを消して直す手順（下の「それでもアプリが使えないとき」）に進んで大丈夫です。
+          写真を保存できたら、管理担当に連絡してください（下の『それでもアプリが使えないとき』）。
         </div>
         <p style="margin:0 0 6px 0;"><strong>救出のしかた</strong></p>
         <ol style="margin:0 0 12px 0; padding-left:20px;">
@@ -3571,21 +3575,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
         <p style="margin:0; font-size:12px; color:#b71c1c;">⚠️ 救出ページは<strong>必ず同じブラウザ・同じ場所（URL）</strong>で開いてください。別のブラウザやプライベートタブで開くと、データがあっても「0件」に見えてしまいます。</p>
 
         <div style="margin-top:14px; border-top:1px solid #f0d9b5; padding-top:12px;">
-          <p style="margin:0 0 6px 0; font-weight:700; color:#b9770e;">それでもアプリが使えないとき（上の救出で写真を保存したあとだけ）</p>
-          <p style="margin:0 0 8px 0;">保管庫（データベース）が壊れて固まっていることがあります。そのときは、<strong>このサイトのデータを一度消して作り直す</strong>と直ります。銀行のインターネットで「Cookieを消すと再ログインできる」のと同じ考え方です。<strong style="color:#b71c1c;">必ず、上の救出で写真を保存してから</strong>行ってください。</p>
-          <p style="margin:0 0 4px 0; font-weight:600;">▼ Safari をお使いのとき</p>
-          <ol style="margin:0 0 10px 0; padding-left:20px;">
-            <li>iPad本体の「設定」アプリ → <strong>Safari</strong> → <strong>詳細</strong> → <strong>Webサイトデータ</strong> と進みます。</li>
-            <li>検索に <strong data-app-host="word">アドレスの最初の部分</strong> と入れ、出てきた <strong data-app-host="name">このアプリのアドレス</strong> を左へスワイプして削除します。</li>
-            <li>Safari を一度終了し、もう一度このアプリのURLを開き直します（写真0枚で起動します）。</li>
-          </ol>
-          <p style="margin:0 0 4px 0; font-weight:600;">▼ Edge をお使いのとき</p>
-          <ol style="margin:0 0 10px 0; padding-left:20px;">
-            <li>Edgeアプリ内の「<strong>…</strong>」→ <strong>設定</strong> → <strong>プライバシー</strong> → <strong>閲覧データをクリア</strong> を開きます。</li>
-            <li><strong>Cookie とサイトデータ</strong>を選んで削除します。</li>
-            <li>Edge を一度終了し、もう一度このアプリのURLを開き直します（写真0枚で起動します）。</li>
-          </ol>
-          <p style="margin:0;">作り直したら、「📥 データを読み込む」で、救出したZIPを順番にすべて読み込めば元どおりになります。<br><span style="color:#6e6e73;">※ 「Cookieだけ」消しても直らないことがあります。そのときは上の「Webサイトデータ／サイトデータ」まで消してください（壊れているのはこちらです）。</span></p>
+          <p style="margin:0 0 6px 0; font-weight:700; color:#b9770e;">それでもアプリが使えないとき</p>
+          <p style="margin:0;">管理担当に連絡してください。管理担当が、写真の取り出しを確かめてから直します。</p>
         </div>
 
         <div class="info-box" style="background:#eef5ff; border-color:#cfe0ff; margin-top:12px;">
@@ -3966,7 +3957,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
             <button type="button" class="qa-trouble-sym" data-q="未保存">「未保存」が消えない・保存できているか不安</button>
             <button type="button" class="qa-trouble-sym" data-q="機種変更">機種変更・別の端末へ移したい</button>
           </div>
-          <p class="qa-trouble-rule">どの場合も合言葉は <strong>「① 取り出す → ② 消してリセット → ③ 📥 読込で戻す」</strong>。<strong>消す前に必ず取り出す</strong>（💾 保存タブで全部をバックアップ／開けないなら救出ページ）。</p>
+          <p class="qa-trouble-rule">どの場合も、まず写真を取り出し（💾 保存のタブの全部の保存／開けないときは救出ページ）、ファイルアプリで確かめてから、管理担当に連絡してください。</p>
           <p class="qa-trouble-cant"><strong>⚠ アプリが「まったく開かない」ときは、この画面も見られません。</strong> その場合は<strong>救出ページ「diag.html」</strong>を開いてデータを取り出してください。<strong>いざという時のために、今のうちに diag.html もブックマーク</strong>しておくと安心です。</p>
         </div>
       </div>
@@ -4715,6 +4706,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var el = document.createElement('div');
       el.className = 'toast' + (kind === 'error' ? ' toast-error' : '');
       el.textContent = msg;
+      if (typeof ms === 'number' && ms >= 6000) el.setAttribute('data-long219', '1');   // v3.219（中1）：約6秒の知らせの印（次の設備へ移るときに消すため。見た目と時間は今と同じ）
       host.appendChild(el);
       requestAnimationFrame(function(){ el.classList.add('show'); });
       setTimeout(function(){
@@ -5076,7 +5068,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'「撮る番号／撮らない番号」を決めたい', a:'<strong>⚙️ 設定</strong>タブの番号モードで、「対象だけ撮る」または「対象外を除く」を選べます。<strong>初期は両方オフ＝すべての番号が対象</strong>です。必要なときだけ番号を指定してください。' },
     { cat:'はじめ・設定', q:'番号が決まっていない設備の開始番号（ダミー番号）を登録したい', a:'<strong>⚙️ 設定</strong>タブで、ダミー番号の<strong>開始番号</strong>を登録します。あとは撮影画面の「🔢 不明設備（ダミー番号）」を押すと、その番号から自動で番号をつけて撮影できます。' },
     { cat:'はじめ・設定', q:'バックアップのお知らせが出る枚数を変えたい', a:'<strong>⚙️ 設定</strong>タブの「何枚たまったら知らせるか」で変更できます（初期は10枚）。<strong>0にするとお知らせはオフ</strong>になります（右上の未保存の赤い数字は常に表示されます）。' },
-    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.218）。' },
+    { cat:'はじめ・設定', q:'アプリのバージョンを確認したい', a:'画面いちばん上のバーに、<strong>アプリ名・バージョン・更新日</strong>が表示されています（例：m-One Genba App v3.219）。' },
 
     // ── 2. 撮影（📸撮影） ──
     { cat:'撮影', q:'同じ設備を続けて撮りたい（前方・側面など）', a:'1枚撮ってこの画面に戻ると、画面の下の帯に<strong>「📷 続けて撮る」</strong>ボタンが出ます。これで同じ設備の枝番（_2, _3 …）を続けて撮れます。' },
@@ -5095,8 +5087,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'評価・分類', q:'分類で「5~2」のように範囲で出るのは何ですか？', a:'<strong>その場では確定しない（未確定）の目印</strong>です。現場では基本そのままにし、あとの工程（客先ヒアリング等）で 5／4／3／2 に確定します。<strong>CSVには「5~2」のまま出る</strong>ので、あとから未確定だと分かります。' },
     { cat:'評価・分類', q:'つけた設備分類を直したい／選び直したい', a:'撮影・評価の画面の <strong>🏷 分類</strong> から、もう一度<strong>大分類 → 中分類 → 小分類</strong>を選び直すと置き換わります。選び直すと<strong>G・Uの初期値も入り直します</strong>（現地に合わせて手で直せます）。分類は任意なので、迷うときは選ばずに保存しても問題ありません。' },
 
-    { cat:'評価・分類', q:'T（傾向）を「📖 観察項目から決める」で決めたい', a:'評価でTにチェックを入れると <strong>「📖 観察項目からTを決める」</strong> ボタンが出ます。押すと、<strong>①評価対象（設備／建築）→②定期メンテナンス・補修は実施／未実施→③当てはまる観察項目（劣化あり）か「見当たらない（劣化なし）」</strong>の順に答えるだけで、<strong>対応するTが自動で選ばれます</strong>。迷うときの参考用で、あとから手で変えることもできます。' },
-    { cat:'評価・分類', q:'観察項目を複数選んでTを決めたい／選んだ内容を確認したい', a:'📖のシートでは、③の観察項目を<strong>複数えらべます</strong>。選び終えたら <strong>「✓ この内容で確定」</strong> を押すとTが決まります。選んだ内容は評価タブの <strong>「選んだ観察項目：…」の表示窓</strong> に出るので、あとから見返せます。<strong>表示窓をタップすると📖シートが開いて選び直せます</strong>。' },
+    { cat:'評価・分類', q:'T（傾向）を「📖 観察項目から決める」で決めたい', a:'評価でTにチェックを入れると <strong>「📖 観察項目からTを決める」</strong> ボタンが出ます。押すと、<strong>①評価対象（設備／建築）→②定期メンテナンス・補修は実施／未実施→③当てはまる観察項目（劣化あり）か「劣化なしで T を決める」</strong>の順に答えるだけで、<strong>対応するTが自動で選ばれます</strong>。迷うときの参考用で、あとから手で変えることもできます。' },
+    { cat:'評価・分類', q:'観察項目を複数選んでTを決めたい／選んだ内容を確認したい', a:'📖のシートでは、③の観察項目を<strong>複数えらべます</strong>。選び終えたら <strong>「選んだ劣化で T を決める」</strong> を押すとTが決まります。選んだ内容は評価タブの <strong>「選んだ観察項目：…」の表示窓</strong> に出るので、あとから見返せます。<strong>表示窓をタップすると📖シートが開いて選び直せます</strong>。' },
     { cat:'評価・分類', q:'撮影記録CSVに「T評価の根拠（観察項目）」という列が増えたのは何？', a:'📖でTを決めたときに<strong>選んだ観察項目</strong>を、撮影記録CSVの<strong>末尾の列「T評価の根拠（観察項目）」</strong>に記録するものです（複数選ぶと「 / 」でつないで入ります）。<strong>📖を使わず手でTを入れたときは空欄</strong>です。この列が無い古いデータも、そのまま問題なく読み込めます。' },
 
     // ── 参考・用語さがし（📖 評価参考） ──
@@ -5130,8 +5122,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
 
     // ── 5. 保存（バックアップ）（💾保存） ──
     { cat:'保存（バックアップ）', q:'写真を保存（バックアップ）するには？', a:'「💾 保存」タブで、<strong>① 新しく撮った分だけバックアップ</strong>、または全データのバックアップ（<strong>② 1つのZIP</strong> か <strong>③ 小分け</strong>）を押します。すると<strong>オレンジの枠</strong>が出るので、その枠を<strong>タップ</strong>して「ファイル」アプリなどに保存してください。保存できたら、<strong>その保存に入れた写真の分だけ</strong>、右上の未保存の数字が減ります（iPad では、共有で「ファイル」に保存するか、「✅ ファイルアプリへの保存を確かめた」を押したときに減ります。③ では、全部のZIPを保存したあとに「✅ すべてのZIPをファイルに保存しました」を押したときに減ります）。' },
-    { cat:'保存（バックアップ）', q:'「新しく撮った分」「区切りでまとめて」「1つのZIP」の違いは？', a:'<strong>① 新しく撮った分だけ</strong>＝前回保存のあとに撮った分だけ（軽い。作業の合間や毎日の終わりに）。<br><strong>② 1つのZIP</strong>＝これまでの全データを1つのファイルにまとめる（区切りや現場の終わりに、全部を1つで残したいときに）。<br><strong>③ 全データを小分け</strong>＝これまでの全データを、いくつかのファイルに分けて保存（写真がとても多いときや、② が途中で止まるときに）。' },
-    { cat:'保存（バックアップ）', q:'いつ保存すればいいですか？', a:'<strong>こまめに「① 新しく撮った分」</strong>を保存し、<strong>区切り（午前・昼・午後・退勤前など）や現場の終わりには、全データ（② か ③）</strong>も保存しておくと、全部がそろった控えが手元に残ります。電波が悪くても<strong>保存自体はオフラインでできます</strong>。' },
+    { cat:'保存（バックアップ）', q:'「新しく撮った分」「区切りでまとめて」「1つのZIP」の違いは？', a:'毎日の終わりは ②『📦 すべてを1つの ZIP に保存する』を使います。写真がとても多いときや ② が止まるときは ③ を使います。① は作業の合間に使います。' },
+    { cat:'保存（バックアップ）', q:'いつ保存すればいいですか？', a:'作業の合間は『🆕 新しく撮った ○ 枚を保存する（ZIP）』でこまめに保存します。毎日の終わりは、次の順で行います。1. 評価の打ちかけが無いか確かめる 2. 保存のタブの『📦 すべてを1つの ZIP に保存する』 3. ファイルアプリで ZIP があるかを目で見る 4. ダウンロードで保存したときは『✅ ファイルアプリへの保存を確かめた』を押す（『📤 ファイルに保存（共有）』で保存できたときは、窓が『保存できました』に変わるので、4. は要りません） 5. 保存のタブの『🗑 この端末の写真を全部消す』。窓に『未保存の写真はありません（0 枚）』と出ているのを確かめてから消します。⚠️ が出たら消さずに 2. に戻ります。' },
     { cat:'保存（バックアップ）', q:'保存したファイルはどこに入りますか？', a:'タップして保存するとき、「ファイル」アプリの保存先を選べます。SharePointなどの共有フォルダにも保存できます。' },
     { cat:'保存（バックアップ）', q:'右上の赤い数字（未保存）は何ですか？', a:'<strong>まだ保存（バックアップ）していない写真の枚数</strong>です。新しく撮った写真のほか、評価やメモを直した写真、消したあとに同じ番号で撮った写真も数えます。保存のリンクをタップすると減ります。<strong>0になっても、消す前には「ファイル」アプリでZIPがあるかを目で確かめてください。</strong>' },
     { cat:'保存（バックアップ）', q:'同じ写真が重複して入っても大丈夫？', a:'大丈夫です。安全のためにわざと重複して保存しており、読み込み（復元）のときに自動で整理（補い合い）されます。' },
@@ -5153,15 +5145,15 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'読み込み・復元', q:'iPhoneのHEIC写真やZIPを取り込めますか？', a:'取り込み方は2つあります。<strong>「📷 写真ファイルを取り込む」</strong>では、写真ファイル（JPEG・PNG など。1枚でも複数でも）か、写真をまとめた<strong>ZIPファイル</strong>を取り込めます。ZIPの中に <strong>HEIC／HEIF（iPhoneの写真形式）</strong> が入っていても取り込めます。取り込み前の確認画面で枚数・内容を確かめられます。一方、<strong>「📥 データを読み込む」（バックアップの復元）では、ZIPの中の JPG・PNG だけが戻り、HEIC／HEIF の写真は戻りません</strong>（このアプリで撮った写真は名前が .jpg なので、ふだんの復元には影響しません）。' },
     { cat:'読み込み・復元', q:'取り込みで赤字の注意が出る／同名やHEIC・JPGの重複をまとめたい', a:'取り込みの確認画面では、<strong>同じ名前（拡張子だけ違う）や重複しそうな写真</strong>を見つけると<strong>赤字で注意</strong>します。<strong>「同名（拡張子違い）を1枚に整理」</strong>を押すと、同じ名前の写真（HEICとJPGなど）を1枚にまとめ、<strong>残した枚数・外した枚数</strong>を表示します。さらに <strong>「HEIC等を自動でオフ」</strong> にチェックを入れておくと、取り込みのたびに自動で同名を1枚へ整理します（<strong>初期はオフ＝今までどおり</strong>）。' },
     { cat:'読み込み・復元', q:'PCで棟ごとにマッピングしています。終わった棟は削除してよい？', a:'すぐ削除しないでください。<strong>全データのバックアップ（💾 保存タブの②か③）を作る→ZIPをひらいて中身を確認→2か所以上に複製→それから削除</strong>の順だと安全です。あとで棟を戻すときは <strong>📥 読込</strong> の <strong>「追加（マージ）」</strong> で合流できます（<strong>「置き換え」は既存を消す</strong>ので注意）。' },
-    { cat:'読み込み・復元', q:'位置記録を取り込むとピンが設備番号でなく通し番号で出る', a:'写真の無い端末で取り込むと起こることがあります。<strong>元のZIP／位置記録HTMLを、📥 読込で「置き換え」取り込み</strong>すると、ファイル名から設備番号を読み取って<strong>ピンが設備番号で表示</strong>されます。<strong>今の通し番号の状態から書き出し直しても元の番号は戻りません</strong>。写真も一緒に取り込めば、番号・紐づけまでそろいます。' },
+    { cat:'読み込み・復元', q:'位置記録を取り込むとピンが設備番号でなく通し番号で出る', a:'写真の入っていない端末で位置記録だけを読み込むと、ピンが通し番号で出ることがあります。写真の入った全部の保存の ZIP を『📥 データを読み込む』で読み込むときは、『＋ 今の写真に足す』を選んでください。『入れ替える』は今の写真が消えるので押さないでください。直らないときは、管理担当に連絡してください。' },
     // ── 7. 一覧・見直し（📋一覧） ──
     { cat:'一覧・見直し', q:'撮った写真の一覧を見たい', a:'<strong>📋 撮影リスト</strong>タブで、撮影した設備の一覧を確認できます。番号で検索でき、各項目から<strong>「📷 続けて撮る」「この番号で撮り直す」「番号変更」</strong>が行えます。' },
     { cat:'一覧・見直し', q:'一覧が急に空になった／消えたように見える', a:'多くの場合<strong>データは消えていません</strong>（枚数が表示されていれば写真は残っています）。<strong>検索（絞り込み）の文字を消す・撮影リストタブを開き直す</strong>と戻ることがあります。それでも不安なときは、先に救出ページでZIP保存してから確認してください。' },
 
     // ── 8. こまったとき（救出・復旧） ──
-    { cat:'こまったとき（救出・復旧）', q:'アプリが開かない／「保管庫に接続できません」などのエラーが出る', a:'まず<strong>データを失わないこと</strong>が最優先です。アプリと同じ場所にある<strong>救出ページ（diag.html）</strong>を開き、写真をZIPで救出して保存してください。救出して保存できたのを確認してから、下の「サイトデータを削除して直す」を行うと復旧します。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリが開かない／「保管庫に接続できません」などのエラーが出る', a:'まず救出ページ（diag.html）で写真を取り出し、ファイルアプリに ZIP があるかを目で確かめてください。そのあとは、自分でブラウザのデータを消さずに、管理担当に連絡してください。' },
     { cat:'こまったとき（救出・復旧）', q:'救出ページ（diag.html）での保存のしかた', a:'「📦 次のかたまりを保存する」を押すと<strong>オレンジの枠</strong>が出ます。その枠を<strong>タップ</strong>して保存し、画面の「◯／◯」が最後になるまでくり返してください。これで写真の確保（バックアップ）は完了です。あわてて中身を確認しなくて大丈夫です。' },
-    { cat:'こまったとき（救出・復旧）', q:'「サイトデータを削除して直す」とは？', a:'<strong>救出して保存できたのを確認してから</strong>行ってください。ブラウザの設定で、このサイトの<strong>サイトデータ（Webサイトデータ）</strong>を削除し、アプリを開き直すと、壊れた保管庫が作り直されて直ります。<strong>「履歴削除」や「Cookieだけ」では直りません。</strong>Safari でも Edge でも同じ手順です。' },
+    { cat:'こまったとき（救出・復旧）', q:'「サイトデータを削除して直す」とは？', a:'ブラウザのデータを消す操作です。撮影データも消えます。現場では行いません。管理担当が、写真の取り出しと確かめを済ませてから行います。' },
     { cat:'こまったとき（救出・復旧）', q:'救出したZIPはどうやって元に戻しますか？', a:'<strong>別の健全な端末・ブラウザ</strong>でアプリを開き、<strong>📥 読込</strong>タブの「データを読み込む」から読み込みます。小分けで救出したZIPは<strong>すべて読み込む</strong>と、足りない情報を補い合って復元できます。' },
     { cat:'こまったとき（救出・復旧）', q:'救出ページ（diag.html）はどこにありますか／どう開きますか', a:'救出ページは<strong>アプリと同じ場所</strong>に置かれた <strong>diag.html</strong> です。アプリが開かないときの<strong>「保存はいま・復元はあとで」</strong>用の別ページで、<strong>💾 保存</strong>タブ先頭の<strong>救出ページへのリンク</strong>からも開けます。ブックマークしておくと安心です。' },
     { cat:'こまったとき（救出・復旧）', q:'救出ページから撮影アプリに戻りたい', a:'救出ページの<strong>「📷 撮影アプリに戻る」</strong>を押すと戻れます。救出ページとアプリは<strong>別のページ</strong>ですが、同じ場所に置かれています。' },
@@ -5227,7 +5219,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'一覧・見直し', q:'一覧から要らない写真を消したい', a:'一覧で対象の写真を開き、<strong>削除</strong>を選びます。消す前に、その写真が<strong>マップのピンに紐づいていないか</strong>を確認してください（紐づけ済みを消すとピンの写真も外れます）。<strong>消す前に必ず保存</strong>しておくと、間違えても戻せます。' },
     // ── こまったとき（救出・復旧）（追加） ──
     { cat:'こまったとき（救出・復旧）', q:'画面が真っ白になった／固まった', a:'まず<strong>あわてて閉じない</strong>でください。少し待つ→<strong>ページを再読み込み</strong>（更新）してみます。それでも直らないときは、同じ場所からもう一度開き直します。データはブラウザに残っているので、<strong>サイトデータを消さない</strong>限り、開き直せば見えます。直らないときは救出ページ（diag.html）を使います。' },
-    { cat:'こまったとき（救出・復旧）', q:'新しい版（アップデート）への入れ替え方は？', a:'新しいHTMLを<strong>同じ場所（同じURL／同じ入口）で開けば</strong>、これまでの撮影データはそのまま残ります（データはブラウザ側に保管されているため）。念のため<strong>入れ替え前に全部のバックアップ（💾 保存タブの②か③）</strong>をしておくと安心です。上のバーの<strong>バージョン表示</strong>で新しい版になったか確認できます。' },
+    { cat:'こまったとき（救出・復旧）', q:'新しい版（アップデート）への入れ替え方は？', a:'新しいHTMLを<strong>同じ場所（同じURL／同じ入口）で開けば</strong>、これまでの撮影データはそのまま残ります（データはブラウザ側に保管されているため）。念のため<strong>入れ替え前に全部のバックアップ（💾 保存タブの②か③）</strong>をしておくと安心です。上のバーの<strong>バージョン表示</strong>で新しい版になったか確認できます。住所（URL）が変わるときは、前の住所のデータは見えません。前の住所で全部の保存（ZIP）をし、ファイルアプリで確かめてから移ってください。' },
     // ── ネット・テザリング（追加） ──
     { cat:'ネット・テザリング', q:'通信量（ギガ）は使いますか？', a:'<strong>ほとんど使いません。</strong>最初にアプリを開くときだけ通信することがありますが、撮影・保存・マップ・評価は<strong>すべて端末の中だけ（オフライン）</strong>で動きます。写真がインターネットに送られることもありません。' },
     { cat:'ネット・テザリング', q:'機内モードでも使えますか？', a:'はい、<strong>機内モードでも使えます</strong>（オフライン動作）。電波の弱い現場でも撮影・保存・マップ操作ができます。むしろ保存中は通信が不安定だと不具合のもとになるため、<strong>通信を切って作業</strong>するのも一つの方法です。' },
@@ -5237,12 +5229,12 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     { cat:'はじめ・設定', q:'まず何から始めればいい？基本の流れを知りたい', a:'この<strong>❓ Q&A のいちばん上</strong>にある <strong>「🌱 はじめての方へ（基本の流れ）」</strong> をご覧ください。<strong>①撮る ②こまめに保存（赤い数字を0に） ③困ったらQ&Aで検索</strong> の3ステップと、各タブ（📸撮影・📊評価・📋撮影リスト・📍位置記録・📖評価参考・💾保存・📥読込・⚙️設定）の役割をまとめています。タップで開閉でき、いちばん大事なのは<strong>こまめな保存</strong>です。' },
 
     // ── v3-145→v3-146：ブラウザ別「このアプリ（サイト）のデータだけ削除」手順（タブレット／PC × Safari／Chrome／Edge を網羅・早見表つき） ──
-    { cat:'こまったとき（救出・復旧）', q:'アプリが使えない・開かない・動かない・真っ白になった（直し方＝データを守ってリセット→復元）', a:'アプリが<strong>クラッシュする・固まる・開かない・動作がおかしい</strong>とき、多くは<strong>ブラウザ内にたまった保存データの不調</strong>が原因です。<strong>このアプリのデータを消して初期状態に戻すと直り、また使えるようになります</strong>。大切なのは<strong>消す前に必ず取り出しておく</strong>ことです。<br><strong>① 取り出す</strong>：開けるなら 💾 保存タブの②か③で全部のバックアップZIPを作る。<strong>開けない・固まって保存できないときは救出ページ diag.html</strong> から取り出す。<br><strong>② 確認</strong>：そのZIPが「ファイル」アプリ・PC・クラウドに<strong>実際にある</strong>ことを確かめる。<br><strong>③ 消す（リセット）</strong>：自分の端末・ブラウザを「早見表」で確認。<strong>1サイトだけ消せるなら</strong>そのブラウザ別手順（Safari／Chrome／Edge）で。<strong>1サイトだけ消せない（❌：iPadのChrome・Edge／AndroidのEdge）ときは、そのブラウザの「閲覧データをクリア（Cookieとサイトデータ）」で消します</strong>。これで<strong>アプリは初期状態に戻り、また使えるようになります</strong>（そのブラウザの他サイトはログアウトされますが、<strong>他のアプリ・他のブラウザには影響しません</strong>）。<br><strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で①のZIPを取り込んで復元</strong>。写真もマップも評価も戻ります。<br><strong>いちばんの注意</strong>：<strong>取り出せないまま全消しすると、そのブラウザ内のデータは戻りません</strong>（外部に残したバックアップだけが頼りになります）。だから<strong>①の取り出しを最優先</strong>に。どうしても開けず救出もできない場合は、全消しでアプリは使えるようになりますが、<strong>復元は過去に保存しておいたZIPから</strong>になります。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリのデータを消す（リセット）と、なぜ直るの？何が消えるの？（＝消す前に必ず保存）', a:'<strong>こんなとき</strong>：アプリが重い・固まる・表示がおかしい・直したい。<br><strong>なぜ消すと直るの？</strong>：このアプリは写真やマップを<strong>ブラウザの中（端末内）</strong>に保存しています。そこに溜まったデータが<strong>古くなったり壊れたり</strong>すると不調が出ます。<strong>このアプリのデータを一度消して初期状態に戻す（リセット）</strong>と、不調が取れて直ることが多いのです。<br><strong>何が消えるの？</strong>：リセットすると<strong>アプリ内の写真・マップ・評価も消えます</strong>（だから順番が大切）。<br><strong>だから、この順番で</strong>：<strong>① 取り出す</strong>（💾 全部のバックアップ／開けないなら救出ページ diag.html）→ <strong>② 保存できたか確認</strong>（<strong>端末の外に保存できたことを目で確かめてから</strong>：「ファイル」アプリなどでZIPがあるかを見る。赤い数字が0でも、外に保存できたとは限りません）→ <strong>③ リセット（消す）</strong>（下の「自分の端末でできる？早見表」とブラウザ別の手順へ）→ <strong>④ 開き直す</strong> → <strong>⑤ 📥 読込で戻す</strong>。<br><strong>※ 取り出さずに消すと戻せません。</strong>必ず「保存→確認」してから消してください。' },
-    { cat:'こまったとき（救出・復旧）', q:'自分の端末で“アプリのリセット（このアプリだけ消去）”はできる？【早見表】', a:'<strong>「リセット」とは</strong>：アプリの調子が悪いときに<strong>このアプリの保存データだけを消して</strong>初期状態に戻し、直すための操作です。ただし<strong>「このアプリ1つだけ」消せる端末・ブラウザは限られます</strong>。自分の組み合わせを下で確認してください。<br>消すのは<strong>「いつもアプリを開いているブラウザ」</strong>です（各ブラウザは別保存）。「このアプリ1サイトだけ」消せるかは次のとおり。<br><strong>● PC（Windows）</strong>：Edge ✅／Chrome ✅／Safari ＝（Windowsには無し）<br><strong>● PC（Mac）</strong>：Safari ✅／Chrome ✅／Edge ✅<br><strong>● タブレット（iPad）</strong>：Safari ✅／Chrome ❌／Edge ❌ … <strong>iPadで1サイトだけ消せるのは Safari だけ</strong><br><strong>● タブレット（Android）</strong>：Chrome ✅／Edge ❌／Safari ＝（Androidには無し）<br><strong>❌（1サイトだけ消せない）ときの対処</strong>：(a) <strong>消せるブラウザでアプリを開き直して使う</strong>のがおすすめ（iPad→Safari、Android→Chrome）。(b) どうしても今のブラウザで消すなら「<strong>閲覧データをクリア（Cookieとサイトデータ）</strong>」を使う＝<strong>他のサイトもログアウト</strong>されますが、<strong>それでもアプリは初期状態に戻って再び使えるようになり、あとから📥 読込で元に戻せます</strong>（クラッシュ時の最終手段）。<br>※ いずれも<strong>先に「全部のバックアップ→保存確認」</strong>を済ませてから。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Safari：iPad・iPhone／Mac】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>Safariは<strong>Apple製品（iPad・iPhone・Mac）専用</strong>です（WindowsやAndroidにはありません）。必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ タブレット（iPad）・iPhone</strong>：「設定」アプリ →（iOS／iPadOS 18は「<strong>アプリ</strong>」→）<strong>Safari</strong> →「<strong>詳細</strong>」→「<strong>Webサイトデータ</strong>」→ 一覧から<strong>このアプリのサイト名（URLの一部）</strong>を探し、<strong>左にスワイプして「削除」</strong>（または右上「編集」から削除）。他のサイトは残ります。ボタンが灰色のときは「設定→スクリーンタイム→コンテンツとプライバシーの制限」を確認。<br><strong>■ PC（Mac）</strong>：Safariメニュー →「設定」→「<strong>プライバシー</strong>」→「<strong>Webサイトデータを管理</strong>」→ 検索にサイト名 → 選んで「<strong>削除</strong>」→「完了」。<br>このあと<strong>アプリを開き直し、📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Google Chrome：PC・Androidタブレット／iPadの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）</strong>：このアプリを開いた状態で、<strong>アドレスバー左端のアイコン（鍵や調整マーク）</strong>をクリック →「<strong>Cookieとサイトデータ</strong>」→「<strong>デバイス上のサイトデータを管理</strong>」→ <strong>ゴミ箱</strong>で削除 →「完了」→ <strong>再読み込み</strong>。（別ルート：右上「⋮」→「設定」→「プライバシーとセキュリティ」→「サードパーティCookie」→「<strong>すべてのサイトデータと権限を表示</strong>」→ 検索 → ゴミ箱）。<br><strong>■ タブレット（Android）</strong>：アプリを開く → アドレスバー左の<strong>ページ情報アイコン</strong> →「<strong>Cookieとサイトデータ</strong>」→ 保存データの<strong>削除</strong>。<br><strong>■ タブレット（iPad）・iPhone の Chrome は「1サイトだけ」削除できません</strong>。→ iPadでは<strong>Safariの手順</strong>で消す（普段からこのアプリを Safari で開いておくのが確実）か、Chromeで使い続けたい場合は「設定→プライバシー→閲覧履歴データの削除→Cookie・サイトデータ（全期間）」で消す＝<strong>他サイトもログアウト</strong>。<br>削除後は<strong>開き直して📥 読込で復元</strong>します。' },
-    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Microsoft Edge：PC／タブレットの注意】', a:'<strong>こんなとき</strong>（重い・固まる・表示がおかしい・直したい）に、<strong>このアプリだけをリセット（保存データを消去）</strong>して直す手順です。<br>必ず先に<strong>「全部のバックアップ」→「保存できたか確認」</strong>を済ませてから。<br><strong>■ PC（Windows・Mac）＝1サイトだけ削除できます</strong>。かんたん：このアプリを開いた状態で<strong>アドレスバー左端の鍵／情報アイコン</strong>→ 表示された<strong>このサイトのCookie・サイトデータ</strong>を<strong>ゴミ箱</strong>で削除。設定から：右上「…」→「設定」→「<strong>Cookieとサイトのアクセス許可</strong>」→「<strong>Cookieとサイトデータの管理と削除</strong>」→「<strong>すべてのCookieとサイトデータを表示する</strong>」→ 検索にサイト名 → 右端の「<strong>…</strong>（その他の操作）→ 削除」（または「∨」で展開しゴミ箱）。（アドレスバーに <strong>edge://settings/siteData</strong> でも可）。<br><strong>■ タブレット（Android／iPad）の Edge は「1サイトだけ」削除する画面がありません</strong>。→ <strong>iPadは Safari の手順</strong>、<strong>Androidは Chrome の手順</strong>で消すのが確実です（普段からその対応ブラウザでアプリを開いておくのがおすすめ）。どうしても Edge のまま消す場合は「設定→プライバシー、検索、サービス→閲覧データをクリア→Cookieとサイトデータ」＝<strong>他サイトもログアウト</strong>。<br><strong>※ Ctrl+Shift+Delete や「すべてクリア」は他サイトまで消える</strong>ので、PCでは上の「1サイトだけ」の手順を使ってください。削除後は<strong>開き直して📥 読込で復元</strong>します。' }
+    { cat:'こまったとき（救出・復旧）', q:'アプリが使えない・開かない・動かない・真っ白になった（直し方＝データを守ってリセット→復元）', a:'まず救出ページ（diag.html）で写真を取り出し、ファイルアプリに ZIP があるかを目で確かめてください。そのあとは、自分でブラウザのデータを消さずに、管理担当に連絡してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリのデータを消す（リセット）と、なぜ直るの？何が消えるの？（＝消す前に必ず保存）', a:'重いときは、まず全部の保存（ZIP）をしてファイルアプリで確かめ、毎日の終わりの手順で『🗑 この端末の写真を全部消す』を使ってください。データを消して直す操作は、現場では行いません。管理担当に連絡してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'自分の端末で“アプリのリセット（このアプリだけ消去）”はできる？【早見表】', a:'現場では行いません。撮影データも消えます。管理担当に連絡してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Safari：iPad・iPhone／Mac】', a:'現場では行いません。撮影データも消えます。管理担当に連絡してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Google Chrome：PC・Androidタブレット／iPadの注意】', a:'現場では行いません。撮影データも消えます。管理担当に連絡してください。' },
+    { cat:'こまったとき（救出・復旧）', q:'アプリの調子が悪いときの“リセット手順”【Microsoft Edge：PC／タブレットの注意】', a:'現場では行いません。撮影データも消えます。管理担当に連絡してください。' }
   ];
 
   // v3-148：「アプリが使えないときは」トラブルパネル＝開閉＋症状タップで該当Q&Aを検索表示。
@@ -6141,7 +6133,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       safetyStatus.style.display = 'block';
       safetyStatus.innerHTML =
         '<div style="font-weight:700;font-size:14px;margin-bottom:6px;">🆘 ' + (reason || 'データ保存に問題が発生しました') + '</div>' +
-        '<div style="font-size:12px;line-height:1.6;">あわてないでください。写真は端末内に残っている可能性が高いです。<strong>まず下のボタンで救出ページを開き、写真を保存してください（最優先）。</strong>保存できるまでは、履歴・サイトデータを消さないでください。<br>写真を保存できたあとも使えないときは、保存タブの「🆘 データが消えた・保存できないときは」を開き、<strong>サイトデータを消して開き直す</strong>手順（Safari／Edge別）で直せます。</div>' +
+        '<div style="font-size:12px;line-height:1.6;">あわてないでください。写真は端末内に残っている可能性が高いです。<strong>まず下のボタンで救出ページを開き、写真を保存してください（最優先）。</strong>保存できるまでは、履歴・サイトデータを消さないでください（消すと、この iPad に残っている写真も消えます）。<br>写真を保存できたら、管理担当に連絡してください。</div>' +
         '<a href="' + DIAG_URL + '" target="_self" style="display:inline-block;margin-top:8px;background:#ff9500;color:#fff;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;">🆘 救出ページを開く（diag.html）</a>';
     } catch (_) {}
   }
@@ -8122,10 +8114,14 @@ https://github.com/nodeca/pako/blob/main/LICENSE
   })();
 
   // 下部固定バナー（撮影/評価）が出ている間だけ、本文の下に余白を確保（重なり防止）
+  //   v3.219：数えるのは「今のタブで実際に見えている帯」だけ（ほかのタブの帯は CSS で隠れているので数えない）。タブを替えたとき（data-curview が替わったとき）も数え直す。
+  //   撮影のタブでは、評価や位置記録の段の途中でも撮るボタンが右下に浮く（撮影の帯が見えているときは、今までどおり帯に任せる）
   (function watchBottomBars(){
     function sync(){
       var cb=$('continuous-banner'), eb=$('eval-bar'), kb=$('complete-bar');
-      var vis=((cb&&cb.style.display&&cb.style.display!=='none')||(eb&&eb.style.display&&eb.style.display!=='none')||(kb&&kb.style.display&&kb.style.display!=='none'));
+      var cv=document.body.getAttribute('data-curview');
+      var on=function(el, view){ return !!(el&&el.style.display&&el.style.display!=='none') && (!cv || cv===view); };   // data-curview がまだ無い間は、今までどおり出ている帯を数える
+      var vis=(on(cb,'shoot')||on(eb,'eval')||on(kb,'floorplan'));
       document.body.classList.toggle('bottombar-on', !!vis);
     }
     try{
@@ -8134,6 +8130,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       if(cb) obs.observe(cb,{attributes:true,attributeFilter:['style']});
       if(eb) obs.observe(eb,{attributes:true,attributeFilter:['style']});
       if(kb) obs.observe(kb,{attributes:true,attributeFilter:['style']});
+      obs.observe(document.body,{attributes:true,attributeFilter:['data-curview']});
       sync();
     }catch(e){}
   })();
@@ -8421,7 +8418,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       tt.textContent = opts.title || ''; bd.textContent = opts.body || ''; bd.hidden = !opts.body; ls.textContent = '';
       var sheet218 = m.querySelector('.m17-ask-sheet'), st218 = null;   // v3.218：図面を選ぶシートだけ（opts.pick）。一覧を送れるようにし、段の表示を出す
       if (sheet218) sheet218.classList.toggle('p218-pick', !!opts.pick);
-      ls.p218Until = opts.pick ? ((window.performance && performance.now) ? performance.now() : 0) + 290 : 0;   // v3.218：図面を選ぶシートだけ、開いてから約0.3秒は押しても受け付けない（すばやい2回目が次の段に当たらない）
+      ls.p218Until = opts.pick ? ((window.performance && performance.now) ? performance.now() : 0) + 600 : 0;   // v3.218：図面を選ぶシートだけ、開いてから約0.6秒（v3.219 で 0.3 秒から延ばした）は押しても受け付けない（すばやい2回目が次の段に当たらない）
       if (opts.steps && opts.steps.length) {
         st218 = document.createElement('div'); st218.className = 'p218-steps'; st218.id = 'p218-steps';
         opts.steps.forEach(function(x, i){
@@ -9267,7 +9264,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
           var main = null, next;
           if (stg === 1) { next = none ? '棟（建物）を足す' : '下の一覧で、棟の「開く」を押す'; if (none) main = btn('m15-row m15-main', '＋ 棟（建物）を足す', function(){ press('map-add-building-btn'); }); }
           else if (stg === 2) { next = none ? '図面（マップ）を読み込む' : '下の一覧で、図面を選ぶ'; if (none) main = btn('m15-row m15-main', '＋ 図面を読み込む（写真・画像・ZIP／複数可）', function(){ press(inArea ? 'map-area-add-sheet-btn' : 'map-add-sheet-btn'); }); }
-          else { next = 'ピンを置く'; main = btn('m15-row m15-main', '📍 この図面でピンを置く ▶', function(){ press('map-sheet-pin-btn'); }); }
+          else { next = 'ピンを置く'; main = btn('m15-row m15-main', '📍 この図面を開く（写真はあとで選ぶ）', function(){ press('map-sheet-pin-btn'); });   /* v3.219（E）：字だけ */ }
           route.appendChild(mk('p', 'm15-next', '次にすること：' + next)); if (main) route.appendChild(main);
           if (stg === 3) {   // 第3段：「どちらの順番？」の2つの札は ⓘ を押したときだけ出す
             var ow = mk('div', 'm15-order-wrap' + (orderOpen ? '' : ' m15-closed')); ow.id = 'm15-order-wrap';
@@ -9555,7 +9552,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var newPhoto = photos.find(function(p){ return p.id === newPhotoId; });
     if (newPhoto && pinPhotoNumberDiffers(pin.label, newPhoto)) {   // v3.208 F-05：ピンの番号と撮った番号が違えば付けない（写真はそのまま）
       clearPendingShootPin(true);
-      showToast('ピン「' + String(pin.label).trim() + '」と撮った番号「' + photoNumberForPin(newPhoto) + '」が違うので、紐づけませんでした。付けるときは、ピンの「写真を付ける」から');
+      showToast('ピン「' + String(pin.label).trim() + '」と撮った番号「' + photoNumberForPin(newPhoto) + '」が違うので、紐づけませんでした。付けるときは、ピンの「写真を付ける」から', null, 6000);   // v3.219（軽2）：約6秒
       return false;
     }
     pin.photoId = newPhotoId;
@@ -10108,7 +10105,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     if (msg) showToast(msg);
   }
   function enterLocatePhase(msg){
-    if (arguments[1] === true && msg) { try { showToast(String(msg).replace(/&(amp|lt|gt|quot|#39);/g, function(m, k){ return { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }[k]; }), null, 4000); } catch (_) {} }   // v3.218（F5）：2つ目に true を渡されたときは、移った先（位置記録のタブ）でも見える知らせで約4秒出す（知らせは字のまま出すので、escapeHtml で替えた字を戻す。頭の行は変えない）
+    if (arguments[1] === true && msg) { try { showToast(String(msg).replace(/&(amp|lt|gt|quot|#39);/g, function(m, k){ return { amp: '&', lt: '<', gt: '>', quot: '"', '#39': "'" }[k]; }), null, 6000); } catch (_) {} }   // v3.218（F5）：2つ目に true を渡されたときは、移った先（位置記録のタブ）でも見える知らせで約6秒（v3.219 で 4 秒から延ばした）出す（知らせは字のまま出すので、escapeHtml で替えた字を戻す。頭の行は変えない）
     if (evalBar) evalBar.style.display = 'none';
     var cbar=$('complete-bar'); if(cbar) cbar.style.display='flex';
     var p0=(evalModeBaseId!=null)?photos.find(function(p){return p.id===evalModeBaseId;}):null;
@@ -10178,7 +10175,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       openPinEditor(ref, already ? null : pt.id);
       if (!editSheetRef) return;
       editorEquip218 = { ref: editSheetRef, pt: pt };
-      if (already) showToast(equipNo17(pt) + ' はこの図面にもう置いてあります。動かすときは、そのピンを押してください');
+      if (already) showToast(equipNo17(pt) + ' はこの図面にもう置いてあります。動かすときは、そのピンを押してください', null, 6000);   // v3.219 ⑦：約6秒
       else notifyOther218(ref, pt);
     } });
   }
@@ -10205,11 +10202,57 @@ https://github.com/nodeca/pako/blob/main/LICENSE
     var other = collectAllSheets().filter(function(x){
       return x.ref.sheetId !== ref.sheetId && ((resolveSheet(x.ref) || {}).pins || []).some(function(p){ return ids.indexOf(p.photoId) >= 0; });
     })[0];
-    if (other) showToast(equipNo17(pt) + ' は「' + sheetPath218(other.ref) + '」に置いてあります（ここにも置けます）');
+    if (other) showToast(equipNo17(pt) + ' は「' + sheetPath218(other.ref) + '」に置いてあります（ここにも置けます）', null, 6000);   // v3.219 ⑦：約6秒
   }
+  // v3.219 ⑤：ピンの画面が閉じたとき（「閉じる（置いた物は保存済み）」でも「＜ 前の画面へ戻る」でも）、その設備のピンがこの図面にあれば、今の状態を知らせる（約6秒）。
+  //   ボタンの処理（onPinEditorBack）は変えず、ピンの画面の style を見張る。字は showToast が textContent で入れる。ピンが無ければ出さない
+  function notifyPlaced219(ref, pt) {
+    try {
+      var ids = equipPhotosOf(pt).map(function(x){ return x.id; });
+      var n = ((resolveSheet(ref) || {}).pins || []).filter(function(p){ return ids.indexOf(p.photoId) >= 0; }).length;
+      if (!n) return;
+      var no219 = equipNo17(pt);
+      dropLong219(function(t){ return t.indexOf(no219 + ' は「') === 0 && /」に置いてあります（ここにも置けます）$/.test(t); });   // v3.219（中1 (a)）：同じ設備の「…に置いてあります（ここにも置けます）」を消す（食い違って見えないように）
+      showToast('📍 ' + no219 + ' のピンは「' + sheetPath218(ref) + '」にあります（この図面に' + n + '本' + (n >= 2 ? 'あります' : '') + '）', null, 6000);
+    } catch (_) {}
+  }
+  // v3.219（中1）：約6秒の知らせ（印 data-long219）を消す。test を渡したときは、字が当てはまる物だけ。ほかの知らせ（1.9 秒）は消さない。知らせの部品を消すだけ
+  function dropLong219(test) {
+    try {
+      Array.prototype.slice.call(document.querySelectorAll('#toastHost .toast[data-long219]')).forEach(function(t){
+        if (!test || test(t.textContent || '')) { if (t.parentNode) t.parentNode.removeChild(t); }
+      });
+    } catch (_) {}
+  }
+  (function watchNextEquip219(){ try {   // v3.219（中1 (b)）：次の設備へ移るとき（位置記録の帯が閉じて、評価の相手が外れたとき）に、前の設備の約6秒の知らせを消す
+    var kb = $('complete-bar'); if (!kb) return;
+    var was = !!(kb.style.display && kb.style.display !== 'none');
+    new MutationObserver(function(){ try {
+      var now = !!(kb.style.display && kb.style.display !== 'none');
+      if (was && !now && evalModeBaseId == null) dropLong219();   // 「＜ 評価へ戻る」で評価へ戻るとき（評価の相手はそのまま）は消さない
+      was = now;
+    } catch (_) {} }).observe(kb, { attributes: true, attributeFilter: ['style'] });
+  } catch (_) {} })();
+  (function watchPinEditor219(){ try {   // ここで何かが起きても、アプリのほかの起動を止めない
+    var pe = $('pin-editor'); if (!pe) return;
+    var open219 = null;   // 開いている図面と設備 { ref, pt }。設備は、シートから開いた図面（editorEquip218）か、開いたときに付ける写真（撮影リストの「📍 図面に置く」など）から分かるときだけ
+    var mo = new MutationObserver(function(){ try {
+      if (pe.style.display && pe.style.display !== 'none') {   // 開いている（図面を替えたときは、閉じて開き直したあとにここへ来るので、知らせは出さない）
+        if (!editSheetRef) return;
+        var pt = (editorEquip218 && editorEquip218.ref === editSheetRef) ? editorEquip218.pt : null;
+        if (!pt && open219 && open219.ref === editSheetRef) pt = open219.pt;
+        if (!pt && pendingAutoPhotoId != null) pt = photos.find(function(x){ return x.id === pendingAutoPhotoId; }) || null;
+        open219 = { ref: editSheetRef, pt: pt };
+      } else if (open219) {   // 閉じた
+        var o = open219; open219 = null;
+        if (o.pt) notifyPlaced219(o.ref, o.pt);
+      }
+    } catch (_) {} });
+    mo.observe(pe, { attributes: true, attributeFilter: ['style'] });
+  } catch (_) {} })();
   function pickSheet218(o) {
     var bs = mapData.buildings || [];
-    if (!bs.length) { showToast('位置記録のタブで、棟を登録してください'); return; }
+    if (!bs.length) { showToast('上の「＋ 棟（建物）を足す」で棟を登録してから、もう一度押してください'); return; }   // v3.219（A）
     var last = null;
     lastSheets218.some(function(r){ if (r.sheetId !== o.exceptSheetId && resolveSheet(r)) { last = r; return true; } return false; });
     var body = '棟 → 区分 → 図面 の順に押します。押した図面で、ピンの画面が開きます。';
@@ -10447,7 +10490,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       ], cancel: 'やめる'
     } : {
       title: 'まだ「' + miss.join('・') + '」が済んでいません',
-      body: 'このまま ' + no + ' を完了できます。済んでいない所は、あとから撮影リストで追記できます。',
+      body: 'このまま ' + no + ' を完了できます。済んでいない所は、あとから撮影リストで追記できます。' + (miss.indexOf('評価') >= 0 ? '\nG・U・T のどれかかメモが入っていないと、評価済みになりません。「やめる」を押してから「＜ 評価へ戻る」で戻り、入れて「✅ 評価を保存して…」を押してください。' : ''),   // v3.219 ④
       choices: [{ key: 'go', label: 'このまま ' + no + ' を完了して次へ', sub: '済んでいない「' + miss.join('・') + '」は、あとから追記できます', kind: 'plain' }],
       cancel: 'やめる'
     };
@@ -10467,6 +10510,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var mo = new MutationObserver(function(){ try { syncBand17(); } catch (_) {} });
       if (pe) mo.observe(pe, { attributes: true, attributeFilter: ['style', 'class'] });
       if (cb) mo.observe(cb, { attributes: true, attributeFilter: ['style'] });
+      var cbn = $('complete-bar-name'); if (cbn) mo.observe(cbn, { childList: true, characterData: true, subtree: true });   // v3.219：位置記録の段に入るたびに（enterLocatePhase が設備の名前を書いたとき）、帯の番号とボタンの字を今の設備に書き直す（前の設備で「やめる」を選んで帯が出たままでも）
       syncBand17();
     } catch (_) {}
   })();
@@ -18853,10 +18897,10 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       var already = !!keep && !!sh && (sh.pins || []).some(function(p){ return ids.indexOf(p.photoId) >= 0; });
       openPinEditor(ref, (keep && !already) ? keep.id : null);
       if (!editSheetRef) return;
-      if (rest218) showToast('図面を替えたので、続けて置くのは終わりました。置いたピンは前の図面に残っています（残り ' + rest218 + ' 枚は「📷 写真を選んでピンを置く」で置けます）', null, 4000);
+      if (rest218) showToast('図面を替えたので、続けて置くのは終わりました。置いたピンは前の図面に残っています（残り ' + rest218 + ' 枚は「📷 写真を選んでピンを置く」で置けます）', null, 6000);
       editorEquip218 = keep ? { ref: editSheetRef, pt: keep } : null;
       if (!keep) return;
-      if (already) showToast(equipNo17(keep) + ' はこの図面にもう置いてあります。動かすときは、そのピンを押してください');
+      if (already) showToast(equipNo17(keep) + ' はこの図面にもう置いてあります。動かすときは、そのピンを押してください', null, 6000);   // v3.219 ⑦：約6秒（図面を替えたとき）
       else notifyOther218(ref, keep);
     } });
   }
@@ -19003,7 +19047,7 @@ https://github.com/nodeca/pako/blob/main/LICENSE
       }
       showToast('📷 撮影タブへ：番号 ' + num + ' をセットしました');
     } else if (pendingShootPin) {
-      showToast((sfpEndedCont ? '前の設備の「続けて撮る」を終えました。' : '') + (isOnlyNumPrefix((getFilename() || {}).value) ? '📷 撮影タブへ。番号の続きの4けたを打ってから撮ってください（撮ると先行ピンに自動で紐づきます）' : '📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）'));   // v3.215 ⑦
+      showToast((sfpEndedCont ? '前の設備の「続けて撮る」を終えました。' : '') + (isOnlyNumPrefix((getFilename() || {}).value) ? '📷 撮影タブへ。番号の続きの4けたを打ってから撮ってください（撮ると先行ピンに自動で紐づきます）' : '📷 撮影タブへ。撮ると先行ピンに自動で紐づきます（番号を入力して撮影）'), null, 6000);   // v3.215 ⑦ ／ v3.219（軽2）：約6秒
     } else {
       showToast('📷 撮影タブへ移動しました。番号を入力して撮影してください');
     }
